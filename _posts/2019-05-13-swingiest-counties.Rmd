@@ -5,6 +5,8 @@ date: "5/13/2019"
 output:
   md_document:
     variant: gfm
+    toc: true
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -21,7 +23,7 @@ library(rmarkdown)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Loading our data
+# Loading our data
 
 We need a few helper functions to denormalize useful data in the rows.
 
@@ -160,7 +162,7 @@ data_2008 <- compare_2008[which(compare_2008$trump_gain > 0),c('state','county',
 ```{r}
 kable(data_2008[order(-data_2008$trump_gain),])
 ```
-### Plots for the 2008 Results
+# Plots for the 2008 Results
 
 Now we can try to plot the data:
 
@@ -183,7 +185,7 @@ county_2008 %>%
 
 We plot each state independently
 
-#### Florida
+## Florida
 
 ```{r}
 county_2008 %>% filter(state_name == 'Florida') %>%
@@ -203,7 +205,7 @@ fl_2008 <- (data_2008 %>% filter(state == 'Florida'))
 kable(fl_2008[order(-fl_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Iowa
+## Iowa
 
 ```{r}
 county_2008 %>% filter(state_name == 'Iowa') %>%
@@ -221,7 +223,7 @@ ia_2008 <- (data_2008 %>% filter(state == 'Iowa'))
 kable(ia_2008[order(-ia_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Michigan
+## Michigan
 
 
 ```{r}
@@ -240,7 +242,7 @@ mi_2008 <- (data_2008 %>% filter(state == 'Michigan'))
 kable(mi_2008[order(-mi_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Nebraska
+## Nebraska
 
 ```{r}
 county_2008 %>% filter(state_name == 'Nebraska') %>%
@@ -259,7 +261,7 @@ ne_2008 <- (data_2008 %>% filter(state == 'Nebraska'))
 kable(ne_2008[order(-ne_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Ohio
+## Ohio
 
 ```{r}
 county_2008 %>% filter(state_name == 'Ohio') %>%
@@ -277,7 +279,7 @@ oh_2008 <- (data_2008 %>% filter(state == 'Ohio'))
 kable(oh_2008[order(-oh_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Pennsylvania
+## Pennsylvania
 
 ```{r}
 county_2008 %>% filter(state_name == 'Pennsylvania') %>%
@@ -295,7 +297,7 @@ pa_2008 <- (data_2008 %>% filter(state == 'Pennsylvania'))
 kable(pa_2008[order(-pa_2008$trump_gain),c('county','trump_gain')])
 ```
 
-#### Wisconsin
+## Wisconsin
 
 
 ```{r}
@@ -315,7 +317,8 @@ wi_2008 <- (data_2008 %>% filter(state == 'Wisconsin'))
 kable(wi_2008[order(-wi_2008$trump_gain),c('county','trump_gain')])
 ```
 
-## 2012 Results
+# Plots for the 2012 Results
+
 And the comparison for 2012 results
 
 
@@ -334,8 +337,6 @@ There were `nrow(data_2012)` counties which flipped from Obama 2012 to Trump in 
 ```{r}
 kable(data_2012[order(-data_2012$trump_gain),])
 ```
-
-### Plots for 2012
 
 Now we can try to plot the data:
 
@@ -356,7 +357,7 @@ county_2012 %>%
   labs(fill = "Swing for Trump")
 ```
 
-#### Florida
+## Florida
 
 ```{r}
 county_2012 %>% filter(state_name == 'Florida') %>%
@@ -377,7 +378,7 @@ kable(fl_2012[order(-fl_2012$trump_gain),c('county','trump_gain')])
 ```
 
 
-#### Iowa
+## Iowa
 
 ```{r}
 county_2012 %>% filter(state_name == 'Iowa') %>%
@@ -395,7 +396,7 @@ ia_2012 <- (data_2012 %>% filter(state == 'Iowa'))
 kable(ia_2012[order(-ia_2012$trump_gain),c('county','trump_gain')])
 ```
 
-#### Michigan
+## Michigan
 
 ```{r}
 county_2012 %>% filter(state_name == 'Michigan') %>%
@@ -413,7 +414,7 @@ mi_2012 <- (data_2012 %>% filter(state == 'Michigan'))
 kable(mi_2012[order(-mi_2012$trump_gain),c('county','trump_gain')])
 ```
 
-#### Ohio
+## Ohio
 
 ```{r}
 county_2012 %>% filter(state_name == 'Ohio') %>%
@@ -432,7 +433,7 @@ oh_2012 <- (data_2012 %>% filter(state == 'Ohio'))
 kable(oh_2012[order(-oh_2012$trump_gain),c('county','trump_gain')])
 ```
 
-#### Pennsylvania
+## Pennsylvania
 
 ```{r}
 county_2012 %>% filter(state_name == 'Pennsylvania') %>%
@@ -451,7 +452,7 @@ pa_2012 <- (data_2012 %>% filter(state == 'Pennsylvania'))
 kable(pa_2012[order(-pa_2012$trump_gain),c('county','trump_gain')])
 ```
 
-#### Wisconsin
+## Wisconsin
 
 ```{r}
 county_2012 %>% filter(state_name == 'Wisconsin') %>%

@@ -1,4 +1,21 @@
-## Loading our data
+  - [Loading our data](#loading-our-data)
+  - [Plots for the 2008 Results](#plots-for-the-2008-results)
+      - [Florida](#florida)
+      - [Iowa](#iowa)
+      - [Michigan](#michigan)
+      - [Nebraska](#nebraska)
+      - [Ohio](#ohio)
+      - [Pennsylvania](#pennsylvania)
+      - [Wisconsin](#wisconsin)
+  - [Plots for the 2012 Results](#plots-for-the-2012-results)
+      - [Florida](#florida-1)
+      - [Iowa](#iowa-1)
+      - [Michigan](#michigan-1)
+      - [Ohio](#ohio-1)
+      - [Pennsylvania](#pennsylvania-1)
+      - [Wisconsin](#wisconsin-1)
+
+# Loading our data
 
 We need a few helper functions to denormalize useful data in the rows.
 
@@ -70,7 +87,7 @@ has_swung_since <- function(results, election_year, state_name, number_of_electi
 ```
 
 ``` r
-state_path <- "../data/elections/presidential/state/1976-2016-president.RData"
+state_path <- "../data/elections/presidential/state/1976_2016_president.RData"
 state_results <- load_obj(state_path);
 state_results <- make_party_into_factor(state_results);
 state_results <- add_vote_percentage(state_results);
@@ -3917,7 +3934,7 @@ Jefferson
 
 </table>
 
-### Plots for the 2008 Results
+# Plots for the 2008 Results
 
 Now we can try to plot the data:
 
@@ -3942,7 +3959,7 @@ county_2008 %>%
 
 We plot each state independently
 
-#### Florida
+## Florida
 
 ``` r
 county_2008 %>% filter(state_name == 'Florida') %>%
@@ -4127,7 +4144,7 @@ St. Lucie
 
 </table>
 
-#### Iowa
+## Iowa
 
 ``` r
 county_2008 %>% filter(state_name == 'Iowa') %>%
@@ -5214,7 +5231,7 @@ Winneshiek
 
 </table>
 
-#### Michigan
+## Michigan
 
 ``` r
 county_2008 %>% filter(state_name == 'Michigan') %>%
@@ -6103,7 +6120,7 @@ Isabella
 
 </table>
 
-#### Nebraska
+## Nebraska
 
 ``` r
 county_2008 %>% filter(state_name == 'Nebraska') %>%
@@ -6184,7 +6201,7 @@ Thurston
 
 </table>
 
-#### Ohio
+## Ohio
 
 ``` r
 county_2008 %>% filter(state_name == 'Ohio') %>%
@@ -6545,7 +6562,7 @@ Trumbull
 
 </table>
 
-#### Pennsylvania
+## Pennsylvania
 
 ``` r
 county_2008 %>% filter(state_name == 'Pennsylvania') %>%
@@ -6752,7 +6769,7 @@ Erie
 
 </table>
 
-#### Wisconsin
+## Wisconsin
 
 ``` r
 county_2008 %>% filter(state_name == 'Wisconsin') %>%
@@ -7839,7 +7856,7 @@ Sauk
 
 </table>
 
-## 2012 Results
+# Plots for the 2012 Results
 
 And the comparison for 2012
 results
@@ -9435,8 +9452,6 @@ Boone
 
 </table>
 
-### Plots for 2012
-
 Now we can try to plot the data:
 
 ``` r
@@ -9458,7 +9473,7 @@ county_2012 %>%
 
 ![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
-#### Florida
+## Florida
 
 ``` r
 county_2012 %>% filter(state_name == 'Florida') %>%
@@ -9599,7 +9614,7 @@ Pinellas
 
 </table>
 
-#### Iowa
+## Iowa
 
 ``` r
 county_2012 %>% filter(state_name == 'Iowa') %>%
@@ -10356,7 +10371,7 @@ Clinton
 
 </table>
 
-#### Michigan
+## Michigan
 
 ``` r
 county_2012 %>% filter(state_name == 'Michigan') %>%
@@ -10673,7 +10688,7 @@ Saginaw
 
 </table>
 
-#### Ohio
+## Ohio
 
 ``` r
 county_2012 %>% filter(state_name == 'Ohio') %>%
@@ -10924,7 +10939,7 @@ Trumbull
 
 </table>
 
-#### Pennsylvania
+## Pennsylvania
 
 ``` r
 county_2012 %>% filter(state_name == 'Pennsylvania') %>%
@@ -11043,7 +11058,7 @@ Erie
 
 </table>
 
-#### Wisconsin
+## Wisconsin
 
 ``` r
 county_2012 %>% filter(state_name == 'Wisconsin') %>%
