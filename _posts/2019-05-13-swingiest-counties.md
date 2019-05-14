@@ -14,6 +14,9 @@
       - [Ohio](#ohio-1)
       - [Pennsylvania](#pennsylvania-1)
       - [Wisconsin](#wisconsin-1)
+  - [Critical Result: Do these 2012 Obama-Trump counties matter? (Yes,
+    they swung the
+    election)](#critical-result-do-these-2012-obama-trump-counties-matter-yes-they-swung-the-election)
 
 # Loading our data
 
@@ -11616,3 +11619,671 @@ Sauk
 </tbody>
 
 </table>
+
+# Critical Result: Do these 2012 Obama-Trump counties matter? (Yes, they swung the election)
+
+Do these counties really matter? If they did, they “swung” the election
+for Trump. Contrast this with a “surge” of voters in safe counties. Lets
+see if there are sufficient votes from these Obama-Trump counties to
+swing the election. First we need to get Clinton’s results for the
+Obama-Trump
+counties:
+
+``` r
+clinton_2016 <- relevant_data[relevant_data$state %in% counties_trump_won$state & relevant_data$county %in% counties_trump_won$county & relevant_data$party == 'democrat' & relevant_data$year == 2016,]
+```
+
+Now we merge the two datasets together to compute the margins in the
+Obama-Trump
+counties.
+
+``` r
+merged_2016 <- merge(trump_intersect_2012, clinton_2016, by=c('state','county','FIPS'));
+merged_2016$margin <- merged_2016$candidatevotes.x - merged_2016$candidatevotes.y
+
+margin_by_counties_2016 <- merged_2016 %>% group_by(state) %>% summarize(margin = sum(margin))
+
+margin_by_counties_2016$pivot <- 1 + (margin_by_counties_2016$margin %/% 2)
+
+kable(margin_by_counties_2016)
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+margin
+
+</th>
+
+<th style="text-align:right;">
+
+pivot
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+232423
+
+</td>
+
+<td style="text-align:right;">
+
+116212
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+83947
+
+</td>
+
+<td style="text-align:right;">
+
+41974
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+171686
+
+</td>
+
+<td style="text-align:right;">
+
+85844
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nebraska
+
+</td>
+
+<td style="text-align:right;">
+
+43569
+
+</td>
+
+<td style="text-align:right;">
+
+21785
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+219133
+
+</td>
+
+<td style="text-align:right;">
+
+109567
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+154450
+
+</td>
+
+<td style="text-align:right;">
+
+77226
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+63839
+
+</td>
+
+<td style="text-align:right;">
+
+31920
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+We need to compare the results for the 7
+states.
+
+``` r
+state_2016 <- state_results[which(state_results$year == 2016 & state_results$state %in% merged_2016$state & (state_results$party == 'democrat' | state_results$party == 'republican')),]
+```
+
+``` r
+margin_2016_by_state <- state_2016 %>% group_by(state) %>% summarize(margin = max(candidatevotes) - min(candidatevotes))
+kable(margin_2016_by_state)
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+margin
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+112911
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+147314
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+10704
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nebraska
+
+</td>
+
+<td style="text-align:right;">
+
+211467
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+446841
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+44292
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+22748
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+Now we can answer the question,
+finally\!
+
+``` r
+pivots_by_state <- merge(margin_2016_by_state,margin_by_counties_2016,c('state'))
+pivots_by_state$swingable <- pivots_by_state$margin.x < pivots_by_state$pivot
+
+kable(pivots_by_state)
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+margin.x
+
+</th>
+
+<th style="text-align:right;">
+
+margin.y
+
+</th>
+
+<th style="text-align:right;">
+
+pivot
+
+</th>
+
+<th style="text-align:left;">
+
+swingable
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+112911
+
+</td>
+
+<td style="text-align:right;">
+
+232423
+
+</td>
+
+<td style="text-align:right;">
+
+116212
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+147314
+
+</td>
+
+<td style="text-align:right;">
+
+83947
+
+</td>
+
+<td style="text-align:right;">
+
+41974
+
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+10704
+
+</td>
+
+<td style="text-align:right;">
+
+171686
+
+</td>
+
+<td style="text-align:right;">
+
+85844
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nebraska
+
+</td>
+
+<td style="text-align:right;">
+
+211467
+
+</td>
+
+<td style="text-align:right;">
+
+43569
+
+</td>
+
+<td style="text-align:right;">
+
+21785
+
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+446841
+
+</td>
+
+<td style="text-align:right;">
+
+219133
+
+</td>
+
+<td style="text-align:right;">
+
+109567
+
+</td>
+
+<td style="text-align:left;">
+
+FALSE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+44292
+
+</td>
+
+<td style="text-align:right;">
+
+154450
+
+</td>
+
+<td style="text-align:right;">
+
+77226
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+22748
+
+</td>
+
+<td style="text-align:right;">
+
+63839
+
+</td>
+
+<td style="text-align:right;">
+
+31920
+
+</td>
+
+<td style="text-align:left;">
+
+TRUE
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+So, Iowa, Nebraska, and Ohio were not swingable. But if Florida,
+Michigan, Pennsylvania, and Wisconsin had swung for Clinton, that is a
+difference of 29, 16, 20, and 10 electoral votes for a sum of 75
+electoral votes. Had this happen, Trump would have received 229
+electoral votes to Clinton’s 302.

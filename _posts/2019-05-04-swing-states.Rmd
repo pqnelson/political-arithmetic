@@ -2,21 +2,24 @@
 title: "Swing States"
 author: "Alex Nelson"
 date: "5/4/2019"
-output: html_document
+output:
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(kableExtra)
 library(dplyr)
 library(car) # for vif()
+library(rmarkdown)
+library(arm) # for bayesglm
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Winners by state
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Loading Data: Winners by state
 
 ```{r}
 winner_by_state_and_year <- function(results) {
@@ -50,7 +53,7 @@ load_obj <- function(path) {
 ```
 
 ```{r}
-path <- "../data/elections/presidential/state/1976-2016-president.RData"
+path <- "../data/elections/presidential/state/1976_2016_president.RData"
 results <- load_obj(path);
 results <- make_party_into_factor(results);
 results <- add_vote_percentage(results);
@@ -58,7 +61,7 @@ winner_data <- winner_by_state_and_year(results);
 winner_data <- winner_data[with(winner_data,order(state,year)), ]
 ```
 
-```{r echo=FALSE results='asis'}
+```{r}
 # winner_data <- winner_data[with(winner_data,order(state,year)), ]
 table_data <- subset(winner_data,select=c("state","party","year","votepercentage"))
 kable(table_data)
@@ -118,18 +121,18 @@ margin_of_victory <- merge(aliased_data,winner_data,by=c("state","year"));
 margin_of_victory$percentage = margin_of_victory$votepercentage - margin_of_victory$runner_up_percentage
 ```
 
-```{r echo=FALSE results='asis'}
+```{r}
 # winner_data <- winner_data[with(winner_data,order(state,year)), ]
 margin_of_victory <- margin_of_victory[with(margin_of_victory,order(state,year)), ]
 table_data <- subset(margin_of_victory,select=c("state","party.y","year","percentage"))
 kable(table_data)
 ```
 
-### Competitive States
+## Competitive States
 
 We could then list the states which have had margin of victory determined by less than 5% of the vote.
 
-```{r echo=FALSE results='asis'}
+```{r}
 kable(margin_of_victory[which(-0.05 <= margin_of_victory$percentage & margin_of_victory$percentage <= 0.05),c("party.y","year","state","percentage")])
 ```
 
@@ -187,13 +190,17 @@ new_train_data <- data[which(data$state == 'California'),]
 train_data <- new_train_data;
 new_train_data <- data[which(data$state == 'Idaho'),]
 train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Texas'),]
+train_data <- rbind(train_data,new_train_data);
 new_train_data <- data[which(data$state == 'Wyoming'),]
 train_data <- rbind(train_data,new_train_data);
 new_train_data <- data[which(data$state == 'Montana'),]
 train_data <- rbind(train_data,new_train_data);
 new_train_data <- data[which(data$state == 'Nebraska'),]
 train_data <- rbind(train_data,new_train_data);
-train_data$is_swing <- 0
+new_train_data <- data[which(data$state == 'Arizona'),]
+train_data <- rbind(train_data,new_train_data);
+train_data$is_swing <- 0;
 new_train_data <- data[which(data$state == 'Ohio'),]
 new_train_data$is_swing <- 1
 train_data <- rbind(train_data,new_train_data);
@@ -216,12 +223,17 @@ new_train_data$is_swing <- 1
 train_data <- rbind(train_data,new_train_data);
 
 train_data$mu <- 1/train_data$margin
-logit_mod <- glm(is_swing ~ swings + mu + bellwether, data = train_data, family = "binomial");
-#
-#predicted <- predict(logit_mod, test_data, type="response")
+logit_mod <- bayesglm(is_swing ~ swings + margin + bellwether + swings*margin + swings*bellwether + bellwether*margin + swings*margin*bellwether, data = train_data, family = binomial(link = "logit"));
 ```
 
-https://stats.idre.ucla.edu/r/dae/logit-regression/
+Using just the number of swings, the margin of victory, and if it's a bellwether state, we have the following predictions:
+
+```{r}
+predicted <- predict(logit_mod, data, type="response")
+data$predicted <- predicted
+kable(data[order(-data$predicted),c('year','state','predicted')], row.names = FALSE)
+```
+
 
 # Data Exploration
 
