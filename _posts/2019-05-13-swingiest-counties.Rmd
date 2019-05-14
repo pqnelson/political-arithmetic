@@ -1,0 +1,475 @@
+---
+title: "Swingiest Counties in 2016"
+author: "Alex Nelson"
+date: "5/13/2019"
+output:
+  md_document:
+    variant: gfm
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(dplyr)
+library(car) # for vif()
+library(usmap)
+library(urbnmapr)
+library(tidyverse)
+library(ggplot2)
+library(scales)
+library(rmarkdown)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading our data
+
+We need a few helper functions to denormalize useful data in the rows.
+
+```{r}
+winner_by_state_and_year <- function(results) {
+  return(results %>% group_by(state,year) %>% filter(votepercentage==max(votepercentage)) %>%  arrange(party));
+}
+```
+
+We need to normalize the parties, since the Democratic party in Minnessota calls themselves the Democratic-Farmer-Labor party.
+
+```{r}
+make_party_into_factor <- function(results) {
+  results$party[results$party == 'democratic-farmer-labor'] <- 'democrat';
+  results$party[is.na(results$party)] <- '$third-party';
+  results$party <- as.factor(results$party);
+  return(results);
+}
+add_vote_percentage <- function(results) {
+  results$votepercentage <- with(results, candidatevotes/totalvotes);
+  return(results);
+}
+```
+
+We need a helper function to load `RData` files into specified variables.
+
+```{r}
+load_obj <- function(path) {
+  env <- new.env();
+  nm <- load(path,env)[1];
+  env[[nm]];
+}
+```
+
+```{r}
+count_alternates <- function(column) {
+  count <- 0;
+  if (length(column) > 0) {
+    val <- column[[1]][1];
+    for (i in 2:length(column)) {
+      if (column[[i]][1] != val) {
+        val <- column[[i]][1];
+        count <- count + 1;
+      }
+    }
+  }
+  return(count);
+}
+```
+
+```{r}
+number_of_swings_since <- function(results, election_year, state_name, number_of_elections=7) {
+  start_year <- election_year - (number_of_elections - 1)*4;
+  has_data <- (1976 <= start_year);
+  is_election_year <- ((election_year - 1976)%%4 == 0);
+  if (!has_data || !is_election_year) {
+    return(0);
+  } else {
+    parties<-results[which(results$state==state_name & start_year <= results$year & results$year <= election_year),c("party")];
+    return(count_alternates(parties[["party"]]));
+  }
+}
+
+has_swung_since <- function(results, election_year, state_name, number_of_elections=7) {
+  return(number_of_swings_since(results, election_year, state_name, number_of_elections) > 1);
+}
+```
+
+```{r}
+state_path <- "../data/elections/presidential/state/1976_2016_president.RData"
+state_results <- load_obj(state_path);
+state_results <- make_party_into_factor(state_results);
+state_results <- add_vote_percentage(state_results);
+state_winner_data <- winner_by_state_and_year(state_results);
+state_winner_data <- state_winner_data[with(state_winner_data,order(state,year)), ]
+
+swing_data <- state_winner_data[which(state_winner_data$year >= 2000),c("state","year")]
+```
+
+```{r}
+for (i in 1:nrow(swing_data)) {
+  row <- swing_data[i,];
+  year <- row[['year']];
+  state <- row[['state']];
+  swing_data[which(swing_data$state == state & swing_data$year == year),c('swings')] <- number_of_swings_since(state_winner_data,year,state,2);
+}
+```
+
+The states we are interested in examining are the ones which have swung from Obama to Trump.
+
+```{r}
+kable(swing_data[which(swing_data$year==2016 & swing_data$swings>=1),])
+```
+
+```{r}
+path <- "../data/elections/presidential/county/countypres_2000-2016.RData"
+results <- load_obj(path);
+results <- make_party_into_factor(results);
+results <- add_vote_percentage(results);
+winner_data <- winner_by_state_and_year(results);
+winner_data <- winner_data[with(winner_data,order(state,county,year)), ]
+```
+
+We now want to drill down on the states which were won by Obama but switched to Trump.
+
+```{r}
+states <- swing_data[which(swing_data$year==2016 & swing_data$swings>=1),c('state')]$state
+relevant_data <- results[results$state %in% states,]
+```
+
+We want to find, among these states, which counties were won by Obama but switched to Trump. We don't know if comparing 2008 to 2016 is more meaningful than 2012 to 2016, so we gather all the data we can.
+
+```{r}
+counties_obama_won_2008 <- relevant_data %>% filter(year==2008) %>% group_by(state,county) %>% filter(votepercentage==max(votepercentage)) %>%  arrange(party) %>% filter(party=='democrat')
+counties_obama_won_2008 <- add_vote_percentage(counties_obama_won_2008)
+
+counties_obama_won_2012 <- relevant_data %>% filter(year==2012) %>% group_by(state,county) %>% filter(votepercentage==max(votepercentage)) %>%  arrange(party) %>% filter(party=='democrat')
+counties_obama_won_2012 <- add_vote_percentage(counties_obama_won_2012)
+
+counties_trump_won <- relevant_data %>% filter(year==2016) %>% group_by(state,county) %>% filter(votepercentage==max(votepercentage)) %>%  arrange(party) %>% filter(party=='republican')
+counties_trump_won <- add_vote_percentage(counties_trump_won)
+```
+
+Now we are curious about the counties which swung from Obama to Trump, which we will try measuring in terms of percent of votes cast.
+
+```{r}
+trump_intersect_2008 <- counties_trump_won[counties_trump_won$state %in% counties_obama_won_2008$state & counties_trump_won$county %in% counties_obama_won_2008$county,]
+obama_intersect_2008 <- counties_obama_won_2008[counties_obama_won_2008$state %in% counties_trump_won$state & counties_obama_won_2008$county %in% counties_trump_won$county,]
+
+compare_2008 <- merge(obama_intersect_2008, trump_intersect_2008, by=c('state','county','FIPS'))
+compare_2008$trump_gain <- compare_2008$votepercentage.y - compare_2008$votepercentage.x
+
+data_2008 <- compare_2008[which(compare_2008$trump_gain > 0),c('state','county','FIPS','trump_gain')]
+```
+
+```{r}
+kable(data_2008[order(-data_2008$trump_gain),])
+```
+### Plots for the 2008 Results
+
+Now we can try to plot the data:
+
+```{r}
+data_2008 <- compare_2008[,c('state','county','FIPS','trump_gain')]
+county_2008 <- data_2008
+county_2008$county_fips = as.character(county_2008$FIPS)
+county_2008 <- left_join(counties, county_2008, by = "county_fips") 
+
+county_2008 %>% 
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = NA) +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = 'white',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+We plot each state independently
+
+#### Florida
+
+```{r}
+county_2008 %>% filter(state_name == 'Florida') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+
+```{r}
+fl_2008 <- (data_2008 %>% filter(state == 'Florida'))
+kable(fl_2008[order(-fl_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Iowa
+
+```{r}
+county_2008 %>% filter(state_name == 'Iowa') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+ia_2008 <- (data_2008 %>% filter(state == 'Iowa'))
+kable(ia_2008[order(-ia_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Michigan
+
+
+```{r}
+county_2008 %>% filter(state_name == 'Michigan') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+mi_2008 <- (data_2008 %>% filter(state == 'Michigan'))
+kable(mi_2008[order(-mi_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Nebraska
+
+```{r}
+county_2008 %>% filter(state_name == 'Nebraska') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+```{r}
+ne_2008 <- (data_2008 %>% filter(state == 'Nebraska'))
+kable(ne_2008[order(-ne_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Ohio
+
+```{r}
+county_2008 %>% filter(state_name == 'Ohio') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+oh_2008 <- (data_2008 %>% filter(state == 'Ohio'))
+kable(oh_2008[order(-oh_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Pennsylvania
+
+```{r}
+county_2008 %>% filter(state_name == 'Pennsylvania') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+pa_2008 <- (data_2008 %>% filter(state == 'Pennsylvania'))
+kable(pa_2008[order(-pa_2008$trump_gain),c('county','trump_gain')])
+```
+
+#### Wisconsin
+
+
+```{r}
+county_2008 %>% filter(state_name == 'Wisconsin') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+```{r}
+wi_2008 <- (data_2008 %>% filter(state == 'Wisconsin'))
+kable(wi_2008[order(-wi_2008$trump_gain),c('county','trump_gain')])
+```
+
+## 2012 Results
+And the comparison for 2012 results
+
+
+```{r}
+trump_intersect_2012 <- counties_trump_won[counties_trump_won$state %in% counties_obama_won_2012$state & counties_trump_won$county %in% counties_obama_won_2012$county,]
+obama_intersect_2012 <- counties_obama_won_2012[counties_obama_won_2012$state %in% counties_trump_won$state & counties_obama_won_2012$county %in% counties_trump_won$county,]
+
+compare_2012 <- merge(obama_intersect_2012, trump_intersect_2012, by=c('state','county','FIPS'))
+compare_2012$trump_gain <- compare_2012$votepercentage.y - compare_2012$votepercentage.x
+
+data_2012 <- compare_2012[which(compare_2012$trump_gain > 0),c('state','county','FIPS','trump_gain')]
+```
+
+There were `nrow(data_2012)` counties which flipped from Obama 2012 to Trump in 2016:
+
+```{r}
+kable(data_2012[order(-data_2012$trump_gain),])
+```
+
+### Plots for 2012
+
+Now we can try to plot the data:
+
+```{r}
+data_2012 <- compare_2012[,c('state','county','FIPS','trump_gain')]
+county_2012 <- data_2012
+county_2012$county_fips = as.character(county_2012$FIPS)
+county_2012 <- left_join(counties, county_2012, by = "county_fips")
+
+county_2012 %>% 
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = NA) +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+#### Florida
+
+```{r}
+county_2012 %>% filter(state_name == 'Florida') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+
+```{r}
+fl_2012 <- (data_2012 %>% filter(state == 'Florida'))
+kable(fl_2012[order(-fl_2012$trump_gain),c('county','trump_gain')])
+```
+
+
+#### Iowa
+
+```{r}
+county_2012 %>% filter(state_name == 'Iowa') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+ia_2012 <- (data_2012 %>% filter(state == 'Iowa'))
+kable(ia_2012[order(-ia_2012$trump_gain),c('county','trump_gain')])
+```
+
+#### Michigan
+
+```{r}
+county_2012 %>% filter(state_name == 'Michigan') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+```{r}
+mi_2012 <- (data_2012 %>% filter(state == 'Michigan'))
+kable(mi_2012[order(-mi_2012$trump_gain),c('county','trump_gain')])
+```
+
+#### Ohio
+
+```{r}
+county_2012 %>% filter(state_name == 'Ohio') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+```{r}
+oh_2012 <- (data_2012 %>% filter(state == 'Ohio'))
+kable(oh_2012[order(-oh_2012$trump_gain),c('county','trump_gain')])
+```
+
+#### Pennsylvania
+
+```{r}
+county_2012 %>% filter(state_name == 'Pennsylvania') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+```{r}
+pa_2012 <- (data_2012 %>% filter(state == 'Pennsylvania'))
+kable(pa_2012[order(-pa_2012$trump_gain),c('county','trump_gain')])
+```
+
+#### Wisconsin
+
+```{r}
+county_2012 %>% filter(state_name == 'Wisconsin') %>%
+  ggplot(aes(long, lat, group = group, fill = trump_gain)) +
+  geom_polygon(color = "#ffffff") +
+  scale_fill_gradient2(labels = scales::percent,
+                       low = muted('red'), mid = '#aaaaaa',
+                       high = muted('blue'), midpoint = 0,
+                       guide = guide_colorbar(title.position = "top")) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Swing for Trump")
+```
+
+```{r}
+wi_2012 <- (data_2012 %>% filter(state == 'Wisconsin'))
+kable(wi_2012[order(-wi_2012$trump_gain),c('county','trump_gain')])
+```
+
+
+
+

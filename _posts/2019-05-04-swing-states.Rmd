@@ -1,0 +1,252 @@
+---
+title: "Swing States"
+author: "Alex Nelson"
+date: "5/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(dplyr)
+library(car) # for vif()
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Winners by state
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+winner_by_state_and_year <- function(results) {
+  return(results %>% group_by(state,year) %>% filter(votepercentage==max(votepercentage)) %>%  arrange(party));
+}
+```
+
+We need to normalize the parties, since the Democratic party in Minnessota calls themselves the Democratic-Farmer-Labor party.
+
+```{r}
+make_party_into_factor <- function(results) {
+  results$party[results$party == 'democratic-farmer-labor'] <- 'democrat';
+  results$party[is.na(results$party)] <- '$third-party';
+  results$party <- as.factor(results$party);
+  return(results);
+}
+add_vote_percentage <- function(results) {
+  results$votepercentage <- with(results, candidatevotes/totalvotes);
+  return(results);
+}
+```
+
+We need a helper function to load `RData` files into specified variables.
+
+```{r}
+load_obj <- function(path) {
+  env <- new.env();
+  nm <- load(path,env)[1];
+  env[[nm]];
+}
+```
+
+```{r}
+path <- "../data/elections/presidential/state/1976-2016-president.RData"
+results <- load_obj(path);
+results <- make_party_into_factor(results);
+results <- add_vote_percentage(results);
+winner_data <- winner_by_state_and_year(results);
+winner_data <- winner_data[with(winner_data,order(state,year)), ]
+```
+
+```{r echo=FALSE results='asis'}
+# winner_data <- winner_data[with(winner_data,order(state,year)), ]
+table_data <- subset(winner_data,select=c("state","party","year","votepercentage"))
+kable(table_data)
+```
+
+The number of times a column alternates between two values (or more), to help ascertain how "swingable" a state is when voting.
+
+```{r}
+count_alternates <- function(column) {
+  count <- 0;
+  if (length(column) > 0) {
+    val <- column[[1]][1];
+    for (i in 2:length(column)) {
+      if (column[[i]][1] != val) {
+        val <- column[[i]][1];
+        count <- count + 1;
+      }
+    }
+  }
+  return(count);
+}
+```
+
+```{r}
+number_of_swings_since <- function(results, election_year, state_name, number_of_elections=7) {
+  start_year <- election_year - (number_of_elections - 1)*4;
+  has_data <- (1976 <= start_year);
+  is_election_year <- ((election_year - 1976)%%4 == 0);
+  if (!has_data || !is_election_year) {
+    return(0);
+  } else {
+    parties<-results[which(results$state==state_name & start_year <= results$year & results$year <= election_year),c("party")];
+    return(count_alternates(parties[["party"]]));
+  }
+}
+
+has_swung_since <- function(results, election_year, state_name, number_of_elections=7) {
+  return(number_of_swings_since(results, election_year, state_name, number_of_elections) > 1);
+}
+```
+
+## Margin of Victory
+
+We need to get the runner up by year, then use that and the state's winner (by year), to compute the margin of victory.
+
+```{r}
+runner_up_by_state_and_year <- function(results) {
+  return(results %>% group_by(state,year) %>% filter(votepercentage < max(votepercentage)) %>% filter(votepercentage==max(votepercentage)) %>% arrange(party));
+}
+
+runner_up_data = runner_up_by_state_and_year(results)
+```
+
+```{r}
+aliased_data = rename(runner_up_data, runner_up_percentage = c("votepercentage"));
+margin_of_victory <- merge(aliased_data,winner_data,by=c("state","year"));
+margin_of_victory$percentage = margin_of_victory$votepercentage - margin_of_victory$runner_up_percentage
+```
+
+```{r echo=FALSE results='asis'}
+# winner_data <- winner_data[with(winner_data,order(state,year)), ]
+margin_of_victory <- margin_of_victory[with(margin_of_victory,order(state,year)), ]
+table_data <- subset(margin_of_victory,select=c("state","party.y","year","percentage"))
+kable(table_data)
+```
+
+### Competitive States
+
+We could then list the states which have had margin of victory determined by less than 5% of the vote.
+
+```{r echo=FALSE results='asis'}
+kable(margin_of_victory[which(-0.05 <= margin_of_victory$percentage & margin_of_victory$percentage <= 0.05),c("party.y","year","state","percentage")])
+```
+
+# Predictions
+
+We can try to 
+
+
+```{r}
+data <- margin_of_victory[,c("state","year","percentage","party.y")]
+data = rename(data, margin = c("percentage"));
+data = rename(data, state_winner = c("party.y"));
+winner_by_year <- data.frame(
+  year = c(1976,1980,1984,1988,1992,1996,2000,2004,2008,2012,2016),
+  winning_party = c('democrat','republican','republican','republican','democrat','democrat','republican','republican','democrat','democrat','republican')
+);
+data <- merge(data,winner_by_year,by=c("year"));
+data$bellwether <- with(data, ifelse(as.character(state_winner)==as.character(winning_party),1,0))
+# data$swings <- with(data, number_of_swings_since(winner_data, year, state))
+swing_data <- winner_data[which(winner_data$year >= 2000),c("state","year")]
+
+for (i in 1:nrow(swing_data)) {
+  row <- swing_data[i,];
+  year <- row[['year']];
+  state <- row[['state']];
+  swing_data[which(swing_data$state == state & swing_data$year == year),c('swings')] <- number_of_swings_since(winner_data,year,state);
+}
+data <- merge(data,swing_data,by=c("year","state"));
+```
+
+## Training Data
+
+Florida and Ohion have both been a swing state since 2000.
+
+According to [FairVote](https://www.fairvote.org/presidential-campaign-strategies-based-on-swing-states)
+
+- '2012',	'Virginia'
+
+But non-examples include the Mountain and Plains states (which are solidly Republican in recent times), specifically:
+- Idaho, 
+- Wyoming,
+- the Dakotas,
+- Montana,
+- Utah,
+- Kansas,
+- Oklahoma, and
+- Nebraska,
+
+California has been solidly Democratic.
+
+## Logisic Regression
+
+```{r}
+new_train_data <- data[which(data$state == 'California'),]
+train_data <- new_train_data;
+new_train_data <- data[which(data$state == 'Idaho'),]
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Wyoming'),]
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Montana'),]
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Nebraska'),]
+train_data <- rbind(train_data,new_train_data);
+train_data$is_swing <- 0
+new_train_data <- data[which(data$state == 'Ohio'),]
+new_train_data$is_swing <- 1
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Florida'),]
+new_train_data$is_swing <- 1
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Virginia' & data$year == 2012),]
+new_train_data$is_swing <- 1
+new_train_data <- data[which(data$state == 'New Hampshire' & data$year >= 2012),]
+new_train_data$is_swing <- 1
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'New Hampshire' & data$year < 2012),]
+new_train_data$is_swing <- 0
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Iowa' & data$year >= 2008),]
+new_train_data$is_swing <- 0
+train_data <- rbind(train_data,new_train_data);
+new_train_data <- data[which(data$state == 'Iowa' & data$year < 2008),]
+new_train_data$is_swing <- 1
+train_data <- rbind(train_data,new_train_data);
+
+train_data$mu <- 1/train_data$margin
+logit_mod <- glm(is_swing ~ swings + mu + bellwether, data = train_data, family = "binomial");
+#
+#predicted <- predict(logit_mod, test_data, type="response")
+```
+
+https://stats.idre.ucla.edu/r/dae/logit-regression/
+
+# Data Exploration
+
+A histogram plot of the variances for the party vote's in each state.
+
+```{r, fig.width=6}
+path <- "../data/elections/presidential/state/1976_2016_president.RData"
+results <- load_obj(path);
+results <- make_party_into_factor(results);
+results <- add_vote_percentage(results);
+party_var <- results %>% group_by(state,party) %>% summarize(votepercentage_var = sd(votepercentage, na.rm=TRUE))
+d1 <- party_var[which(party_var$party=='democrat'),c("votepercentage_var")]
+hist(d1[["votepercentage_var"]],xlab="Percent of State's Vote",main="Democratic Vote Result St.Dev. by state, 1976-2016")
+```
+
+
+Similarly for the Republicans:
+
+
+```{r, fig.width=6}
+r1 <- party_var[which(party_var$party=='republican'),c("votepercentage_var")]
+hist(r1[["votepercentage_var"]],xlab="Percent of State's Vote",main="Republican Vote Result St.Dev. by state, 1976-2016")
+```
+
+
+
+
+This is a fascinating property, Democratic voters seem to be solidly Democratic?
