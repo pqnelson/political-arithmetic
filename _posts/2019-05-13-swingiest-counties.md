@@ -3955,7 +3955,7 @@ county_2008 %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
 
 We plot each state independently
 
@@ -3966,14 +3966,14 @@ county_2008 %>% filter(state_name == 'Florida') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
 
 ``` r
 fl_2008 <- (data_2008 %>% filter(state == 'Florida'))
@@ -4151,14 +4151,14 @@ county_2008 %>% filter(state_name == 'Iowa') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-51-1.png)<!-- -->
 
 ``` r
 ia_2008 <- (data_2008 %>% filter(state == 'Iowa'))
@@ -5238,14 +5238,14 @@ county_2008 %>% filter(state_name == 'Michigan') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
 
 ``` r
 mi_2008 <- (data_2008 %>% filter(state == 'Michigan'))
@@ -6127,14 +6127,14 @@ county_2008 %>% filter(state_name == 'Nebraska') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
 
 ``` r
 ne_2008 <- (data_2008 %>% filter(state == 'Nebraska'))
@@ -6208,14 +6208,14 @@ county_2008 %>% filter(state_name == 'Ohio') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
 
 ``` r
 oh_2008 <- (data_2008 %>% filter(state == 'Ohio'))
@@ -6569,14 +6569,14 @@ county_2008 %>% filter(state_name == 'Pennsylvania') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-59-1.png)<!-- -->
 
 ``` r
 pa_2008 <- (data_2008 %>% filter(state == 'Pennsylvania'))
@@ -6776,14 +6776,14 @@ county_2008 %>% filter(state_name == 'Wisconsin') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
 
 ``` r
 wi_2008 <- (data_2008 %>% filter(state == 'Wisconsin'))
@@ -9464,14 +9464,14 @@ county_2012 %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = NA) +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-65-1.png)<!-- -->
 
 ## Florida
 
@@ -9480,14 +9480,14 @@ county_2012 %>% filter(state_name == 'Florida') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-66-1.png)<!-- -->
 
 ``` r
 fl_2012 <- (data_2012 %>% filter(state == 'Florida'))
@@ -9621,14 +9621,14 @@ county_2012 %>% filter(state_name == 'Iowa') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-68-1.png)<!-- -->
 
 ``` r
 ia_2012 <- (data_2012 %>% filter(state == 'Iowa'))
@@ -10378,14 +10378,14 @@ county_2012 %>% filter(state_name == 'Michigan') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-70-1.png)<!-- -->
 
 ``` r
 mi_2012 <- (data_2012 %>% filter(state == 'Michigan'))
@@ -10695,14 +10695,14 @@ county_2012 %>% filter(state_name == 'Ohio') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-72-1.png)<!-- -->
 
 ``` r
 oh_2012 <- (data_2012 %>% filter(state == 'Ohio'))
@@ -10946,14 +10946,14 @@ county_2012 %>% filter(state_name == 'Pennsylvania') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-74-1.png)<!-- -->
 
 ``` r
 pa_2012 <- (data_2012 %>% filter(state == 'Pennsylvania'))
@@ -11065,14 +11065,14 @@ county_2012 %>% filter(state_name == 'Wisconsin') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#aaaaaa',
+                       low = muted('red'), mid = '#888888', na.value = 'gray80',
                        high = muted('blue'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-76-1.png)<!-- -->
 
 ``` r
 wi_2012 <- (data_2012 %>% filter(state == 'Wisconsin'))
