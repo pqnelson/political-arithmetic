@@ -176,8 +176,8 @@ county_2008 %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = NA) +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = 'white',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = 'white',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -192,8 +192,8 @@ county_2008 %>% filter(state_name == 'Florida') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -212,8 +212,8 @@ county_2008 %>% filter(state_name == 'Iowa') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -231,8 +231,8 @@ county_2008 %>% filter(state_name == 'Michigan') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -249,8 +249,8 @@ county_2008 %>% filter(state_name == 'Nebraska') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -268,8 +268,8 @@ county_2008 %>% filter(state_name == 'Ohio') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -286,8 +286,8 @@ county_2008 %>% filter(state_name == 'Pennsylvania') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -305,8 +305,8 @@ county_2008 %>% filter(state_name == 'Wisconsin') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -350,8 +350,8 @@ county_2012 %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = NA) +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -364,8 +364,8 @@ county_2012 %>% filter(state_name == 'Florida') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -385,8 +385,8 @@ county_2012 %>% filter(state_name == 'Iowa') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -403,8 +403,8 @@ county_2012 %>% filter(state_name == 'Michigan') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -421,8 +421,8 @@ county_2012 %>% filter(state_name == 'Ohio') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -440,8 +440,8 @@ county_2012 %>% filter(state_name == 'Pennsylvania') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
@@ -459,8 +459,8 @@ county_2012 %>% filter(state_name == 'Wisconsin') %>%
   ggplot(aes(long, lat, group = group, fill = trump_gain)) +
   geom_polygon(color = "#ffffff") +
   scale_fill_gradient2(labels = scales::percent,
-                       low = muted('red'), mid = '#888888', na.value = 'gray80',
-                       high = muted('blue'), midpoint = 0,
+                       low = muted('blue'),  mid = '#888888', na.value = 'gray80',
+                       high = muted('red'), midpoint = 0,
                        guide = guide_colorbar(title.position = "top")) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
   labs(fill = "Swing for Trump")
