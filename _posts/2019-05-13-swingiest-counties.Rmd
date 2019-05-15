@@ -12,10 +12,13 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(kableExtra)
+
 library(dplyr)
 library(car) # for vif()
 library(usmap)
 library(urbnmapr)
+
+library(tidycensus)
 library(tidyverse)
 library(ggplot2)
 library(scales)
@@ -123,6 +126,7 @@ path <- "../data/elections/presidential/county/countypres_2000-2016.RData"
 results <- load_obj(path);
 results <- make_party_into_factor(results);
 results <- add_vote_percentage(results);
+county_results <- results; # for later usage
 winner_data <- winner_by_state_and_year(results);
 winner_data <- winner_data[with(winner_data,order(state,county,year)), ]
 ```
@@ -519,4 +523,180 @@ kable(pivots_by_state)
 ```
 So, Iowa, Nebraska, and Ohio were not swingable. But if Florida, Michigan, Pennsylvania, and Wisconsin had swung for Clinton, that is a difference of 29, 16, 20, and 10 electoral votes for a sum of 75 electoral votes. Had this happen, Trump would have received 229 electoral votes to Clinton's 302.
 
-On the other hand, the third party votes
+On the other hand, the third party votes do not seem to credibly act as a spoiler.
+
+## Florida Suspicions
+
+There were two counties with Hacking suspicions in Florida. At first, Leon seems like a candidate, except it's the most highly educated county in the country (and there is a strong negative correlation between education and voting for Trump).
+
+Madison county seems incredibly suspicious, it's approximately 40% African American and 60% white. Just from the Z-transform of vote percentage, this seems quite an amazing shift in votes for Clinton decreasing more than Trump's increase. (Break this out into its own post. Right now, just scratchwork.)
+
+```{r}
+fl_counties_pre_2016 <- county_results %>% filter(year < 2016 & state=='Florida')
+fl_mean_sd <- fl_counties_pre_2016 %>% group_by(county,party) %>% summarize(mean=mean(votepercentage),sd=sd(votepercentage)) %>% filter(party=='democrat' | party=='republican')
+fl_counties_2016 <- county_results %>% filter(year == 2016 & state=='Florida')
+merged_fl <- merge(fl_counties_2016, fl_mean_sd, by=c('county','party'))
+merged_fl$z <- (merged_fl$votepercentage - merged_fl$mean)/merged_fl$sd
+
+kable(merged_fl[order(merged_fl$z),c('county','z','party')])
+```
+
+## Wait, but, Why? (Census Examination)
+
+We get basic data from the census [ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
+specifically the breakdown by age and demographics. I borrow their terminology in naming the variables.
+
+```
+api_key <- read.table("../data/keys/census.txt", header = FALSE)[[1]]
+census_api_key(api_key)
+```
+
+
+```
+census.fl <- get_acs(geography = "county", 
+              variables = c(medincome = "B19013_001",
+                            male.white.18_19 = "B01001A_007",
+                            male.white.20_24 = "B01001A_008",
+                            male.white.25_29 = "B01001A_009",
+                            male.white.30_34 = "B01001A_010",
+                            male.white.35_44 = "B01001A_011",
+                            male.white.45_54 = "B01001A_012",
+                            male.white.55_64 = "B01001A_013",
+                            male.white.65_74 = "B01001A_014",
+                            male.white.75_84 = "B01001A_015",
+                            male.white.85_plus = "B01001A_016",
+                            female.white.18_19 = "B01001A_022",
+                            female.white.20_24 = "B01001A_023",
+                            female.white.25_29 = "B01001A_024",
+                            female.white.30_34 = "B01001A_025",
+                            female.white.35_44 = "B01001A_026",
+                            female.white.45_54 = "B01001A_027",
+                            female.white.55_64 = "B01001A_028",
+                            female.white.65_74 = "B01001A_029",
+                            female.white.75_84 = "B01001A_030",
+                            female.white.85_plus = "B01001A_031",
+                            male.black.18_19 = "B01001B_007",
+                            male.black.20_24 = "B01001B_008",
+                            male.black.25_29 = "B01001B_009",
+                            male.black.30_34 = "B01001B_010",
+                            male.black.35_44 = "B01001B_011",
+                            male.black.45_54 = "B01001B_012",
+                            male.black.55_64 = "B01001B_013",
+                            male.black.65_74 = "B01001B_014",
+                            male.black.75_84 = "B01001B_015",
+                            male.black.85_plus = "B01001B_016",
+                            female.black.18_19 = "B01001B_022",
+                            female.black.20_24 = "B01001B_023",
+                            female.black.25_29 = "B01001B_024",
+                            female.black.30_34 = "B01001B_025",
+                            female.black.35_44 = "B01001B_026",
+                            female.black.45_54 = "B01001B_027",
+                            female.black.55_64 = "B01001B_028",
+                            female.black.65_74 = "B01001B_029",
+                            female.black.75_84 = "B01001B_030",
+                            female.black.85_plus = "B01001B_031",
+                            male.american_indian.18_19 = "B01001C_007",
+                            male.american_indian.20_24 = "B01001C_008",
+                            male.american_indian.25_29 = "B01001C_009",
+                            male.american_indian.30_34 = "B01001C_010",
+                            male.american_indian.35_44 = "B01001C_011",
+                            male.american_indian.45_54 = "B01001C_012",
+                            male.american_indian.55_64 = "B01001C_013",
+                            male.american_indian.65_74 = "B01001C_014",
+                            male.american_indian.75_84 = "B01001C_015",
+                            male.american_indian.85_plus = "B01001C_016",
+                            female.american_indian.18_19 = "B01001C_022",
+                            female.american_indian.20_24 = "B01001C_023",
+                            female.american_indian.25_29 = "B01001C_024",
+                            female.american_indian.30_34 = "B01001C_025",
+                            female.american_indian.35_44 = "B01001C_026",
+                            female.american_indian.45_54 = "B01001C_027",
+                            female.american_indian.55_64 = "B01001C_028",
+                            female.american_indian.65_74 = "B01001C_029",
+                            female.american_indian.75_84 = "B01001C_030",
+                            female.american_indian.85_plus = "B01001C_031",
+                            male.asian.18_19 = "B01001D_007",
+                            male.asian.20_24 = "B01001D_008",
+                            male.asian.25_29 = "B01001D_009",
+                            male.asian.30_34 = "B01001D_010",
+                            male.asian.35_44 = "B01001D_011",
+                            male.asian.45_54 = "B01001D_012",
+                            male.asian.55_64 = "B01001D_013",
+                            male.asian.65_74 = "B01001D_014",
+                            male.asian.75_84 = "B01001D_015",
+                            male.asian.85_plus = "B01001D_016",
+                            female.asian.18_19 = "B01001D_022",
+                            female.asian.20_24 = "B01001D_023",
+                            female.asian.25_29 = "B01001D_024",
+                            female.asian.30_34 = "B01001D_025",
+                            female.asian.35_44 = "B01001D_026",
+                            female.asian.45_54 = "B01001D_027",
+                            female.asian.55_64 = "B01001D_028",
+                            female.asian.65_74 = "B01001D_029",
+                            female.asian.75_84 = "B01001D_030",
+                            female.asian.85_plus = "B01001D_031",
+                            male.pacific_islander.18_19 = "B01001E_007",
+                            male.pacific_islander.20_24 = "B01001E_008",
+                            male.pacific_islander.25_29 = "B01001E_009",
+                            male.pacific_islander.30_34 = "B01001E_010",
+                            male.pacific_islander.35_44 = "B01001E_011",
+                            male.pacific_islander.45_54 = "B01001E_012",
+                            male.pacific_islander.55_64 = "B01001E_013",
+                            male.pacific_islander.65_74 = "B01001E_014",
+                            male.pacific_islander.75_84 = "B01001E_015",
+                            male.pacific_islander.85_plus = "B01001E_016",
+                            female.pacific_islander.18_19 = "B01001E_022",
+                            female.pacific_islander.20_24 = "B01001E_023",
+                            female.pacific_islander.25_29 = "B01001E_024",
+                            female.pacific_islander.30_34 = "B01001E_025",
+                            female.pacific_islander.35_44 = "B01001E_026",
+                            female.pacific_islander.45_54 = "B01001E_027",
+                            female.pacific_islander.55_64 = "B01001E_028",
+                            female.pacific_islander.65_74 = "B01001E_029",
+                            female.pacific_islander.75_84 = "B01001E_030",
+                            female.pacific_islander.85_plus = "B01001E_031",
+                            male.white_only.18_19 = "B01001H_007",
+                            male.white_only.20_24 = "B01001H_008",
+                            male.white_only.25_29 = "B01001H_009",
+                            male.white_only.30_34 = "B01001H_010",
+                            male.white_only.35_44 = "B01001H_011",
+                            male.white_only.45_54 = "B01001H_012",
+                            male.white_only.55_64 = "B01001H_013",
+                            male.white_only.65_74 = "B01001H_014",
+                            male.white_only.75_84 = "B01001H_015",
+                            male.white_only.85_plus = "B01001H_016",
+                            female.white_only.18_19 = "B01001H_022",
+                            female.white_only.20_24 = "B01001H_023",
+                            female.white_only.25_29 = "B01001H_024",
+                            female.white_only.30_34 = "B01001H_025",
+                            female.white_only.35_44 = "B01001H_026",
+                            female.white_only.45_54 = "B01001H_027",
+                            female.white_only.55_64 = "B01001H_028",
+                            female.white_only.65_74 = "B01001H_029",
+                            female.white_only.75_84 = "B01001H_030",
+                            female.white_only.85_plus = "B01001H_031",
+                            male.hispanic.18_19 = "B01001I_007",
+                            male.hispanic.20_24 = "B01001I_008",
+                            male.hispanic.25_29 = "B01001I_009",
+                            male.hispanic.30_34 = "B01001I_010",
+                            male.hispanic.35_44 = "B01001I_011",
+                            male.hispanic.45_54 = "B01001I_012",
+                            male.hispanic.55_64 = "B01001I_013",
+                            male.hispanic.65_74 = "B01001I_014",
+                            male.hispanic.75_84 = "B01001I_015",
+                            male.hispanic.85_plus = "B01001I_016",
+                            female.hispanic.18_19 = "B01001I_022",
+                            female.hispanic.20_24 = "B01001I_023",
+                            female.hispanic.25_29 = "B01001I_024",
+                            female.hispanic.30_34 = "B01001I_025",
+                            female.hispanic.35_44 = "B01001I_026",
+                            female.hispanic.45_54 = "B01001I_027",
+                            female.hispanic.55_64 = "B01001I_028",
+                            female.hispanic.65_74 = "B01001I_029",
+                            female.hispanic.75_84 = "B01001I_030",
+                            female.hispanic.85_plus = "B01001I_031"
+                            ), 
+              year = 2016,
+              output = "wide",
+              state = "FL")
+```

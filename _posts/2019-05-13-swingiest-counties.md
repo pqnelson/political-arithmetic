@@ -17,6 +17,9 @@
   - [Critical Result: Do these 2012 Obama-Trump counties matter? (Yes,
     they swung the
     election)](#critical-result-do-these-2012-obama-trump-counties-matter-yes-they-swung-the-election)
+      - [Florida Suspicions](#florida-suspicions)
+      - [Wait, but, Why? (Census
+        Examination)](#wait-but-why-census-examination)
 
 # Loading our data
 
@@ -310,6 +313,7 @@ path <- "../data/elections/presidential/county/countypres_2000-2016.RData"
 results <- load_obj(path);
 results <- make_party_into_factor(results);
 results <- add_vote_percentage(results);
+county_results <- results; # for later usage
 winner_data <- winner_by_state_and_year(results);
 winner_data <- winner_data[with(winner_data,order(state,county,year)), ]
 ```
@@ -3958,7 +3962,7 @@ county_2008 %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-68-1.png)<!-- -->
 
 We plot each state independently
 
@@ -3976,7 +3980,7 @@ county_2008 %>% filter(state_name == 'Florida') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-69-1.png)<!-- -->
 
 ``` r
 fl_2008 <- (data_2008 %>% filter(state == 'Florida'))
@@ -4161,7 +4165,7 @@ county_2008 %>% filter(state_name == 'Iowa') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-71-1.png)<!-- -->
 
 ``` r
 ia_2008 <- (data_2008 %>% filter(state == 'Iowa'))
@@ -5248,7 +5252,7 @@ county_2008 %>% filter(state_name == 'Michigan') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-73-1.png)<!-- -->
 
 ``` r
 mi_2008 <- (data_2008 %>% filter(state == 'Michigan'))
@@ -6137,7 +6141,7 @@ county_2008 %>% filter(state_name == 'Nebraska') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-75-1.png)<!-- -->
 
 ``` r
 ne_2008 <- (data_2008 %>% filter(state == 'Nebraska'))
@@ -6218,7 +6222,7 @@ county_2008 %>% filter(state_name == 'Ohio') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-77-1.png)<!-- -->
 
 ``` r
 oh_2008 <- (data_2008 %>% filter(state == 'Ohio'))
@@ -6579,7 +6583,7 @@ county_2008 %>% filter(state_name == 'Pennsylvania') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-79-1.png)<!-- -->
 
 ``` r
 pa_2008 <- (data_2008 %>% filter(state == 'Pennsylvania'))
@@ -6786,7 +6790,7 @@ county_2008 %>% filter(state_name == 'Wisconsin') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-81-1.png)<!-- -->
 
 ``` r
 wi_2008 <- (data_2008 %>% filter(state == 'Wisconsin'))
@@ -9474,7 +9478,7 @@ county_2012 %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-85-1.png)<!-- -->
 
 ## Florida
 
@@ -9490,7 +9494,7 @@ county_2012 %>% filter(state_name == 'Florida') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-86-1.png)<!-- -->
 
 ``` r
 fl_2012 <- (data_2012 %>% filter(state == 'Florida'))
@@ -9631,7 +9635,7 @@ county_2012 %>% filter(state_name == 'Iowa') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-88-1.png)<!-- -->
 
 ``` r
 ia_2012 <- (data_2012 %>% filter(state == 'Iowa'))
@@ -10388,7 +10392,7 @@ county_2012 %>% filter(state_name == 'Michigan') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-90-1.png)<!-- -->
 
 ``` r
 mi_2012 <- (data_2012 %>% filter(state == 'Michigan'))
@@ -10705,7 +10709,7 @@ county_2012 %>% filter(state_name == 'Ohio') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-38-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-92-1.png)<!-- -->
 
 ``` r
 oh_2012 <- (data_2012 %>% filter(state == 'Ohio'))
@@ -10956,7 +10960,7 @@ county_2012 %>% filter(state_name == 'Pennsylvania') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-94-1.png)<!-- -->
 
 ``` r
 pa_2012 <- (data_2012 %>% filter(state == 'Pennsylvania'))
@@ -11075,7 +11079,7 @@ county_2012 %>% filter(state_name == 'Wisconsin') %>%
   labs(fill = "Swing for Trump")
 ```
 
-![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-42-1.png)<!-- -->
+![](2019-05-13-swingiest-counties_files/figure-gfm/unnamed-chunk-96-1.png)<!-- -->
 
 ``` r
 wi_2012 <- (data_2012 %>% filter(state == 'Wisconsin'))
@@ -12391,4 +12395,3977 @@ difference of 29, 16, 20, and 10 electoral votes for a sum of 75
 electoral votes. Had this happen, Trump would have received 229
 electoral votes to Clinton’s 302.
 
-On the other hand, the third party votes
+On the other hand, the third party votes do not seem to credibly act as
+a spoiler.
+
+## Florida Suspicions
+
+There were two counties with Hacking suspicions in Florida. At first,
+Leon seems like a candidate, except it’s the most highly educated county
+in the country (and there is a strong negative correlation between
+education and voting for Trump).
+
+Madison county seems incredibly suspicious, it’s approximately 40%
+African American and 60% white. Just from the Z-transform of vote
+percentage, this seems quite an amazing shift in votes for Clinton
+decreasing more than Trump’s increase. (Break this out into its own
+post. Right now, just
+scratchwork.)
+
+``` r
+fl_counties_pre_2016 <- county_results %>% filter(year < 2016 & state=='Florida')
+fl_mean_sd <- fl_counties_pre_2016 %>% group_by(county,party) %>% summarize(mean=mean(votepercentage),sd=sd(votepercentage)) %>% filter(party=='democrat' | party=='republican')
+fl_counties_2016 <- county_results %>% filter(year == 2016 & state=='Florida')
+merged_fl <- merge(fl_counties_2016, fl_mean_sd, by=c('county','party'))
+merged_fl$z <- (merged_fl$votepercentage - merged_fl$mean)/merged_fl$sd
+
+kable(merged_fl[order(merged_fl$z),c('county','z','party')])
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+county
+
+</th>
+
+<th style="text-align:right;">
+
+z
+
+</th>
+
+<th style="text-align:left;">
+
+party
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+77
+
+</td>
+
+<td style="text-align:left;">
+
+Madison
+
+</td>
+
+<td style="text-align:right;">
+
+\-13.0541830
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+72
+
+</td>
+
+<td style="text-align:left;">
+
+Leon
+
+</td>
+
+<td style="text-align:right;">
+
+\-12.3476584
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+25
+
+</td>
+
+<td style="text-align:left;">
+
+Desoto
+
+</td>
+
+<td style="text-align:right;">
+
+\-8.4115327
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+41
+
+</td>
+
+<td style="text-align:left;">
+
+Glades
+
+</td>
+
+<td style="text-align:right;">
+
+\-7.6595559
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+51
+
+</td>
+
+<td style="text-align:left;">
+
+Hernando
+
+</td>
+
+<td style="text-align:right;">
+
+\-6.3451644
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+15
+
+</td>
+
+<td style="text-align:left;">
+
+Charlotte
+
+</td>
+
+<td style="text-align:right;">
+
+\-5.9650176
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+45
+
+</td>
+
+<td style="text-align:left;">
+
+Hamilton
+
+</td>
+
+<td style="text-align:right;">
+
+\-5.6265791
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+17
+
+</td>
+
+<td style="text-align:left;">
+
+Citrus
+
+</td>
+
+<td style="text-align:right;">
+
+\-5.1653173
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+127
+
+</td>
+
+<td style="text-align:left;">
+
+Volusia
+
+</td>
+
+<td style="text-align:right;">
+
+\-5.0431686
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+81
+
+</td>
+
+<td style="text-align:left;">
+
+Marion
+
+</td>
+
+<td style="text-align:right;">
+
+\-5.0068457
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+101
+
+</td>
+
+<td style="text-align:left;">
+
+Pasco
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.8900804
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+33
+
+</td>
+
+<td style="text-align:left;">
+
+Flagler
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.4154726
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+93
+
+</td>
+
+<td style="text-align:left;">
+
+Okeechobee
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.0052836
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+9
+
+</td>
+
+<td style="text-align:left;">
+
+Brevard
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.8740231
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+87
+
+</td>
+
+<td style="text-align:left;">
+
+Monroe
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.8518239
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+117
+
+</td>
+
+<td style="text-align:left;">
+
+St. Lucie
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.8237628
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+53
+
+</td>
+
+<td style="text-align:left;">
+
+Highlands
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.6345155
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+121
+
+</td>
+
+<td style="text-align:left;">
+
+Suwannee
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0898502
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+63
+
+</td>
+
+<td style="text-align:left;">
+
+Jefferson
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.9250783
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+79
+
+</td>
+
+<td style="text-align:left;">
+
+Manatee
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.8937905
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+83
+
+</td>
+
+<td style="text-align:left;">
+
+Martin
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7980546
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+73
+
+</td>
+
+<td style="text-align:left;">
+
+Levy
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7609625
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+107
+
+</td>
+
+<td style="text-align:left;">
+
+Putnam
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7502456
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+129
+
+</td>
+
+<td style="text-align:left;">
+
+Wakulla
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.6288397
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+67
+
+</td>
+
+<td style="text-align:left;">
+
+Lake
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5538987
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+123
+
+</td>
+
+<td style="text-align:left;">
+
+Taylor
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.4260582
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+99
+
+</td>
+
+<td style="text-align:left;">
+
+Palm Beach
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2864238
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+61
+
+</td>
+
+<td style="text-align:left;">
+
+Jackson
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2655653
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+23
+
+</td>
+
+<td style="text-align:left;">
+
+Columbia
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2518178
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2
+
+</td>
+
+<td style="text-align:left;">
+
+Alachua
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2517017
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+59
+
+</td>
+
+<td style="text-align:left;">
+
+Indian River
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2276944
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+86
+
+</td>
+
+<td style="text-align:left;">
+
+Miami-Dade
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1943179
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+89
+
+</td>
+
+<td style="text-align:left;">
+
+Nassau
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1810598
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+39
+
+</td>
+
+<td style="text-align:left;">
+
+Gilchrist
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1659578
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+5
+
+</td>
+
+<td style="text-align:left;">
+
+Bay
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1577144
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+103
+
+</td>
+
+<td style="text-align:left;">
+
+Pinellas
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1505869
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+7
+
+</td>
+
+<td style="text-align:left;">
+
+Bradford
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1231179
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+27
+
+</td>
+
+<td style="text-align:left;">
+
+Dixie
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1073104
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+131
+
+</td>
+
+<td style="text-align:left;">
+
+Walton
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0266207
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+75
+
+</td>
+
+<td style="text-align:left;">
+
+Liberty
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9917447
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+35
+
+</td>
+
+<td style="text-align:left;">
+
+Franklin
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9863728
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+13
+
+</td>
+
+<td style="text-align:left;">
+
+Calhoun
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9588568
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+133
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9105570
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+43
+
+</td>
+
+<td style="text-align:left;">
+
+Gulf
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8964220
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+96
+
+</td>
+
+<td style="text-align:left;">
+
+Orange
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8118909
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+111
+
+</td>
+
+<td style="text-align:left;">
+
+Sarasota
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8102434
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+114
+
+</td>
+
+<td style="text-align:left;">
+
+Seminole
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8102373
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+125
+
+</td>
+
+<td style="text-align:left;">
+
+Union
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8053637
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+47
+
+</td>
+
+<td style="text-align:left;">
+
+Hardee
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.7306295
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+57
+
+</td>
+
+<td style="text-align:left;">
+
+Holmes
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6978034
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+119
+
+</td>
+
+<td style="text-align:left;">
+
+Sumter
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6351315
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+109
+
+</td>
+
+<td style="text-align:left;">
+
+Santa Rosa
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.5899837
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+65
+
+</td>
+
+<td style="text-align:left;">
+
+Lafayette
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.5500188
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+3
+
+</td>
+
+<td style="text-align:left;">
+
+Baker
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.5421134
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+30
+
+</td>
+
+<td style="text-align:left;">
+
+Duval
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4080263
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+92
+
+</td>
+
+<td style="text-align:left;">
+
+Okaloosa
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2901824
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+20
+
+</td>
+
+<td style="text-align:left;">
+
+Clay
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2569542
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+56
+
+</td>
+
+<td style="text-align:left;">
+
+Hillsborough
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2410790
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+105
+
+</td>
+
+<td style="text-align:left;">
+
+Polk
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2282699
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+32
+
+</td>
+
+<td style="text-align:left;">
+
+Escambia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2239512
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+69
+
+</td>
+
+<td style="text-align:left;">
+
+Lee
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2202520
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+98
+
+</td>
+
+<td style="text-align:left;">
+
+Osceola
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2037216
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+22
+
+</td>
+
+<td style="text-align:left;">
+
+Collier
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0670727
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+116
+
+</td>
+
+<td style="text-align:left;">
+
+St. Johns
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0159166
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+12
+
+</td>
+
+<td style="text-align:left;">
+
+Broward
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7775105
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+71
+
+</td>
+
+<td style="text-align:left;">
+
+Leon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5044888
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+49
+
+</td>
+
+<td style="text-align:left;">
+
+Hendry
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4787331
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+37
+
+</td>
+
+<td style="text-align:left;">
+
+Gadsden
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4716763
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+91
+
+</td>
+
+<td style="text-align:left;">
+
+Okaloosa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3344565
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+115
+
+</td>
+
+<td style="text-align:left;">
+
+St. Johns
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1452747
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+110
+
+</td>
+
+<td style="text-align:left;">
+
+Santa Rosa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0814886
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+38
+
+</td>
+
+<td style="text-align:left;">
+
+Gadsden
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0366937
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+50
+
+</td>
+
+<td style="text-align:left;">
+
+Hendry
+
+</td>
+
+<td style="text-align:right;">
+
+0.0011611
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+11
+
+</td>
+
+<td style="text-align:left;">
+
+Broward
+
+</td>
+
+<td style="text-align:right;">
+
+0.0148503
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+19
+
+</td>
+
+<td style="text-align:left;">
+
+Clay
+
+</td>
+
+<td style="text-align:right;">
+
+0.0989794
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+31
+
+</td>
+
+<td style="text-align:left;">
+
+Escambia
+
+</td>
+
+<td style="text-align:right;">
+
+0.2379991
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+106
+
+</td>
+
+<td style="text-align:left;">
+
+Polk
+
+</td>
+
+<td style="text-align:right;">
+
+0.3359712
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+21
+
+</td>
+
+<td style="text-align:left;">
+
+Collier
+
+</td>
+
+<td style="text-align:right;">
+
+0.3496026
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+55
+
+</td>
+
+<td style="text-align:left;">
+
+Hillsborough
+
+</td>
+
+<td style="text-align:right;">
+
+0.4574848
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+70
+
+</td>
+
+<td style="text-align:left;">
+
+Lee
+
+</td>
+
+<td style="text-align:right;">
+
+0.5393146
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+6
+
+</td>
+
+<td style="text-align:left;">
+
+Bay
+
+</td>
+
+<td style="text-align:right;">
+
+0.6235797
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+29
+
+</td>
+
+<td style="text-align:left;">
+
+Duval
+
+</td>
+
+<td style="text-align:right;">
+
+0.6857134
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+1
+
+</td>
+
+<td style="text-align:left;">
+
+Alachua
+
+</td>
+
+<td style="text-align:right;">
+
+0.7343397
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+113
+
+</td>
+
+<td style="text-align:left;">
+
+Seminole
+
+</td>
+
+<td style="text-align:right;">
+
+0.7679717
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+90
+
+</td>
+
+<td style="text-align:left;">
+
+Nassau
+
+</td>
+
+<td style="text-align:right;">
+
+0.8537665
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+97
+
+</td>
+
+<td style="text-align:left;">
+
+Osceola
+
+</td>
+
+<td style="text-align:right;">
+
+0.8730602
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+104
+
+</td>
+
+<td style="text-align:left;">
+
+Pinellas
+
+</td>
+
+<td style="text-align:right;">
+
+0.8871247
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+60
+
+</td>
+
+<td style="text-align:left;">
+
+Indian River
+
+</td>
+
+<td style="text-align:right;">
+
+1.0016490
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+100
+
+</td>
+
+<td style="text-align:left;">
+
+Palm Beach
+
+</td>
+
+<td style="text-align:right;">
+
+1.0989568
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+48
+
+</td>
+
+<td style="text-align:left;">
+
+Hardee
+
+</td>
+
+<td style="text-align:right;">
+
+1.1340864
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+4
+
+</td>
+
+<td style="text-align:left;">
+
+Baker
+
+</td>
+
+<td style="text-align:right;">
+
+1.1448248
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+95
+
+</td>
+
+<td style="text-align:left;">
+
+Orange
+
+</td>
+
+<td style="text-align:right;">
+
+1.1667497
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+80
+
+</td>
+
+<td style="text-align:left;">
+
+Manatee
+
+</td>
+
+<td style="text-align:right;">
+
+1.2325898
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+132
+
+</td>
+
+<td style="text-align:left;">
+
+Walton
+
+</td>
+
+<td style="text-align:right;">
+
+1.2362822
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+10
+
+</td>
+
+<td style="text-align:left;">
+
+Brevard
+
+</td>
+
+<td style="text-align:right;">
+
+1.2380203
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+68
+
+</td>
+
+<td style="text-align:left;">
+
+Lake
+
+</td>
+
+<td style="text-align:right;">
+
+1.2850009
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+44
+
+</td>
+
+<td style="text-align:left;">
+
+Gulf
+
+</td>
+
+<td style="text-align:right;">
+
+1.2891821
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+112
+
+</td>
+
+<td style="text-align:left;">
+
+Sarasota
+
+</td>
+
+<td style="text-align:right;">
+
+1.2928120
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+120
+
+</td>
+
+<td style="text-align:left;">
+
+Sumter
+
+</td>
+
+<td style="text-align:right;">
+
+1.3204575
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+66
+
+</td>
+
+<td style="text-align:left;">
+
+Lafayette
+
+</td>
+
+<td style="text-align:right;">
+
+1.3670062
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+134
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+1.4137423
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+58
+
+</td>
+
+<td style="text-align:left;">
+
+Holmes
+
+</td>
+
+<td style="text-align:right;">
+
+1.4436115
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+24
+
+</td>
+
+<td style="text-align:left;">
+
+Columbia
+
+</td>
+
+<td style="text-align:right;">
+
+1.4656978
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+8
+
+</td>
+
+<td style="text-align:left;">
+
+Bradford
+
+</td>
+
+<td style="text-align:right;">
+
+1.4664223
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+126
+
+</td>
+
+<td style="text-align:left;">
+
+Union
+
+</td>
+
+<td style="text-align:right;">
+
+1.5324450
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+36
+
+</td>
+
+<td style="text-align:left;">
+
+Franklin
+
+</td>
+
+<td style="text-align:right;">
+
+1.5553328
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+76
+
+</td>
+
+<td style="text-align:left;">
+
+Liberty
+
+</td>
+
+<td style="text-align:right;">
+
+1.5974505
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+14
+
+</td>
+
+<td style="text-align:left;">
+
+Calhoun
+
+</td>
+
+<td style="text-align:right;">
+
+1.6573827
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+85
+
+</td>
+
+<td style="text-align:left;">
+
+Miami-Dade
+
+</td>
+
+<td style="text-align:right;">
+
+1.7097065
+
+</td>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+40
+
+</td>
+
+<td style="text-align:left;">
+
+Gilchrist
+
+</td>
+
+<td style="text-align:right;">
+
+1.7430092
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+84
+
+</td>
+
+<td style="text-align:left;">
+
+Martin
+
+</td>
+
+<td style="text-align:right;">
+
+1.7444223
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+62
+
+</td>
+
+<td style="text-align:left;">
+
+Jackson
+
+</td>
+
+<td style="text-align:right;">
+
+1.7758298
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+28
+
+</td>
+
+<td style="text-align:left;">
+
+Dixie
+
+</td>
+
+<td style="text-align:right;">
+
+1.9218255
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+74
+
+</td>
+
+<td style="text-align:left;">
+
+Levy
+
+</td>
+
+<td style="text-align:right;">
+
+1.9550760
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+122
+
+</td>
+
+<td style="text-align:left;">
+
+Suwannee
+
+</td>
+
+<td style="text-align:right;">
+
+1.9946669
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+108
+
+</td>
+
+<td style="text-align:left;">
+
+Putnam
+
+</td>
+
+<td style="text-align:right;">
+
+1.9949896
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+130
+
+</td>
+
+<td style="text-align:left;">
+
+Wakulla
+
+</td>
+
+<td style="text-align:right;">
+
+1.9978776
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+64
+
+</td>
+
+<td style="text-align:left;">
+
+Jefferson
+
+</td>
+
+<td style="text-align:right;">
+
+2.1236743
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+124
+
+</td>
+
+<td style="text-align:left;">
+
+Taylor
+
+</td>
+
+<td style="text-align:right;">
+
+2.1244284
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+54
+
+</td>
+
+<td style="text-align:left;">
+
+Highlands
+
+</td>
+
+<td style="text-align:right;">
+
+2.1656167
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+82
+
+</td>
+
+<td style="text-align:left;">
+
+Marion
+
+</td>
+
+<td style="text-align:right;">
+
+2.5810188
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+118
+
+</td>
+
+<td style="text-align:left;">
+
+St. Lucie
+
+</td>
+
+<td style="text-align:right;">
+
+2.6500644
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+88
+
+</td>
+
+<td style="text-align:left;">
+
+Monroe
+
+</td>
+
+<td style="text-align:right;">
+
+2.8082296
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+102
+
+</td>
+
+<td style="text-align:left;">
+
+Pasco
+
+</td>
+
+<td style="text-align:right;">
+
+2.8853897
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+34
+
+</td>
+
+<td style="text-align:left;">
+
+Flagler
+
+</td>
+
+<td style="text-align:right;">
+
+3.0764653
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+128
+
+</td>
+
+<td style="text-align:left;">
+
+Volusia
+
+</td>
+
+<td style="text-align:right;">
+
+3.0869365
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+94
+
+</td>
+
+<td style="text-align:left;">
+
+Okeechobee
+
+</td>
+
+<td style="text-align:right;">
+
+3.1103144
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+18
+
+</td>
+
+<td style="text-align:left;">
+
+Citrus
+
+</td>
+
+<td style="text-align:right;">
+
+3.3637836
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+52
+
+</td>
+
+<td style="text-align:left;">
+
+Hernando
+
+</td>
+
+<td style="text-align:right;">
+
+3.8837906
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+46
+
+</td>
+
+<td style="text-align:left;">
+
+Hamilton
+
+</td>
+
+<td style="text-align:right;">
+
+3.9640952
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+26
+
+</td>
+
+<td style="text-align:left;">
+
+Desoto
+
+</td>
+
+<td style="text-align:right;">
+
+4.1748943
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+16
+
+</td>
+
+<td style="text-align:left;">
+
+Charlotte
+
+</td>
+
+<td style="text-align:right;">
+
+4.2152861
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+42
+
+</td>
+
+<td style="text-align:left;">
+
+Glades
+
+</td>
+
+<td style="text-align:right;">
+
+5.1984926
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+78
+
+</td>
+
+<td style="text-align:left;">
+
+Madison
+
+</td>
+
+<td style="text-align:right;">
+
+7.2763220
+
+</td>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+## Wait, but, Why? (Census Examination)
+
+We get basic data from the census
+[ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
+specifically the breakdown by age and demographics. I borrow their
+terminology in naming the
+    variables.
+
+    api_key <- read.table("../data/keys/census.txt", header = FALSE)[[1]]
+    census_api_key(api_key)
+
+    census.fl <- get_acs(geography = "county", 
+                  variables = c(medincome = "B19013_001",
+                                male.white.18_19 = "B01001A_007",
+                                male.white.20_24 = "B01001A_008",
+                                male.white.25_29 = "B01001A_009",
+                                male.white.30_34 = "B01001A_010",
+                                male.white.35_44 = "B01001A_011",
+                                male.white.45_54 = "B01001A_012",
+                                male.white.55_64 = "B01001A_013",
+                                male.white.65_74 = "B01001A_014",
+                                male.white.75_84 = "B01001A_015",
+                                male.white.85_plus = "B01001A_016",
+                                female.white.18_19 = "B01001A_022",
+                                female.white.20_24 = "B01001A_023",
+                                female.white.25_29 = "B01001A_024",
+                                female.white.30_34 = "B01001A_025",
+                                female.white.35_44 = "B01001A_026",
+                                female.white.45_54 = "B01001A_027",
+                                female.white.55_64 = "B01001A_028",
+                                female.white.65_74 = "B01001A_029",
+                                female.white.75_84 = "B01001A_030",
+                                female.white.85_plus = "B01001A_031",
+                                male.black.18_19 = "B01001B_007",
+                                male.black.20_24 = "B01001B_008",
+                                male.black.25_29 = "B01001B_009",
+                                male.black.30_34 = "B01001B_010",
+                                male.black.35_44 = "B01001B_011",
+                                male.black.45_54 = "B01001B_012",
+                                male.black.55_64 = "B01001B_013",
+                                male.black.65_74 = "B01001B_014",
+                                male.black.75_84 = "B01001B_015",
+                                male.black.85_plus = "B01001B_016",
+                                female.black.18_19 = "B01001B_022",
+                                female.black.20_24 = "B01001B_023",
+                                female.black.25_29 = "B01001B_024",
+                                female.black.30_34 = "B01001B_025",
+                                female.black.35_44 = "B01001B_026",
+                                female.black.45_54 = "B01001B_027",
+                                female.black.55_64 = "B01001B_028",
+                                female.black.65_74 = "B01001B_029",
+                                female.black.75_84 = "B01001B_030",
+                                female.black.85_plus = "B01001B_031",
+                                male.american_indian.18_19 = "B01001C_007",
+                                male.american_indian.20_24 = "B01001C_008",
+                                male.american_indian.25_29 = "B01001C_009",
+                                male.american_indian.30_34 = "B01001C_010",
+                                male.american_indian.35_44 = "B01001C_011",
+                                male.american_indian.45_54 = "B01001C_012",
+                                male.american_indian.55_64 = "B01001C_013",
+                                male.american_indian.65_74 = "B01001C_014",
+                                male.american_indian.75_84 = "B01001C_015",
+                                male.american_indian.85_plus = "B01001C_016",
+                                female.american_indian.18_19 = "B01001C_022",
+                                female.american_indian.20_24 = "B01001C_023",
+                                female.american_indian.25_29 = "B01001C_024",
+                                female.american_indian.30_34 = "B01001C_025",
+                                female.american_indian.35_44 = "B01001C_026",
+                                female.american_indian.45_54 = "B01001C_027",
+                                female.american_indian.55_64 = "B01001C_028",
+                                female.american_indian.65_74 = "B01001C_029",
+                                female.american_indian.75_84 = "B01001C_030",
+                                female.american_indian.85_plus = "B01001C_031",
+                                male.asian.18_19 = "B01001D_007",
+                                male.asian.20_24 = "B01001D_008",
+                                male.asian.25_29 = "B01001D_009",
+                                male.asian.30_34 = "B01001D_010",
+                                male.asian.35_44 = "B01001D_011",
+                                male.asian.45_54 = "B01001D_012",
+                                male.asian.55_64 = "B01001D_013",
+                                male.asian.65_74 = "B01001D_014",
+                                male.asian.75_84 = "B01001D_015",
+                                male.asian.85_plus = "B01001D_016",
+                                female.asian.18_19 = "B01001D_022",
+                                female.asian.20_24 = "B01001D_023",
+                                female.asian.25_29 = "B01001D_024",
+                                female.asian.30_34 = "B01001D_025",
+                                female.asian.35_44 = "B01001D_026",
+                                female.asian.45_54 = "B01001D_027",
+                                female.asian.55_64 = "B01001D_028",
+                                female.asian.65_74 = "B01001D_029",
+                                female.asian.75_84 = "B01001D_030",
+                                female.asian.85_plus = "B01001D_031",
+                                male.pacific_islander.18_19 = "B01001E_007",
+                                male.pacific_islander.20_24 = "B01001E_008",
+                                male.pacific_islander.25_29 = "B01001E_009",
+                                male.pacific_islander.30_34 = "B01001E_010",
+                                male.pacific_islander.35_44 = "B01001E_011",
+                                male.pacific_islander.45_54 = "B01001E_012",
+                                male.pacific_islander.55_64 = "B01001E_013",
+                                male.pacific_islander.65_74 = "B01001E_014",
+                                male.pacific_islander.75_84 = "B01001E_015",
+                                male.pacific_islander.85_plus = "B01001E_016",
+                                female.pacific_islander.18_19 = "B01001E_022",
+                                female.pacific_islander.20_24 = "B01001E_023",
+                                female.pacific_islander.25_29 = "B01001E_024",
+                                female.pacific_islander.30_34 = "B01001E_025",
+                                female.pacific_islander.35_44 = "B01001E_026",
+                                female.pacific_islander.45_54 = "B01001E_027",
+                                female.pacific_islander.55_64 = "B01001E_028",
+                                female.pacific_islander.65_74 = "B01001E_029",
+                                female.pacific_islander.75_84 = "B01001E_030",
+                                female.pacific_islander.85_plus = "B01001E_031",
+                                male.white_only.18_19 = "B01001H_007",
+                                male.white_only.20_24 = "B01001H_008",
+                                male.white_only.25_29 = "B01001H_009",
+                                male.white_only.30_34 = "B01001H_010",
+                                male.white_only.35_44 = "B01001H_011",
+                                male.white_only.45_54 = "B01001H_012",
+                                male.white_only.55_64 = "B01001H_013",
+                                male.white_only.65_74 = "B01001H_014",
+                                male.white_only.75_84 = "B01001H_015",
+                                male.white_only.85_plus = "B01001H_016",
+                                female.white_only.18_19 = "B01001H_022",
+                                female.white_only.20_24 = "B01001H_023",
+                                female.white_only.25_29 = "B01001H_024",
+                                female.white_only.30_34 = "B01001H_025",
+                                female.white_only.35_44 = "B01001H_026",
+                                female.white_only.45_54 = "B01001H_027",
+                                female.white_only.55_64 = "B01001H_028",
+                                female.white_only.65_74 = "B01001H_029",
+                                female.white_only.75_84 = "B01001H_030",
+                                female.white_only.85_plus = "B01001H_031",
+                                male.hispanic.18_19 = "B01001I_007",
+                                male.hispanic.20_24 = "B01001I_008",
+                                male.hispanic.25_29 = "B01001I_009",
+                                male.hispanic.30_34 = "B01001I_010",
+                                male.hispanic.35_44 = "B01001I_011",
+                                male.hispanic.45_54 = "B01001I_012",
+                                male.hispanic.55_64 = "B01001I_013",
+                                male.hispanic.65_74 = "B01001I_014",
+                                male.hispanic.75_84 = "B01001I_015",
+                                male.hispanic.85_plus = "B01001I_016",
+                                female.hispanic.18_19 = "B01001I_022",
+                                female.hispanic.20_24 = "B01001I_023",
+                                female.hispanic.25_29 = "B01001I_024",
+                                female.hispanic.30_34 = "B01001I_025",
+                                female.hispanic.35_44 = "B01001I_026",
+                                female.hispanic.45_54 = "B01001I_027",
+                                female.hispanic.55_64 = "B01001I_028",
+                                female.hispanic.65_74 = "B01001I_029",
+                                female.hispanic.75_84 = "B01001I_030",
+                                female.hispanic.85_plus = "B01001I_031"
+                                ), 
+                  year = 2016,
+                  output = "wide",
+                  state = "FL")
