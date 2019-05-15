@@ -541,6 +541,15 @@ merged_fl$z <- (merged_fl$votepercentage - merged_fl$mean)/merged_fl$sd
 kable(merged_fl[order(merged_fl$z),c('county','z','party')])
 ```
 
+Well, what if this was a surge election, and it brought a lot of people out of the woodwork to vote for Trump? We can take this into account, normalizing statewide the county-'z' value to measure how variable each county was relative to the state as a whole:
+
+```{r}
+merged_fl$normed_z <- (merged_fl$z - mean(merged_fl$z))/sd(merged_fl$z)
+kable(merged_fl[order(merged_fl$normed_z),c('county','normed_z','party')])
+```
+
+Remember: Leon county is the most educated in the country, it is not anomalous in defecting from Trump. The outliers have $|z|\geq 2$, so specifically Madison, DeSoto, and Glades counties appear statistically anomalous.
+
 ## Wait, but, Why? (Census Examination)
 
 We get basic data from the census [ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
