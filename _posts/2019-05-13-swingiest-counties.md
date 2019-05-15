@@ -11843,8 +11843,12 @@ states.
 state_2016 <- state_results[which(state_results$year == 2016 & state_results$state %in% merged_2016$state & (state_results$party == 'democrat' | state_results$party == 'republican')),]
 ```
 
+We should also track the third party votes, since presumably they also
+acted as a
+[spoiler](https://en.wikipedia.org/wiki/Spoiler_effect).
+
 ``` r
-margin_2016_by_state <- state_2016 %>% group_by(state) %>% summarize(margin = max(candidatevotes) - min(candidatevotes))
+margin_2016_by_state <- state_2016 %>% group_by(state) %>% summarize(margin = max(candidatevotes) - min(candidatevotes), third_party_votes = max(totalvotes) - sum(candidatevotes))
 kable(margin_2016_by_state)
 ```
 
@@ -11863,6 +11867,12 @@ state
 <th style="text-align:right;">
 
 margin
+
+</th>
+
+<th style="text-align:right;">
+
+third\_party\_votes
 
 </th>
 
@@ -11886,6 +11896,12 @@ Florida
 
 </td>
 
+<td style="text-align:right;">
+
+297178
+
+</td>
+
 </tr>
 
 <tr>
@@ -11899,6 +11915,12 @@ Iowa
 <td style="text-align:right;">
 
 147314
+
+</td>
+
+<td style="text-align:right;">
+
+110928
 
 </td>
 
@@ -11918,6 +11940,12 @@ Michigan
 
 </td>
 
+<td style="text-align:right;">
+
+250902
+
+</td>
+
 </tr>
 
 <tr>
@@ -11931,6 +11959,12 @@ Nebraska
 <td style="text-align:right;">
 
 211467
+
+</td>
+
+<td style="text-align:right;">
+
+63772
 
 </td>
 
@@ -11950,6 +11984,12 @@ Ohio
 
 </td>
 
+<td style="text-align:right;">
+
+261318
+
+</td>
+
 </tr>
 
 <tr>
@@ -11963,6 +12003,12 @@ Pennsylvania
 <td style="text-align:right;">
 
 44292
+
+</td>
+
+<td style="text-align:right;">
+
+218228
 
 </td>
 
@@ -11982,6 +12028,12 @@ Wisconsin
 
 </td>
 
+<td style="text-align:right;">
+
+188330
+
+</td>
+
 </tr>
 
 </tbody>
@@ -11994,7 +12046,10 @@ finally\!
 ``` r
 pivots_by_state <- merge(margin_2016_by_state,margin_by_counties_2016,c('state'))
 pivots_by_state$swingable <- pivots_by_state$margin.x < pivots_by_state$pivot
-
+colnames(pivots_by_state)[colnames(pivots_by_state)=="margin.x"] <- "state_margin"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="margin.y"] <- "swing_counties_margin"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="third_party_votes.x"] <- "state_third_party_votes"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="third_party_votes.y"] <- "swing_counties_third_party_votes"
 kable(pivots_by_state)
 ```
 
@@ -12012,13 +12067,19 @@ state
 
 <th style="text-align:right;">
 
-margin.x
+state\_margin
 
 </th>
 
 <th style="text-align:right;">
 
-margin.y
+third\_party\_votes
+
+</th>
+
+<th style="text-align:right;">
+
+swing\_counties\_margin
 
 </th>
 
@@ -12051,6 +12112,12 @@ Florida
 <td style="text-align:right;">
 
 112911
+
+</td>
+
+<td style="text-align:right;">
+
+297178
 
 </td>
 
@@ -12090,6 +12157,12 @@ Iowa
 
 <td style="text-align:right;">
 
+110928
+
+</td>
+
+<td style="text-align:right;">
+
 83947
 
 </td>
@@ -12119,6 +12192,12 @@ Michigan
 <td style="text-align:right;">
 
 10704
+
+</td>
+
+<td style="text-align:right;">
+
+250902
 
 </td>
 
@@ -12158,6 +12237,12 @@ Nebraska
 
 <td style="text-align:right;">
 
+63772
+
+</td>
+
+<td style="text-align:right;">
+
 43569
 
 </td>
@@ -12187,6 +12272,12 @@ Ohio
 <td style="text-align:right;">
 
 446841
+
+</td>
+
+<td style="text-align:right;">
+
+261318
 
 </td>
 
@@ -12226,6 +12317,12 @@ Pennsylvania
 
 <td style="text-align:right;">
 
+218228
+
+</td>
+
+<td style="text-align:right;">
+
 154450
 
 </td>
@@ -12260,6 +12357,12 @@ Wisconsin
 
 <td style="text-align:right;">
 
+188330
+
+</td>
+
+<td style="text-align:right;">
+
 63839
 
 </td>
@@ -12287,3 +12390,5 @@ Michigan, Pennsylvania, and Wisconsin had swung for Clinton, that is a
 difference of 29, 16, 20, and 10 electoral votes for a sum of 75
 electoral votes. Had this happen, Trump would have received 229
 electoral votes to Clinton’s 302.
+
+On the other hand, the third party votes

@@ -498,8 +498,10 @@ We need to compare the results for the 7 states.
 state_2016 <- state_results[which(state_results$year == 2016 & state_results$state %in% merged_2016$state & (state_results$party == 'democrat' | state_results$party == 'republican')),]
 ```
 
+We should also track the third party votes, since presumably they also acted as a [spoiler](https://en.wikipedia.org/wiki/Spoiler_effect).
+
 ```{r}
-margin_2016_by_state <- state_2016 %>% group_by(state) %>% summarize(margin = max(candidatevotes) - min(candidatevotes))
+margin_2016_by_state <- state_2016 %>% group_by(state) %>% summarize(margin = max(candidatevotes) - min(candidatevotes), third_party_votes = max(totalvotes) - sum(candidatevotes))
 kable(margin_2016_by_state)
 ```
 
@@ -509,7 +511,12 @@ Now we can answer the question, finally!
 ```{r}
 pivots_by_state <- merge(margin_2016_by_state,margin_by_counties_2016,c('state'))
 pivots_by_state$swingable <- pivots_by_state$margin.x < pivots_by_state$pivot
-
+colnames(pivots_by_state)[colnames(pivots_by_state)=="margin.x"] <- "state_margin"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="margin.y"] <- "swing_counties_margin"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="third_party_votes.x"] <- "state_third_party_votes"
+colnames(pivots_by_state)[colnames(pivots_by_state)=="third_party_votes.y"] <- "swing_counties_third_party_votes"
 kable(pivots_by_state)
 ```
 So, Iowa, Nebraska, and Ohio were not swingable. But if Florida, Michigan, Pennsylvania, and Wisconsin had swung for Clinton, that is a difference of 29, 16, 20, and 10 electoral votes for a sum of 75 electoral votes. Had this happen, Trump would have received 229 electoral votes to Clinton's 302.
+
+On the other hand, the third party votes
