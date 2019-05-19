@@ -21,7 +21,7 @@ library(urbnmapr)
 library(tidycensus)
 library(tidyverse)
 library(ggplot2)
-library(scales)
+library(scales) # for muted()
 library(rmarkdown)
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -555,13 +555,13 @@ Remember: Leon county is the most educated in the country, it is not anomalous i
 We get basic data from the census [ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
 specifically the breakdown by age and demographics. I borrow their terminology in naming the variables.
 
-```
+```{r}
 api_key <- read.table("../data/keys/census.txt", header = FALSE)[[1]]
 census_api_key(api_key)
 ```
 
 
-```
+```{r}
 census.fl <- get_acs(geography = "county", 
               variables = c(medincome = "B19013_001",
                             male.white.18_19 = "B01001A_007",

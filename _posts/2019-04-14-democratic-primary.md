@@ -1,0 +1,201 @@
+  - [Data](#data)
+      - [Kalmagorov-Smirnov Test](#kalmagorov-smirnov-test)
+          - [Testing without padding](#testing-without-padding)
+      - [Simulating Candidate
+        Announcements](#simulating-candidate-announcements)
+
+# Data
+
+``` r
+announcements <- data.frame(
+  candidate = c("Elizabeth Warren","Tulsi Gabbard","Julian Castro","Kirsten Gillibrand","Kamala Harris","Pete Buttigieg","Cory Booker","Amy Klobuchar","Bernie Sanders","Jay Inslee","John Hickenlooper","Beto O'Rourke","Mike Gravel","Tim Ryan","Eric Swalwell","Seth Moulton","Joe Biden","Michael Bennet","Seth Bullock","Bill de Blasio"),
+  announced = as.Date(c('2018-12-31','2019-01-11','2019-01-12','2019-01-15','2019-01-21','2019-01-23','2019-02-01','2019-02-10','2019-02-19','2019-03-01','2019-03-04','2019-03-14','2019-03-19','2019-04-04','2019-04-08','2019-04-22','2019-04-25','2019-05-02','2019-05-14','2019-05-16'))
+)
+```
+
+Now we can compute the intervals.
+
+``` r
+intervals <- announcements %>%
+    arrange(announced) %>%
+    mutate(diff = as.integer(announced - lag(announced, default = first(announced))))
+```
+
+``` r
+hist(as.integer(intervals$diff),xlab="Days between announcement",main="Intervals beween Democratic Primary Candidate Announcements")
+```
+
+![](2019-04-14-democratic-primary_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+Using ggplot2 to make things prettier.
+
+``` r
+# "#77AB43"
+diffs <- intervals$diff[2:length(intervals$diff)]
+start_dt <- min(intervals$announced)
+end_dt <- max(intervals$announced)
+shape <- nrow(intervals)/(1.0*as.integer(end_dt - start_dt))
+x <- seq(0, max(intervals$diff), length.out=100)
+df <- with(intervals, data.frame(x = x, y = length(intervals$diff)*dexp(x, rate=shape)))
+p <- ggplot(intervals) + geom_histogram(aes(x = diff), # bins=max(intervals$diff), 
+                                   fill=muted("#008FD5", l=50, c=50), binwidth=0.75) +
+  geom_line(data = df, aes(x = x, y = y), color = "#FF2700") +
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Wait until next Announcement",
+       subtitle = "Intervals between Democratic candidate announcements") +
+  scale_color_fivethirtyeight() +
+  theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + ylab("Number of Candidates") + xlab("Days")
+p
+```
+
+![](2019-04-14-democratic-primary_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Then we save the plot
+
+``` r
+setwd("D:/src/pa/_posts/")
+ggsave("../img/2019-05-primary.png", plot=p)
+```
+
+    ## Saving 7 x 5 in image
+
+## Kalmagorov-Smirnov Test
+
+We can test if this is a good fit for the exponential distribution (it
+probably isn’t). We can’t have duplicate values, and we’re kind of short
+on data, so lets try “padding the data” with duplicates, and “smooth
+out” duplicate values by “tiny amounts”.
+
+``` r
+idx <- 1;
+diff <- c();
+for (x in as.integer(intervals$diff)) {
+  if (x %in% diff) {
+    diff[idx] <- x + (idx/10000.0);
+  } else {
+    diff[idx] <- x;
+  }
+  idx <- idx + 1;
+}
+for (x in as.integer(intervals$diff)) {
+  if (x %in% diff) {
+    tmp = 4;
+    y = x + idx/(10000.0*tmp);
+    while (y %in% diff) {
+      tmp <- tmp + 1;
+      y <- x + idx/(10000.0*tmp);
+    }
+    diff[idx] <- y;
+  } else {
+    diff[idx] <- x;
+  }
+  idx <- idx + 1;
+}
+for (x in as.integer(intervals$diff)) {
+  if (x %in% diff) {
+    tmp = 4;
+    y = x + idx/(10000000.0*tmp);
+    while (y %in% diff) {
+      tmp <- tmp + 1;
+      y <- x + idx/(10000000.0*tmp);
+    }
+    diff[idx] <- y;
+  } else {
+    diff[idx] <- x;
+  }
+  idx <- idx + 1;
+}
+ks.test(diff,"pexp",shape, exact=TRUE)
+```
+
+    ## 
+    ##  One-sample Kolmogorov-Smirnov test
+    ## 
+    ## data:  diff
+    ## D = 0.18381, p-value = 0.03019
+    ## alternative hypothesis: two-sided
+
+### Testing without padding
+
+Lets see what the data tells us, without duplicating data, but padding
+by a “tiny amount” to avoid duplicates.
+
+``` r
+idx <- 1;
+diff <- c();
+for (x in as.integer(intervals$diff[2:length(intervals$diff)])) {
+  if (x %in% diff) {
+    y <- x;
+    while (y %in% diff) {
+      y <- y + (1e-13)*idx;
+    }
+    diff[idx] <- y;
+  } else {
+    diff[idx] <- x;
+  }
+  idx <- idx + 1;
+}
+```
+
+``` r
+ks.test(diff,"pexp",shape, exact=TRUE)
+```
+
+    ## 
+    ##  One-sample Kolmogorov-Smirnov test
+    ## 
+    ## data:  diff
+    ## D = 0.20749, p-value = 0.3387
+    ## alternative hypothesis: two-sided
+
+## Simulating Candidate Announcements
+
+We could simply simulate the total number of candidates announced, given
+some “number of days into the primary” `t`, and the `rate` at which
+candidates announce.
+
+``` r
+# "#77AB43"
+simulate_candidates <- function(t, rate) {
+    
+    path <- matrix(0, nrow = 1, ncol = 2)
+    
+    jumps_number <- rpois(1, lambda = rate * t)
+    jumps_time <- runif(n = jumps_number, min = 0, max = t) %>% sort()
+    
+    for(j in seq_along(jumps_time)) {
+        jump <- matrix(c(jumps_time[j], path[nrow(path), 2],
+                         jumps_time[j], path[nrow(path), 2]  + 1),
+                       nrow = 2, ncol = 2, byrow = TRUE)
+        path <- rbind(path, jump)
+    }
+    
+    path <- rbind(path,
+                  c(t, path[nrow(path), 2]))
+    
+    list(path, jumps_time)
+    
+}
+path2 <- simulate_candidates(as.integer(end_dt - start_dt), shape)
+```
+
+Then we plot the intervals using the handy `diff()` function, which
+should resemble what we witness.
+
+``` r
+data.frame(it = diff(path2[[2]])) %>%
+    ggplot() +
+    geom_histogram(aes(it, y = ..density..), fill="#008FD5") +
+    stat_function(fun = dexp, args=list(rate=shape)) +
+    labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Simulated Candidate Announcements",
+       subtitle = "Intervals between Democratic candidate announcements") +
+    scale_color_fivethirtyeight() +
+    theme_fivethirtyeight(base_size = 8) +
+    theme(axis.title = element_text()) + ylab("Proportion of Candidates") + xlab("Days")
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](2019-04-14-democratic-primary_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
