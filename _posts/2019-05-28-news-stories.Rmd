@@ -1,0 +1,44 @@
+---
+title: "Missing News"
+author: "Alex Nelson"
+date: "5/28/2019"
+output:
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(scales) # for muted()
+library(rmarkdown)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+We are really just interested in computing the hypergeometric distribution given `K=22`, `k=5`, and `n=12`. Well, using the conventions chosen by R, we have
+
+```{r}
+prob_dist <- function(N) {
+  return(dhyper(5, m=22, n=N-22, k=12));
+}
+```
+
+```{r pressure, echo=FALSE}
+df <- data.frame(n=28:70,p=prob_dist(28:70))
+
+ggplot(df, aes(x=n,y=p)) +
+    geom_point(shape=1,color="#008FD5") +
+    geom_vline(xintercept = 52, color = "#FF2700") +
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Missing News stories",
+       subtitle = "Probability of missing news stories") +
+    scale_color_fivethirtyeight() +
+    theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + ylab("Probability") + xlab("Number of Stories")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
