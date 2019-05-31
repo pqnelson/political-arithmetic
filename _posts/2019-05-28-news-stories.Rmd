@@ -33,12 +33,399 @@ df <- data.frame(n=28:70,p=prob_dist(28:70))
 ggplot(df, aes(x=n,y=p)) +
     geom_point(shape=1,color="#008FD5") +
     geom_vline(xintercept = 52, color = "#FF2700") +
-  labs(caption="http://political-arithmetic.blogspot.com",
-       title= "Missing News stories",
-       subtitle = "Probability of missing news stories") +
+    labs(caption="http://political-arithmetic.blogspot.com",
+         title= "Missing News stories",
+         subtitle = "Probability of missing news stories") +
     scale_color_fivethirtyeight() +
     theme_fivethirtyeight(base_size = 8) +
-  theme(axis.title = element_text()) + ylab("Probability") + xlab("Number of Stories")
+    theme(axis.title = element_text()) + ylab("Probability") + xlab("Number of Stories")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Raw Data
+
+## May 28, 2019
+
+### International
+<!--html_preserve-->
+<table class="viz" style="">
+<thead>
+<tr>
+<th>New York <cite class="newspaper">Times</cite></th>
+<th>Los Angeles <cite class="newspaper">Times</cite></th>
+</tr>
+</thead>
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/pakistan-china-trafficking.html">She Thought She’d Married a Rich Chinese Farmer. She Hadn’t.</a> (A4)
+</td>
+<td></td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/afghanistan-attacks-schools-unicef.html">Attacks by Extremists on Afghan Schools Triple, Report Says</a> (A4)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/europe/liviu-dragnea-romania-corruption.html">Romania’s Most Powerful Man Is Sent to Prison for Corruption</a> (A6)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/japan-empress-masako.html">With Trump’s Visit to Japan, Empress Masako Finds a Spotlight</a> (A8)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/trump-japan.html">Trump and Abe’s ‘Unshakable Bond’ Shows Some Cracks in Tokyo</a> (A8)
+</td>
+<td><a href="https://www.latimes.com/politics/la-na-pol-trump-iran-north-korea-japan-20190527-story.html">Trump pushes off war talk on Iran, says ‘regime change’ is not U.S. goal</a> (A1)</td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/europe/europe-election-results-populism.html">Election Puts Europe on the Front Line of the Battle With Populism</a> (A10)
+</td>
+<td><a href="https://www.latimes.com/world/la-fg-europe-elections-results-nationalists-green-party-20190528-story.html">In European vote, far-right surge fails to materialize, but mainstream parties lose support</a> (A2)</td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/europe/eu-election-takeaways.html">European Parliament Elections: 5 Biggest Takeaways</a> (A10)
+</td>
+<td></td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/europe/european-vote-france.html">European Vote Reveals an Ever More Divided France</a> (A11)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/japan-stabbing-bus-stop.html">18 Schoolchildren Stabbed, and Girl and Man Killed, in Attack in Japan</a> (A11)
+</td>
+<td><a href="https://www.latimes.com/world/la-fg-japan-knife-attack-20190528-story.html">Knife-wielding man attacks schoolgirls in Japan, killing 2</a> (blurb of story on A2)</td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/europe/sebastian-kurz-austria.html">Sebastian Kurz, Austrian Leader, Is Ousted in No-Confidence Vote</a> (A12)
+</td>
+<td><a href="https://www.latimes.com/world/la-fg-austria-kurz-chancellor-no-confidence-vote-20190527-story.html">Ousted by parliament, Austria’s Kurz vows to win back job</a> (A4)</td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/middleeast/netanyahu-israel-lieberman-coalition.html">Israel’s Netanyahu Struggles to Form a Government, as Time Runs Short</a> (A12)
+</td>
+<td><a href="https://www.latimes.com/world/la-fg-israel-netanyahu-coalition-knesset-20190527-story.html">Netanyahu running out of time to form government; Israel may face new elections</a> (A2)</td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/asia/china-white-panda.html">White Panda Is Spotted in China for the First Time</a> (A12)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/world/africa/congo-boat-sinking.html">30 Dead and 200 Missing in Congo After Boat Sinks</a> (A12)
+</td>
+<td></td>
+</tr>
+
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/world/la-fg-thailand-dissidents-20190528-story.html">Arrests, killings strike fear in Thailand’s dissidents: ‘The hunting has been accelerated’</a> (A3)</td>
+</tr>
+
+</table>
+<footer class="viz">
+<p class="notes">Matches are based on substantially overlapping subject matters. The only debatable story match is "Trump pushes off war talk on Iran", which is a proper subset of the corresponding New York <cite class="newspaper">Times</cite> article.</p>
+<p class="notes">
+Also note, in the Los Angeles <cite class="newspaper">Times</cite>, there was a 1000 word blurb about the knife attacks in Japan. Later, on their website, they posted a longer and more detailed article. I decided to count that as a match, which may be debatable.
+</p>
+<p class="source">Sources: Los Angeles Times, New York Times</p>
+</footer>
+<!--html_preserve-->
+
+### National
+<!--html_preserve-->
+<table class="viz">
+<thead>
+<tr>
+<th>New York <cite class="newspaper">Times</cite></th>
+<th>Los Angeles <cite class="newspaper">Times</cite></th>
+</tr>
+</thead>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/politics/trump-climate-science.html">Trump Administration Hardens Its Attack on Climate Science</a> (A1)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/technology/google-temp-workers.html">Google’s Shadow Work Force: Temps Who Outnumber Full-Time Employees</a> (A1)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/politics/us-huawei-berlin-wall.html">Trump Wants to Wall Off Huawei, but the Digital World Bridles at Barriers</a> (A1)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/auto-worker-jobs-lost.html">With His Job Gone, an Autoworker Wonders, ‘What Am I as a Man?’</a> (A1)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/politics/2020-candidates-iowa.html">With the 2020 Democratic Field Set, Candidates Begin the Races Within the Race</a> (A1)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/oklahoma-floods-pets-rescue.html">Saving Charlie: A Rush to Rescue Stranded Cats and Dogs from Oklahoma Floods</a> (A17)
+</td>
+<td></td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/us/politics/supreme-court-gun-control.html">Fearing Supreme Court Loss, New York Tries to Make Gun Case Vanish</a> (A17)
+</td>
+<td></td>
+</tr>
+
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/upshot/malpractice-health-care-missed-opportunity.html">A Missed Opportunity for the Malpractice System to Improve Health Care</a> (A19)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/27/nyregion/hamptons-shinnecock-billboards.html">Why a Hamptons Highway Is a Battleground Over Native American Rights</a> (A22)
+</td>
+<td></td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/science/environment/la-me-marshall-islands-dome-is-leaking-radiation-20190528-story.html">High radiation levels found in giant clams of Marshall Islands near U.S. nuclear dump</a> (A1)</td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/politics/la-na-pol-joe-sanberg-presidential-run-20190528-story.html">He made millions as an L.A. investor. Now, he may run for president to fight poverty</a> (A1)</td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/local/lanow/la-me-ln-koreatown-parking-ktown-black-car-silver-car-20190528-story.html">Want to park in Koreatown? Get ready for a ‘blood sport’</a> (A1)</td>
+</tr>
+
+
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/nation/la-na-world-series-poker-anniversary-20190528-story.html">Put your hands together for the World Series of Poker, turning 50 this year</a> (A4)</td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/nation/la-na-texas-gun-safety-bill-nra-20190527-story.html">Texas lawmakers approve safe gun storage program, quietly going around the NRA</a> (A4)</td>
+</tr>
+
+<tr>
+<td></td>
+<td><a href="https://www.latimes.com/nation/la-na-oklahoma-opioid-trial-pharmaceutical-20190527-story.html">Oklahoma’s opiod lawsuit targeting drugmaker goes to trial Tuesday</a> (A7)</td>
+</tr>
+
+</table>
+<footer class="viz">
+<p class="notes">Matches are based on substantially overlapping subject matters.</p>
+<p class="source">Sources: Los Angeles Times, New York Times</p>
+</footer>
+<!--html_preserve-->
+
+## May 29, 2019
+
+### International
+<!--html_preserve-->
+<table class="viz">
+<thead>
+<th>New York Times</th><th>Los Angeles Times</th>
+</thead>
+<tr>
+<td><a href="/2019/05/28/world/asia/japan-stabbing-schoolchildren.html">Stabbing of 17 Children Shocks Japan, Where Parents Trust Streets Are Safe</a> A4</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/asia/afghanistan-taliban-attacks-moscow-talks.html">Afghan Forces Hit With Wave of Attacks on Eve of Taliban Talks</a> A4</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/americas/246-cocaine-packs-flight-death.html">After Death on Airliner, Autopsy’s Grim Discovery: 246 Packs of Cocaine</a> A4</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/asia/pakistan-pashtun-dissent.html">‘Time Is Up’: Pakistan’s Army Targets Protest Movement, Stifling Dissent</a> A6</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/us/politics/christian-reismeier-guantanamo-military-court.html">Former Navy Judge Named to Oversee Guantánamo Military Court</a> A6</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/asia/military-patch-trump.html">More Than Patriotism on Their Sleeves: Military Patches Sport Trump Likeness</a> A6</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/climate/united-nations-climate-pledges.html">United Nations Says 80 Countries May Ramp Up Climate Pledges</a> A7</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/europe/eu-elections-germany-merkel.html">Germany’s Political Establishment Looks Fragile After E.U. Vote</a> A8</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/europe/pope-francis-mccarrick.html">Pope Francis Denies He Knew of Abuse by McCarrick</a> A8</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/americas/mexico-corruption-prosecution-oil-company.html">Mexico Charges Former Oil Official With Bribery in Anticorruption Drive</a> A9</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/asia/south-korea-jeju-massacres.html">Memories of Massacres Were Long Suppressed Here. Tourists Now Retrace the Atrocities.</a> A10</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="/2019/05/28/world/asia/trump-japan.html">Japan Rolled Out the Red Carpet. Trump Veered Off Into Personal Fixations.</a> A10</td>
+<td></td>
+</tr>
+</table>
+<!--html_preserve-->
+
+### National
+<!--html_preserve-->
+<table class="viz">
+<thead>
+<th>New York Times</th><th>Los Angeles Times</th>
+</thead>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/elizabeth-warren-2020.html">Elizabeth Warren Gains Ground in 2020 Field, One Plan at a Time</a> A11</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/disaster-relief-bill.html">For Second Time, One Republican’s Objection Delays Disaster Aid</a> A11</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/supreme-court-mexican-border-shooting.html">Justices to Hear Case of U.S. Agent’s Shooting of Teenager Across the Mexican Border</a> A12</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/kamala-harris-abortion.html">Kamala Harris, in MSNBC Town Hall, Lays Out New Abortion Proposal</a> A12</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/missouri-abortion-clinic.html">Missouri’s Last Abortion Clinic Could Stop Providing the Procedure This Week</a> A12</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/trump-biden-north-korea.html">Trump and Biden Campaign Trade Jabs Over North Korea’s Remarks</a> A13</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/border-wall-private-new-mexico.html">Border Wall on Private Land in New Mexico Fuels Backlash</a> A14</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/tornadoes-usa.html">Kansas City-Area Tornadoes Add to 12 Straight Days of Destruction</a> A15</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/justin-amash-trump.html">Justin Amash, Under Attack for Impeachment Talk, Finds Mixed Support at Home</a> A16</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/elaine-chao-stock-divest.html">Transportation Secretary Failed to Sever Financial Ties to Construction Company</a> A16</td>
+<td></td>
+</tr>
+
+<tr>
+<td><a href="https://www.nytimes.com/2019/05/28/us/politics/michael-wolff-siege-trump.html">White House Insider Account Has Feel of an Outside View, and Prompts a Mueller Denial</a> A16</td>
+<td></td>
+</tr>
+</table>
+<!--/html_preserve-->
+
+## May 30, 2019
+
+### International
+
+<a href="https://www.latimes.com/ct-israel-second-election-netanyahu-20190529-story.html">As coalition eludes Netanyahu, Israel is headed for new vote</a> (A1)
+
+<td>Why Balkan Strife Endures (AP, A2)</td>
+<a href="https://www.latimes.com/sns-bc-eu--brexit-boris-johnson-20190529-story.html">Boris Johnson to face court questions about Brexit claims</a> (A3)
+
+<a href="https://www.latimes.com/world/la-fg-ethiopia-ethnic-violence-millions-displaced-20190530-story.html">Ethnic violence in Ethiopia has forced nearly 3 million people from their homes</a> (A3)
+<a href="https://www.latimes.com/sns-bc-eu--malta-journalist-slain-20190529-story.html">Report criticizes probe into slaying of Malta journalist</a> (A3)
+<a href="https://www.latimes.com/sns-bc-ml--us-kushner-mideast-20190529-story.html">Jordan stands by 2-state Israel-Palestinian solution</a> (A5)
+
+<a href="https://www.latimes.com/world/la-fg-vatican-mccarrick-abuse-restrictions-ignored-20190529-story.html">Ex-Cardinal McCarrick and others ignored sex abuse restrictions</a> (A5)
+<a href=""></a>
+
+
+### National
+
+<a href="https://www.latimes.com/local/lanow/la-me-ln-homeless-cleanup-property-skid-row-downtown-lawsuit-mitchell-case-20190529-story.html">L.A. agrees to let homeless people keep skid row property — and some in downtown aren’t happy</a> (A1)
+
+<a href="https://www.latimes.com/sports/la-sp-ninja-esports-fortnite-video-games-20190529-story.html">Tyler 'Ninja' Blevins, the Fortnite guy, wants to be known as more than that</a> (A1)
+
+<a href="https://www.latimes.com/politics/la-na-pol-mueller-report-russia-investigation-statement-20190529-story.html">Mueller says Trump was not exonerated by investigation</a> (A1)
+
+<a href="https://www.latimes.com/politics/la-na-pol-congress-mueller-pressure-impeachment-20190529-story.html">Calls to Impeach Intesify After Speech</a> (A1)
+
+<a href="https://www.latimes.com/sns-bc-us--obit-code-talker-pinto-20190524-story.html">Farewell to a code talker</a> (A2)
+
+<a href="https://www.latimes.com/politics/la-na-pol-congress-pelosi-facebook-doctored-video-russia-20190529-story.html">Pelosi slams Facebook as ‘enablers of false information’ over doctored video</a> (A6)
+
+<a href="https://www.latimes.com/nation/la-na-tornadoes-storm-kansas-ohio-20190529-story.html">Climate change may not be the culprit for a record-setting spate of tornadoes</a> (A6)
+
+<a href="https://www.latimes.com/politics/la-na-pol-2020-election-beto-orourke-immigration-plan-20190529-story.html">Beto O’Rourke’s immigration plan calls for a path to citizenship</a> (A7)
+
+<a href="https://www.latimes.com/nation/la-na-pol-louisiana-abortion-law-passes-20190529-story.html">Louisiana lawmakers pass abortion ban; Democratic governor plans to sign it</a> (A7)
