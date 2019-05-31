@@ -588,9 +588,22 @@ prob_clinton(ethnicity,gender,education,income) = invlogit(b0 + b1*ethnicity + b
 
 ...and similarly for Trump, but we need to compute the coefficients `b0`, ..., `b4`. The constant coefficient is just the `logit(clinton_votes/(clinton_votes + trump_votes)) = logit(65853514.0/(62984828.0 + 65853514.0)) = 0.04453892`.
 
-We can estimate `exp(beta_x) = ((p(y=1|x=1,...)/p(y=0|x=1,...))/(p(y=1|x!=1,...)/p(y=0|x!=1,...)))` (where the ellipses `...` are parameters held fixed), so specifically for Clinton we find `b2 = (54/46)/(41/59) = (54*59)/(41*46) = 1.68929` if `female=1` and `male=0`. For Trump, `b2 = (41/59)/(52/48) = (41*48)/(52*59) = 0.6414602`.
+```{r}
+beta0 <- log(65853514.0/62984828.0)
+```
 
-Henceforth, I will write `c_` for Clinton's logistic regression coefficients and `t_` for Trump's logistic regression coefficients. We have, using the national exit polls (though this could apply to each state)
+Although left unstated, exit polls are usually plus-or-minus 4%, and assuming it is with 95% confidence, (so approximating the numerator and denominator as normally distributed random variables with expected values given, and standard deviation being 2%) the [propagation  of uncertainty](https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae) implies the variance of `beta0` is
+
+```{r}
+var_beta <- function(A,B) {
+  return( ((3.0/A)**2)+((3.0/B)**2) );
+}
+var_beta0 <- var_beta(65853514.0, 62984828.0) # nearly machine epsilon
+```
+
+The variance for other betas will be closer to half a percent. (It is bounded from above for `A=B=50`, `var_beta(50,50)~0.06**2`.) Even if one were to insist on the margin of error being twice that of a normal poll (i.e., it should be 6% instead of our 4%), the variance's upper bound is moved to approximately `0.08485**2`. (["This makes the margins for error somewhere between 50-90% higher than they would be for comparable telephone surveys."](https://fivethirtyeight.com/features/ten-reasons-why-you-should-ignore-exit/))
+
+We can estimate the coefficients for any group by taking `beta_clinton(group) = log(percent_clinton(group)/percent_trump(group)) - beta0`. This is the basic strategy of one-factor models, after all.
 
 ```{r}
 national_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'nation'),]
@@ -605,13 +618,9 @@ Then we have the numerators for the coefficients
 ```{r}
 race_and_gender$clinton_numerator <- (1.0*race_and_gender$Clinton_perc)/(1.0*(race_and_gender$Trump_perc))
 race_and_gender$trump_numerator <- (1.0*race_and_gender$Trump_perc)/(1.0*(race_and_gender$Clinton_perc))
-race_and_gender$p_trump <- (0.01*race_and_gender$options_perc)*(1.0*race_and_gender$Trump_perc)/(1.0*(race_and_gender$Clinton_perc + race_and_gender$Trump_perc))
-race_and_gender$p_clinton <- (0.01*race_and_gender$options_perc)*(1.0*race_and_gender$Clinton_perc)/(1.0*(race_and_gender$Trump_perc + race_and_gender$Clinton_perc))
 
-race_and_gender <- race_and_gender %>%
-  group_by(options) %>%
-  mutate(clinton_coef = log(clinton_numerator/(sum(race_and_gender[which(race_and_gender$options != options),]$p_clinton)/(sum(race_and_gender[which(race_and_gender$options != options),]$p_trump)))),
-         trump_coef = log(trump_numerator/(sum(race_and_gender[which(race_and_gender$options != options),]$p_trump)/(sum(race_and_gender[which(race_and_gender$options != options),]$p_clinton)))))
+race_and_gender$clinton_coef <- log(race_and_gender$clinton_numerator) - beta0
+race_and_gender$trump_coef <- log(race_and_gender$trump_numerator) - beta0
 
 kable(race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
@@ -620,13 +629,9 @@ For education we have:
 ```{r}
 education$clinton_numerator <- (1.0*education$Clinton_perc)/(1.0*(education$Trump_perc))
 education$trump_numerator <- (1.0*education$Trump_perc)/(1.0*(education$Clinton_perc))
-education$p_trump <- (0.01*education$options_perc)*(1.0*education$Trump_perc)/(1.0*(education$Trump_perc + education$Clinton_perc))
-education$p_clinton <- (0.01*education$options_perc)*(1.0*education$Clinton_perc)/(1.0*(education$Trump_perc + education$Clinton_perc))
 
-education <- education %>%
-  group_by(options) %>%
-  mutate(clinton_coef = log(clinton_numerator/(sum(education[which(education$options != options),]$p_clinton)/(sum(education[which(education$options != options),]$p_trump)))),
-         trump_coef = log(trump_numerator/(sum(education[which(education$options != options),]$p_trump)/(sum(education[which(education$options != options),]$p_clinton)))))
+education$clinton_coef <- log(education$clinton_numerator) - beta0
+education$trump_coef <- log(education$trump_numerator) - beta0
 
 kable(education[,c("options","clinton_coef","trump_coef")])
 ```
@@ -643,10 +648,8 @@ fl_race_and_gender$trump_numerator <- (1.0*fl_race_and_gender$Trump_perc)/(1.0*f
 fl_race_and_gender$p_trump <- (0.01*fl_race_and_gender$options_perc)*(0.01*fl_race_and_gender$Trump_perc)/(0.01*fl_race_and_gender$Clinton_perc + 0.01*fl_race_and_gender$Trump_perc)
 fl_race_and_gender$p_clinton <- (0.01*fl_race_and_gender$options_perc)*(0.01*fl_race_and_gender$Clinton_perc)/(0.01*fl_race_and_gender$Clinton_perc + 0.01*fl_race_and_gender$Trump_perc)
 
-fl_race_and_gender <- fl_race_and_gender %>%
-  group_by(options) %>%
-  mutate(clinton_coef = log(clinton_numerator/(sum(fl_race_and_gender[which(fl_race_and_gender$options != options),]$p_clinton)/sum(fl_race_and_gender[which(fl_race_and_gender$options != options),]$p_trump))),
-         trump_coef = log(trump_numerator/(sum(fl_race_and_gender[which(fl_race_and_gender$options != options),]$p_trump)/sum(fl_race_and_gender[which(fl_race_and_gender$options != options),]$p_clinton))))
+fl_race_and_gender$clinton_coef <- log(fl_race_and_gender$clinton_numerator) - beta0
+fl_race_and_gender$trump_coef <- log(fl_race_and_gender$trump_numerator) - beta0
 
 kable(fl_race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
