@@ -1,0 +1,130 @@
+---
+title: "2016 Fox Exit Polls"
+author: "Alex Nelson"
+date: "6/1/2019"
+output:
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
+---
+
+We have to possibly install several packages
+```
+install.packages("RSelenium")
+install.packages("rvest")
+install.packages("plotly")
+install.packages("ggalt")
+```
+
+```{r setup, include=FALSE}
+library(RSelenium)                # parsing dynamic web content
+library(rvest)                    # scraping
+library(tidyverse)                # data cleaning and ggplot2 - tidy!
+library(stringr)                  # string manipulation
+library(plotly)                   # interactive visualization
+library(ggalt)                    # visualization
+library(tibble)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Scraping the Exit-Polling Data from Fox
+
+We try to fetch the data from [FOX NEWS](http://www.foxnews.com/politics/elections/2016/exit-polls). The data seems to be nation-wide, contrary to the misleading options to drill down on particular states.
+
+I am trying to consistently name the tables as with the CNN exit polls. The first stab will be to get the raw exit poll data as a CSV, then to clean it up so I could directly compare both results.
+
+```{r}
+# https://www.foxnews.com/politics/elections/2016/exit-polls?type=president&filter=AZ
+webpage <- html("https://www.foxnews.com/politics/elections/2016/exit-polls?type=president")
+```
+
+For a given answer, we want to extract the number of respondents from the HTML.
+
+```{r}
+respondents_count <- function(row) {
+  row %>% html_nodes('footer') %>% html_text() %>%
+    (function(x) {
+      gsub(",","", x)
+    }) %>%
+    str_extract('[:digit:]+') %>% as.integer
+}
+# respondents_count(rows0[[1]])
+```
+
+Likewise, get the list of percentages of responses by candidate supporters:
+
+```{r}
+parse_response <- function(r) {
+  r %>% html_nodes('div') %>% html_nodes('span.num') %>%
+  html_text() %>%
+  map(., function(x) {
+    as.integer(str_extract(x, '[:digit:]+'))
+  }) %>%
+  unlist 
+}
+# parse_response(responses[[1]])
+```
+
+We need a helper function to trim whitespace from strings:
+
+```{r}
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+```
+
+Then transform each question into a tibble, which we will merge together later.
+
+```{r}
+# questions_id,questions,num_respondents,options,Clinton_perc,Trump_perc,Others_Unknown_perc,options_perc,state,url
+parse_question <- function(row, questions_id) {
+  percentages <- row %>% html_nodes('div.data-table') %>% html_nodes('section.stat') %>% map(., parse_response)
+  tibble(
+    questions_id = questions_id,
+    questions = row %>% html_nodes('header') %>% html_nodes('span.question') %>% html_text(),
+    num_respondents = respondents_count(row),
+    options = row %>% html_nodes('div.data-table') %>% html_nodes('header') %>% map(.,html_text) %>% unlist %>% trim,
+    Clinton_perc = percentages %>% map(., function(x) { x[[2]]}) %>% unlist,
+    Trump_perc = percentages %>% map(., function(x) { x[[3]]}) %>% unlist,
+    Johnson_perc = percentages %>% map(., function(x) { x[[4]]}) %>% unlist,
+    Stein_perc = percentages %>% map(., function(x) { x[[5]]}) %>% unlist,
+    options_perc = percentages %>% map(., function(x) { x[[1]]}) %>% unlist
+  )
+}
+# parse_question(rows0[[1]])
+# bind_rows(tibble1, tibble2)
+```
+
+We can combine all the tibbles together to get the data for the nation (and more generally for all the available states):
+
+```{r}
+webpage <- html("https://www.foxnews.com/politics/elections/2016/exit-polls?type=president&filter=US")
+nationwide_df <- webpage %>% html_nodes('section.poll-item') %>% imap(., ~ parse_question(.x,.y)) %>% bind_rows
+nationwide_df$state = "nation"
+nationwide_df$url = "https://www.foxnews.com/politics/elections/2016/exit-polls?type=president&filter=US"
+```
+
+
+```{r}
+fetch_for_state <- function(option) {
+  abbrev <- html_attr(option,'value')
+  url <- paste0("https://www.foxnews.com/politics/elections/2016/exit-polls?type=president&filter=",abbrev)
+  webpage <- html(url)
+  df <- webpage %>% html_nodes('section.poll-item') %>% imap(., ~ parse_question(.x,.y)) %>% bind_rows
+  df$state = html_text(option)
+  df$url = url
+  return(df)
+}
+```
+
+Then we combine all the fetched state data with the nation-wide data, to write as a CSV.
+
+```{r}
+states_df <- webpage %>% html_nodes('div.filters') %>% html_nodes('select') %>% .[[2]] %>% html_nodes('option') %>%
+  map(.,fetch_for_state) %>% bind_rows
+
+all_exit_poll_df <- bind_rows(nationwide_df,states_df)
+
+write_csv(all_exit_poll_df, 'exit_polls_data_fox_2016.csv', col_names = T)
+```
+
+

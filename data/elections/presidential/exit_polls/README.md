@@ -1,3 +1,5 @@
+# CNN 2016 Exit Polls
+
 This contains the exit polls for the 2016 US Presidenial election, as
 CNN posted on their [website](http://www.cnn.com/election/results/exit-polls/national/president).
 
@@ -59,3 +61,7 @@ done by Vincent Zhang on `data.world`: https://data.world/mrapple/2016-exit-poll
 - `url` the URL where data was scrapped from (the state specific answers
   are taken from a different url, something like `http://cnn/base-url/STATE`,
   at least schematically)
+
+# Fox Exit Polls 2016
+
+These were scrapped from Fox News's website, though the responses appear to be independent of state. This makes the data seem questionable, at least for use on anything other than nation-wide analyses.
