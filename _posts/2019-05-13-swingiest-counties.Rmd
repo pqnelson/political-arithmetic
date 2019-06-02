@@ -609,32 +609,117 @@ We can estimate the coefficients for any group by taking `beta_clinton(group) = 
 national_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'nation'),]
 
 race_and_gender <- national_exit_polls[which(national_exit_polls$questions=="Race and gender"),]
-
+age <- national_exit_polls[which(national_exit_polls$questions_id==3),]
+income <- national_exit_polls[which(national_exit_polls$questions_id==13),]
+married <- national_exit_polls[which(national_exit_polls$questions_id==20),]
+religion <- national_exit_polls[which(national_exit_polls$questions_id==23),]
 education <- national_exit_polls[which(national_exit_polls$questions == "Education"),]
 ```
+
+We can estimate the error using the Wilson confidence interval.
+
+```{r}
+wilson_center <- function(p, n, z) {
+  (p + 0.5*z*z/n)/(1.0 + z*z*1.0/n);
+}
+wilson_width <- function(p, n, z) {
+  (z/(1.0 + z*z*1.0/n))*sqrt(p*(1.0-p)/n  + (z*0.5/n)**2);
+}
+log_coefs <- function(r) {
+  c <- wilson_center(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
+  t <- wilson_center(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
+  r$clinton_numerator <- c/t
+  r$trump_numerator <- t/c
+  
+  r$clinton_coef <- log(r$clinton_numerator) - beta0
+  r$trump_coef <- log(r$trump_numerator) - beta0
+  r$log_var <- (wilson_width(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/(0.01*r$Clinton_perc))**2 + (wilson_width(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/(0.01*r$Trump_perc))**2;
+  r$log_sd <- sqrt(r$log_var);
+  return(r);
+}
+```
+
+#### Religion
+
+#### Married
+
+```{r}
+education <- log_coefs(married)
+
+kable(married[,c("options","clinton_coef","trump_coef")])
+```
+
+#### Gender and Ethnicity
 
 Then we have the numerators for the coefficients
 
 ```{r}
-race_and_gender$clinton_numerator <- (1.0*race_and_gender$Clinton_perc)/(1.0*(race_and_gender$Trump_perc))
-race_and_gender$trump_numerator <- (1.0*race_and_gender$Trump_perc)/(1.0*(race_and_gender$Clinton_perc))
-
-race_and_gender$clinton_coef <- log(race_and_gender$clinton_numerator) - beta0
-race_and_gender$trump_coef <- log(race_and_gender$trump_numerator) - beta0
+race_and_gender <- log_coefs(race_and_gender)
 
 kable(race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
+
+
+#### Education
+
 For education we have:
 
 ```{r}
-education$clinton_numerator <- (1.0*education$Clinton_perc)/(1.0*(education$Trump_perc))
-education$trump_numerator <- (1.0*education$Trump_perc)/(1.0*(education$Clinton_perc))
-
-education$clinton_coef <- log(education$clinton_numerator) - beta0
-education$trump_coef <- log(education$trump_numerator) - beta0
+education <- log_coefs(education)
 
 kable(education[,c("options","clinton_coef","trump_coef")])
 ```
+
+Observe that education is linear progressing. We can assign the following weights to education level: -1 to "High school or less", 0 to "Some college", 1 to "College graduate", and 2 to "Postgraduate". Then we find a linear regression the coefficient is better approximated by `x1` in the following table:
+
+```{r}
+df <- data.frame(y=education$clinton_coef, z=education$trump_coef,x=1:4,x0=0:3,x1=-1:2)
+
+clm <- lm(y~x1,df)
+tlm <- lm(z~x1,df)
+
+beta_education <- clm$coefficients[2] # == -tlm$coefficients[2]
+
+kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
+```
+#### Income
+
+
+```{r}
+income <- log_coefs(income)
+
+kable(income[,c("options","clinton_coef","trump_coef")])
+```
+```{r}
+df <- data.frame(y = income$clinton_coef, z=income$trump_coef, x=1:6, x2=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300),x3=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300)**2)
+
+clm <- lm(y~x**2,df)
+```
+
+#### Age
+
+For age we have a partition of ages into 5 or 6 classes. We take the midpoint of these intervals to approximate the value, and take a linear regression of the logistic coefficients.
+
+```{r}
+age <- log_coefs(age)
+
+kable(age[,c("options","clinton_coef","trump_coef")])
+```
+We try to approximate this using a linear regression, taking `age-46` as the input signal appears to be best (note the intercept is approximately `-beta0`):
+
+```{r}
+df <- data.frame(y=age$clinton_coef, z=age$trump_coef,x=c(21,27,34.5,44.5,57,75),x0=-3:2,x1=c(21,27,34.5,44.5,57,75)-46)
+df2 <- data.frame(y=age$clinton_coef[1:5], z=age$trump_coef[1:5], x=c(21,27,34.5,44.5,57),x0=-3:1,x1=c(21,27,34.5,44.5,57)-46)
+clm <- lm(y~x1,df2)
+tlm <- lm(z~x1,df2)
+
+beta_age <- clm$coefficients[2] # == -tlm$coefficients[2] to machine epsilon
+
+kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
+```
+
+
+#### Different States
 
 We can consider coefficients for different states, lets see Florida:
 
@@ -643,36 +728,11 @@ fl_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'Florida'),]
 
 fl_race_and_gender <- fl_exit_polls[which(fl_exit_polls$questions=="Race and gender"),]
 
-fl_race_and_gender$clinton_numerator <- (1.0*fl_race_and_gender$Clinton_perc)/(1.0*fl_race_and_gender$Trump_perc)
-fl_race_and_gender$trump_numerator <- (1.0*fl_race_and_gender$Trump_perc)/(1.0*fl_race_and_gender$Clinton_perc)
-fl_race_and_gender$p_trump <- (0.01*fl_race_and_gender$options_perc)*(0.01*fl_race_and_gender$Trump_perc)/(0.01*fl_race_and_gender$Clinton_perc + 0.01*fl_race_and_gender$Trump_perc)
-fl_race_and_gender$p_clinton <- (0.01*fl_race_and_gender$options_perc)*(0.01*fl_race_and_gender$Clinton_perc)/(0.01*fl_race_and_gender$Clinton_perc + 0.01*fl_race_and_gender$Trump_perc)
-
-fl_race_and_gender$clinton_coef <- log(fl_race_and_gender$clinton_numerator) - beta0
-fl_race_and_gender$trump_coef <- log(fl_race_and_gender$trump_numerator) - beta0
+fl_race_and_gender <- log_coefs(fl_race_and_gender)
 
 kable(fl_race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
 
-
-
-
-
-### Simulating Data
-
-Here, we don't have access to the individual responses, so we need to synthesize individual responses. The `options_perc` tells us the distribution among the options in the poll, and we use as a multinomial distribution.
-
-```{r}
-national_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'nation'),]
-
-race_and_gender <- national_exit_polls[which(national_exit_polls$questions=="Race and gender"),]
-```
-
-Presumably `Pr(race,gender,education|Clinton)=Pr(race,gender|Clinton)Pr(education|Clinton)` the race-and-gender is independent of education.
-
-```{r}
-
-```
 
 
 ## Census Data
@@ -1065,3 +1125,6 @@ census.fl.education <- get_acs(geography = "county",
 
 Train on the exit polls to create the coefficients for the logistic regression, then use that to predict the turnout by county.
 
+# Voter turnout
+
+We are told there were 138,846,571 ballots cast in 2016 but 230,931,921	eligible voters in 2016 (and 250,055,734 people of voting age). (http://www.electproject.org/2016g)
