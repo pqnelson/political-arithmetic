@@ -547,8 +547,9 @@ Well, what if this was a surge election, and it brought a lot of people out of t
 
 ```{r}
 merged_fl$normed_z <- (merged_fl$z - mean(merged_fl$z))/sd(merged_fl$z)
-kable(merged_fl[order(merged_fl$normed_z),c('county','normed_z','party')])
+kable(merged_fl[which(abs(merged_fl$normed_z) > qnorm(0.975)),c('county','normed_z','party')])
 ```
+Note that only the Glades is not more extreme than 3 sigma (i.e., with |z|>2.575829).
 
 Remember: Leon county is the most educated in the country, it is not anomalous in defecting from Trump. The outliers have $|z|\geq 2$, so specifically Madison, DeSoto, and Glades counties appear statistically anomalous.
 
