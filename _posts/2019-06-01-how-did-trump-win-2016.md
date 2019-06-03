@@ -146,6 +146,274 @@ log_coefs <- function(r) {
 
 #### Religion
 
+``` r
+religion <- log_coefs(religion)
+
+kable(religion[,c("options","clinton_coef","trump_coef")])
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:right;">
+
+clinton\_coef
+
+</th>
+
+<th style="text-align:right;">
+
+trump\_coef
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+90
+
+</td>
+
+<td style="text-align:left;">
+
+Protestant
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5384758
+
+</td>
+
+<td style="text-align:right;">
+
+0.4493979
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+91
+
+</td>
+
+<td style="text-align:left;">
+
+Catholic
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1279051
+
+</td>
+
+<td style="text-align:right;">
+
+0.0388273
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+92
+
+</td>
+
+<td style="text-align:left;">
+
+Mormon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7340701
+
+</td>
+
+<td style="text-align:right;">
+
+0.6449923
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+93
+
+</td>
+
+<td style="text-align:left;">
+
+Other Christian
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2722827
+
+</td>
+
+<td style="text-align:right;">
+
+0.1832048
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+94
+
+</td>
+
+<td style="text-align:left;">
+
+Jewish
+
+</td>
+
+<td style="text-align:right;">
+
+1.0806558
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.1697336
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+95
+
+</td>
+
+<td style="text-align:left;">
+
+Muslim
+
+</td>
+
+<td style="text-align:right;">
+
+NA
+
+</td>
+
+<td style="text-align:right;">
+
+NA
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+96
+
+</td>
+
+<td style="text-align:left;">
+
+Other religion
+
+</td>
+
+<td style="text-align:right;">
+
+0.5497610
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.6388389
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+97
+
+</td>
+
+<td style="text-align:left;">
+
+No religion
+
+</td>
+
+<td style="text-align:right;">
+
+0.9409377
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0300155
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
 #### Married
 
 ``` r

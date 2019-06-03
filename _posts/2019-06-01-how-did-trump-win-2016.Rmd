@@ -117,6 +117,12 @@ log_coefs <- function(r) {
 
 #### Religion
 
+```{r}
+religion <- log_coefs(religion)
+
+kable(religion[,c("options","clinton_coef","trump_coef")])
+```
+
 #### Married
 
 ```{r}
