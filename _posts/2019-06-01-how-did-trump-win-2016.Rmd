@@ -2,6 +2,7 @@
 title: "How did Trump win 2016?"
 author: "Alex Nelson"
 date: "6/1/2019"
+output:
   md_document:
     variant: gfm
     toc: true
@@ -131,6 +132,14 @@ Then we have the numerators for the coefficients
 ```{r}
 race_and_gender <- log_coefs(race_and_gender)
 
+beta_white_male = race_and_gender[which(race_and_gender$options=='White men'),c('clinton_coef')]
+beta_white_female = race_and_gender[which(race_and_gender$options=='White women'),c('clinton_coef')]
+beta_black_male = race_and_gender[which(race_and_gender$options=='Black men'),c('clinton_coef')]
+beta_black_female = race_and_gender[which(race_and_gender$options=='Black women'),c('clinton_coef')]
+beta_latino_male = race_and_gender[which(race_and_gender$options=='Latino men'),c('clinton_coef')]
+beta_latino_female = race_and_gender[which(race_and_gender$options=='Latino women'),c('clinton_coef')]
+beta_others_gender = race_and_gender[which(race_and_gender$options=='Others'),c('clinton_coef')]
+
 kable(race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
 
@@ -189,6 +198,8 @@ clm <- lm(y~x1,df2)
 tlm <- lm(z~x1,df2)
 
 beta_age <- clm$coefficients[2] # == -tlm$coefficients[2] to machine epsilon
+beta_retiree <- age[which(age$options=="65 and older"),c('clinton_coef')]
+
 
 kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
 ```
@@ -227,8 +238,18 @@ Note, the estimates are given with 90% margin of error, meaning we are 90% confi
 We also need to request data which will correspond with possible options in the exit polls.
 
 ```{r}
-census.fl <- get_acs(geography = "county", 
-              variables = c(male.18_19 = "B01001_007",
+spam <- get_acs(geography = "county", 
+               variables = c(male.18_19 = "B01001_007",
+                            male.20 = "B01001_008"),
+        state="FL",
+              output = "wide",
+        year=2016)
+```
+
+```{r}
+census_fetch <- function(state_abbrev) {
+  gender <- get_acs(geography = "county", 
+               variables = c(male.18_19 = "B01001_007",
                             male.20 = "B01001_008",
                             male.21 = "B01001_009",
                             male.22_24 = "B01001_010",
@@ -265,8 +286,13 @@ census.fl <- get_acs(geography = "county",
                             female.70_74 = "B01001_046",
                             female.75_79 = "B01001_047",
                             female.80_84 = "B01001_048",
-                            female.85_plus = "B01001_049",
-                            male.white.18_19 = "B01001A_007",
+                            female.85_plus = "B01001_049"
+                            ), 
+              year = 2016,
+              output = "wide",
+              state = state_abbrev)
+  ethnicity <- get_acs(geography = "county", 
+               variables = c(male.white.18_19 = "B01001A_007",
                             male.white.20_24 = "B01001A_008",
                             male.white.25_29 = "B01001A_009",
                             male.white.30_34 = "B01001A_010",
@@ -409,9 +435,8 @@ census.fl <- get_acs(geography = "county",
                             ), 
               year = 2016,
               output = "wide",
-              state = "FL")
-
-census.fl.econ <- get_acs(geography = "county", 
+              state = state_abbrev)
+  econ <- get_acs(geography = "county", 
               variables = c(income.median = "B19013_001",
                             below_poverty_line = "B06012_002E",
                             between_100_to_149_percent_poverty_line = "B06012_003",
@@ -484,10 +509,8 @@ census.fl.econ <- get_acs(geography = "county",
                             ), 
               year = 2016,
               output = "wide",
-              state = "FL")
-
-
-census.fl.education <- get_acs(geography = "county", 
+              state = state_abbrev)
+  education <- get_acs(geography = "county", 
               variables = c(male.18_24.less_than_9th_grade = "B15001_004",
                             male.18_24.less_than_high_school = "B15001_005",
                             male.18_24.high_school_grad = "B15001_006",
@@ -595,10 +618,165 @@ census.fl.education <- get_acs(geography = "county",
                             ), 
               year = 2016,
               output = "wide",
-              state = "FL")
+              state = state_abbrev)
+  inner_join(gender,ethnicity,by=c('GEOID','NAME')) %>%
+    inner_join(education,by=c('GEOID','NAME')) %>%
+    inner_join(econ,by=c('GEOID','NAME'))
+}
+
+save_census_as_csv <- function(state_abbrev) {
+  write.csv(census_fetch(state_abbrev), file=paste0(state_abbrev,'.csv'), row.names=FALSE)
+}
+
+save_all_exit_polled_states <- function() {
+  for (state in levels(unique(national_exit_polls$state))) {
+    if (state != "nation") {
+      save_census_as_csv(state);
+    }
+  }
+}
 ```
 
 Train on the exit polls to create the coefficients for the logistic regression, then use that to predict the turnout by county.
+
+# Maximum turnout
+
+Assuming there was maximum voter turnout, what would the election have looked like in our polled states? We can use post-stratification to estimate the proportion of each county won by Clinton, then multiply by the voting age population to estimate the votes per county. Adding up all the counties's votes will give us the estimated votes for the state, and if it is 50%+1 or greater of the voting age population Clinton would have won the state.
+
+We begin with computing the voting age population for a given county (row of the CSV file):
+
+```{r}
+voting_age_pop <- function(row) {
+  sum(row[,c("female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE","male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE")])
+}
+```
+
+## Post Stratified Terms
+
+We start with the race and gender terms, age (for non-retirees), and education.
+
+```{r}
+safe_sum <- function(row) {
+  if (nrow(row) == 0 | ncol(row) == 0) {
+    return(0);
+  }
+  return(sum(row,na.rm=TRUE))
+}
+count_high_school_educated <- function(row) {
+  safe_sum(row[,grep('.(less_than_9th_gradeE|less_than_high_schoolE|high_school_gradE)$',names(row))])
+}
+count_some_college <- function(row) {
+  safe_sum(row[,grep(".(some_collegeE|associate_degreeE)$",names(row))])
+}
+count_college_grads <- function(row) {
+  safe_sum(row[,grep(".bachelor_degreeE$",names(row))])
+}
+count_postgrads <- function(row) {
+  safe_sum(row[,grep(".graduate_degreeE$",names(row))])
+}
+count_retirees <- function(row) {
+  safe_sum(row[,c("male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE")])
+}
+weigh_county <- function(row) {
+  (safe_sum(row[,grep(pattern='^male.white.*E$',names(row))])*invlogit(beta0+beta_white_male) +
+    safe_sum(row[,grep(pattern='^female.white.*E$',names(row))])*invlogit(beta0+beta_white_female) +
+    safe_sum(row[,grep(pattern='^male.black.*E$',names(row))])*invlogit(beta0+beta_black_male) +
+    safe_sum(row[,grep(pattern='^female.black.*E$',names(row))])*invlogit(beta0+beta_black_female) +
+    safe_sum(row[,grep(pattern='^male.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_male) +
+    safe_sum(row[,grep(pattern='^female.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_female) +
+    safe_sum(row[,grep(pattern='male.a*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
+    safe_sum(row[,grep(pattern='male.p*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
+    count_high_school_educated(row)*invlogit(beta0-1*beta_education) +
+    count_some_college(row)*invlogit(beta0+0*beta_education) + 
+    count_college_grads(row)*invlogit(beta0+1*beta_education) + 
+    count_postgrads(row)*invlogit(beta0+2*beta_education) + 
+     safe_sum(row[,c("male.18_19E","female.18_19E")])*invlogit(beta_age*(18.5-46)) +
+     safe_sum(row[,c("male.20E","female.20E")])*invlogit(beta_age*(20-46)) +
+     safe_sum(row[,c("male.21E","female.21E")])*invlogit(beta_age*(21-46)) +
+     safe_sum(row[,c("male.22_24E","female.22_24E")])*invlogit(beta_age*(23-46)) +
+     safe_sum(row[,c("male.25_29E","female.25_29E")])*invlogit(beta_age*(0.5*(25+29)-46)) +
+     safe_sum(row[,c("male.30_34E","female.30_34E")])*invlogit(beta_age*(0.5*(30+34)-46)) +
+     safe_sum(row[,c("male.35_39E","female.35_39E")])*invlogit(beta_age*(0.5*(35+39) - 46)) + 
+     safe_sum(row[,c("male.40_44E","female.40_44E")])*invlogit(beta_age*(0.5*(40+44) - 46)) + 
+     safe_sum(row[,c("male.45_49E","female.45_49E")])*invlogit(beta_age*(0.5*(45+49) - 46)) + 
+     safe_sum(row[,c("male.50_54E","female.50_54E")])*invlogit(beta_age*(0.5*(50+54) - 46)) + 
+     safe_sum(row[,c("male.55_59E","female.55_59E")])*invlogit(beta_age*(0.5*(55+59) - 46)) + 
+     safe_sum(row[,c("male.60_61E","female.60_61E")])*invlogit(beta_age*(60.5 - 46)) + 
+     safe_sum(row[,c("male.62_64E","female.62_64E")])*invlogit(beta_age*(63 - 46)) + 
+    count_retirees(row)*invlogit(beta0+beta_retiree))/(
+  safe_sum(row[,grep(pattern="male.white.*E$",names(row))]) +
+    safe_sum(row[,grep(pattern="male.black.*E$",names(row))]) +
+    safe_sum(row[,grep(pattern="male.hispanic.*E$",names(row))]) +
+    safe_sum(row[,grep(pattern="male.a*E$",names(row))]) +
+    safe_sum(row[,grep(pattern="male.p*E$",names(row))]) + 
+    count_high_school_educated(row) +
+    count_some_college(row) + 
+    count_college_grads(row) + 
+    count_postgrads(row) +
+    safe_sum(row[,c("male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E"
+)]) +
+    count_retirees(row)
+  )
+}
+```
+
+The expected number of votes per county would be the county's weight multiplied by its voting age population:
+
+```{r}
+county_expected_votes <- function(row) {
+  weigh_county(row)*voting_age_pop(row)
+}
+```
+
+```{r}
+state_expected_votes <- function(state) {
+  state %>% rowwise %>% county_expected_votes %>% sum
+}
+```
+
+We can then estimate if Clinton will win the state by comparing the expected votes (summed over counties) to 50%+1 of the population:
+
+```{r}
+would_clinton_have_won <- function(state) {
+  expected_votes <- (state %>% rowwise %>% county_expected_votes %>% sum);
+  vap <- voting_age_pop(state);
+  print(paste0(expected_votes,' > ',vap*0.5))
+  return(expected_votes > floor(vap*0.5))
+}
+```
+
+```{r}
+states <- levels(unique(national_exit_polls$state))
+states <- states[which(states!='nation')]
+df <- data.frame(
+  state=states
+#  expected_votes = map(states,function(x) {
+#read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
+#  }),
+#  threshold = map(states,function(x) {
+#    1+floor((read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
+#  })
+)
+state_expected_votes_from_name <- function(name) {
+  (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
+}
+threshold_for_state <- function(name) {
+  1+floor( (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
+}
+df <- df %>% mutate(expected_votes=map(state,state_expected_votes_from_name),
+                    threshold=map(state,threshold_for_state)
+                    )
+
+max_turnout_test <- function() {
+  for (state in levels(unique(national_exit_polls$state))) {
+    if (state != "nation") {
+      state_data <- read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
+      print(paste0(state,' => ',would_clinton_have_won(state_data)))
+    }
+  }
+}
+kable(df)
+```
 
 # Voter turnout
 
