@@ -5,3 +5,4 @@ refs/
 .Rproj.user/
 pa.Rproj
 data/keys/
+*.model
