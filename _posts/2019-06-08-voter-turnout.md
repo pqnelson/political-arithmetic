@@ -127,16 +127,19 @@ Gelman, Carilin, Stern, and Rubin’s *Bayesian Data Analysis* (Second
 ed.) discusses Melbourne school children walking to school, and that
 basic model applies to walking to the polls to vote. The variables in
 question, slightly reprashed in our model’s domain specific terminology:
-- `y[i,j,k] = 1` if the person `i` in ~~class~~ ethnic group `j` (in
-~~school~~ county `k`) walked to the poll to vote - `y[i,j,k] = 0` if
-person `i` did not vote - `M[k] = 7` is the number of ethnic groups
-we’re considering - `N[k]` is the number of people in county `k` -
-`N[j,k]` is the number of people of ethnic group `j` living in county
-`k` - `N` is the total number of people in the state - `y_bar[j,k]` is
-the proportion of ~~students at school `k`~~ people of ethnic group `j`
-in county `k` who voted - `y_bar[k]` is the proportion of people in
-county `k` who voted - `y_bar` is the proportion of people in the state
-who voted
+
+  - `y[i,j,k] = 1` if the person `i` in ~~class~~ ethnic group `j` (in
+    ~~school~~ county `k`) walked to the poll to vote
+  - `y[i,j,k] = 0` if person `i` did not vote
+  - `M[k] = 7` is the number of ethnic groups we’re considering
+  - `N[k]` is the number of people in county `k`
+  - `N[j,k]` is the number of people of ethnic group `j` living in
+    county `k`
+  - `N` is the total number of people in the state
+  - `y_bar[j,k]` is the proportion of ~~students at school `k`~~ people
+    of ethnic group `j` in county `k` who voted
+  - `y_bar[k]` is the proportion of people in county `k` who voted
+  - `y_bar` is the proportion of people in the state who voted
 
 We assume `Pr(y[i,j,k]) = theta[j,k]` all the individuals are
 independent random variables. We also model `y_bar[j,k] ~
@@ -662,9 +665,9 @@ err <- (p_white_male*az_data$male.white + p_white_female*az_data$female.white + 
 err
 ```
 
-    ##  [1] -0.258392003  0.003973659 -0.121036466 -0.176207681 -0.108548625
-    ##  [6]  0.041174595  0.431820471 -0.041458617  0.107640277 -0.109284607
-    ## [11] -0.049376675  0.104508586  0.022323465 -0.015515676  0.130853459
+    ##  [1] -0.456686635  0.072125323  0.295582287 -0.130971061 -0.023832306
+    ##  [6]  0.218963446  0.605076528 -0.001227645  0.122326664 -0.019393215
+    ## [11] -0.059555771  0.124613936  0.152120323 -0.019398187  0.143428129
 
 It’s hard to gauge how bad this is, since anything over 100 votes
 “sounds scary”. Lets see the RMSE, which is in units of “votes”, and
@@ -675,7 +678,7 @@ error:
 rmse(az_data$totalvotes, p_white_male*az_data$male.white + p_white_female*az_data$female.white + p_black_male*az_data$male.black + p_black_female*az_data$female.black + p_latino_male*az_data$male.hispanic + p_latino_female*az_data$female.hispanic + p_others*az_data$others)
 ```
 
-    ## [1] 18517.4
+    ## [1] 10271.5
 
 And as a fraction of total
 votes:
@@ -684,4 +687,4 @@ votes:
 rmse(az_data$totalvotes, p_white_male*az_data$male.white + p_white_female*az_data$female.white + p_black_male*az_data$male.black + p_black_female*az_data$female.black + p_latino_male*az_data$male.hispanic + p_latino_female*az_data$female.hispanic + p_others*az_data$others)/sum(az_data$totalvotes)
 ```
 
-    ## [1] 0.007044168
+    ## [1] 0.00390736
