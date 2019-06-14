@@ -12,7 +12,7 @@ output:
 
 ```{r setup, include=FALSE}
 library(knitr)
-
+library(purrr)
 library(tidycensus)
 library(tidyverse)
 library(dplyr)
@@ -142,10 +142,7 @@ We load and categorize the Census data from 2016:
 
 ```{r}
 census_data <- categorize(state_census_data())
-```
-
-```{r}
-census_data %>% transmute(delta_person = male.white + female.white + male.black + female.black + male.hispanic + female.hispanic + others - (age.18_19 + age.20 + age.21 + age.22_24 + age.25_29 + age.30_34 + age.35_39 + age.40_44 + age.45_49 + age.50_54 + age.55_59 + age.60_61 + age.62_64 + age.retirees))  %>% sum
+census_data$state <- factor(census_data$state, levels(exit_poll_df$state))
 ```
 
 The error when using `ethnicity_only` figures, compared against the age, is about -4.9m.
@@ -166,6 +163,8 @@ We will need to regress against the election data by county level, to figure out
 load('D:/src/pa/data/elections/presidential/county/countypres_2000-2016.RData')
 election_2016 <- x[which(x$year == 2016),]
 #data <- inner_join(election_2016[which(election_2016$party=='democrat' | election_2016$party == 'republican'),c('FIPS','candidate','party','candidatevotes','totalvotes')],categorize_state(fl_census_data),by='FIPS')
+az_data <- inner_join(election_2016[which(election_2016$party=='democrat' & election_2016$state == 'Arizona'),c('FIPS','candidate','party','candidatevotes','totalvotes')],census_data,by='FIPS')
+  az_data$N <- nrow(az_data)
 ```
 
 # Walking to the polls
@@ -194,96 +193,7 @@ rmse <- function(actual, predicted) {
 }
 ```
 
-Then we simply follow the model outlined above, but with the additional constraint that the state-wide vote counts must be "near" the predicted voter turnout (modulo some noise).
-
-```{r}
-cat(paste0(
-"model
-{
-  # likelihood
-  tv ~ dnorm(sum(mw,fw,mb,fb,ml,fl,ov), utv); # 2764143243
-  for (i in 1:N) {
-    totalvotes[i] ~ dnorm(mw[i] + fw[i] + mb[i] + fb[i] + ml[i] + fl[i] + ov[i], u.totalvotes[i]); # 983241381
-    
-    mw[i] ~ dbin(p_male_white[i], male.white[i]);
-    fw[i] ~ dbin(p_female_white[i], female.white[i]);
-    mb[i] ~ dbin(p_male_black[i], max(1, male.black[i]));
-    fb[i] ~ dbin(p_female_black[i], max(1, female.black[i]));
-    ml[i] ~ dbin(p_male_latino[i], max(1,male.hispanic[i]));
-    fl[i] ~ dbin(p_female_latino[i], max(1,female.hispanic[i]));
-    ov[i] ~ dbin(p_others[i], max(1, others[i]));
-  }
-  # prior
-  for (i in 1:N) {
-    p_male_white[i] ~ dbeta(w_male_white*male.white[i] + 1, (1 - w_male_white)*male.white[i] + 1)
-    p_female_white[i] ~ dbeta(w_female_white*female.white[i] + 1, (1 - w_female_white)*female.white[i] + 1)
-    p_male_black[i] ~ dbeta(w_male_black*male.black[i] + 1, (1 - w_male_black)*male.black[i] + 1)
-    p_female_black[i] ~ dbeta(w_female_black*female.black[i] + 1, (1 - w_female_black)*female.black[i] + 1)
-    p_male_latino[i] ~ dbeta(w_male_latino*male.hispanic[i] + 1, (1 - w_male_latino)*male.hispanic[i] + 1)
-    p_female_latino[i] ~ dbeta(w_female_latino*female.hispanic[i] + 1, (1 - w_female_latino)*female.hispanic[i] + 1)
-    p_others[i] ~ dbeta(w_others*others[i] + 1, (1 - w_others)*others[i] + 1)
-  }
-  #w_male_white ~ dbeta(48,52)
-  #w_female_white ~ dbeta(27,74)
-  #w_male_black ~ dbeta(22,78)
-  #w_female_black ~ dbeta(21,79)
-  #w_male_latino ~ dbeta(30,70)
-  #w_female_latino ~ dbeta(27,73)
-  #w_others ~ dbeta(47,53)
-
-  w_male_white ~ dbeta(65,45)
-  w_female_white ~ dbeta(65,45)
-  w_male_black ~ dbeta(59,41)
-  w_female_black ~ dbeta(59,41)
-  w_male_latino ~ dbeta(47,53)
-  w_female_latino ~ dbeta(47,53)
-  w_others ~ dbeta(47,53)
-
-}"), file="az_election2016.model")
-```
-
-Then we run the simulation for Arizona:
-
-```{r}
-az_data <- inner_join(election_2016[which(election_2016$party=='democrat' & election_2016$state == 'Arizona'),c('FIPS','candidate','party','candidatevotes','totalvotes')],census_data,by='FIPS')
-az_data$N <- nrow(az_data)
-az_inits <- function() {
-  N = nrow(az_data)
-  return(list(w_male_white = rbeta(1,48,52),
-       w_female_white = rbeta(1,27,74),
-       w_male_black = rbeta(1,22,78),
-       w_female_black = rbeta(1,21,79),
-       w_male_latino = rbeta(1,30,70),
-       w_female_latino = rbeta(1,27,73),
-       w_others = rbeta(1,47,53),
-       p_male_white = rbeta(N,2,2),
-       p_female_white = rbeta(N,3,7),
-       p_male_black = rbeta(N,2,8),
-       p_female_black = rbeta(N,2,8),
-       p_male_latino = rbeta(N,3,7),
-       p_female_latino = rbeta(N,3,7),
-       p_others = rbeta(N,5,5),
-       number_of_states = 1
-       ))
-}
-jagsModel = jags.model(file="az_election2016.model" , 
-                       data=list(male.white = az_data$male.white,
-                                 female.white = az_data$female.white,
-                                 male.black = az_data$male.black,
-                                 female.black = az_data$female.black,
-                                 male.hispanic = az_data$male.hispanic,
-                                 female.hispanic = az_data$female.hispanic,
-                                 others = az_data$others,
-                                 totalvotes = az_data$totalvotes,
-                                 u.totalvotes = az_data$totalvotes,
-                                 tv = sum(az_data$totalvotes),
-                                 utv = sum(az_data$totalvotes),
-                                 N = nrow(az_data)
-                                 ),
-                       inits=az_inits,
-                       n.chains=5, n.adapt=12000)
-update(jagsModel, n.iter=2000)
-```
+We also refactor out a useful function to compute the expected values for variables from a JAGS model.
 
 ```{r}
 expected_values <- function(model, prefix="p_") {
@@ -295,7 +205,7 @@ expected_values <- function(model, prefix="p_") {
               paste0(prefix, 'female_latino'),
               paste0(prefix, 'others'))
   samps <- coda.samples(model, params, n.iter=4000)
-
+  
   mc1 <- as.data.frame(as.matrix(samps))
   white_male <- rep(0,nrow(az_data))
   white_female <- rep(0,nrow(az_data))
@@ -381,29 +291,107 @@ expected_values <- function(model, prefix="p_") {
 }
 ```
 
+Then we simply follow the model outlined above, but with the additional constraint that the state-wide vote counts must be "near" the predicted voter turnout (modulo some noise).
 
 ```{r}
-az_totalvote_ps <- function(model) {
-  return(expected_values(model,"p_"))
+cat(paste0(
+"model
+{
+  # likelihood
+  tv ~ dnorm(sum(mw,fw,mb,fb,ml,fl,ov), utv); # 2764143243
+  for (i in 1:N) {
+    totalvotes[i] ~ dnorm(mw[i] + fw[i] + mb[i] + fb[i] + ml[i] + fl[i] + ov[i], u.totalvotes[i]); # 983241381
+    
+    mw[i] ~ dbin(p_male_white[i], male.white[i]);
+    fw[i] ~ dbin(p_female_white[i], female.white[i]);
+    mb[i] ~ dbin(p_male_black[i], max(1, male.black[i]));
+    fb[i] ~ dbin(p_female_black[i], max(1, female.black[i]));
+    ml[i] ~ dbin(p_male_latino[i], max(1,male.hispanic[i]));
+    fl[i] ~ dbin(p_female_latino[i], max(1,female.hispanic[i]));
+    ov[i] ~ dbin(p_others[i], max(1, others[i]));
+  }
+  # prior
+  for (i in 1:N) {
+    p_male_white[i] ~ dbeta(w_male_white*male.white[i] + 1, (1 - w_male_white)*male.white[i] + 1)
+    p_female_white[i] ~ dbeta(w_female_white*female.white[i] + 1, (1 - w_female_white)*female.white[i] + 1)
+    p_male_black[i] ~ dbeta(w_male_black*male.black[i] + 1, (1 - w_male_black)*male.black[i] + 1)
+    p_female_black[i] ~ dbeta(w_female_black*female.black[i] + 1, (1 - w_female_black)*female.black[i] + 1)
+    p_male_latino[i] ~ dbeta(w_male_latino*male.hispanic[i] + 1, (1 - w_male_latino)*male.hispanic[i] + 1)
+    p_female_latino[i] ~ dbeta(w_female_latino*female.hispanic[i] + 1, (1 - w_female_latino)*female.hispanic[i] + 1)
+    p_others[i] ~ dbeta(w_others*others[i] + 1, (1 - w_others)*others[i] + 1)
+  }
+  #w_male_white ~ dbeta(48,52)
+  #w_female_white ~ dbeta(27,74)
+  #w_male_black ~ dbeta(22,78)
+  #w_female_black ~ dbeta(21,79)
+  #w_male_latino ~ dbeta(30,70)
+  #w_female_latino ~ dbeta(27,73)
+  #w_others ~ dbeta(47,53)
+
+  w_male_white ~ dbeta(65,45)
+  w_female_white ~ dbeta(65,45)
+  w_male_black ~ dbeta(59,41)
+  w_female_black ~ dbeta(59,41)
+  w_male_latino ~ dbeta(47,53)
+  w_female_latino ~ dbeta(47,53)
+  w_others ~ dbeta(47,53)
+
+}"), file="az_election2016.model")
+```
+
+Then we run the simulation for Arizona:
+
+```{r}
+estimate_az_turnout <- function() {
+  az_inits <- function() {
+    N = nrow(az_data)
+    return(list(w_male_white = rbeta(1,48,52),
+                w_female_white = rbeta(1,27,74),
+                w_male_black = rbeta(1,22,78),
+                w_female_black = rbeta(1,21,79),
+                w_male_latino = rbeta(1,30,70),
+                w_female_latino = rbeta(1,27,73),
+                w_others = rbeta(1,47,53),
+                p_male_white = rbeta(N,2,2),
+                p_female_white = rbeta(N,3,7),
+                p_male_black = rbeta(N,2,8),
+                p_female_black = rbeta(N,2,8),
+                p_male_latino = rbeta(N,3,7),
+                p_female_latino = rbeta(N,3,7),
+                p_others = rbeta(N,5,5),
+                number_of_states = 1
+    ))
+  }
+  jagsModel = jags.model(file="az_election2016.model" , 
+                         data=list(male.white = az_data$male.white,
+                                   female.white = az_data$female.white,
+                                   male.black = az_data$male.black,
+                                   female.black = az_data$female.black,
+                                   male.hispanic = az_data$male.hispanic,
+                                   female.hispanic = az_data$female.hispanic,
+                                   others = az_data$others,
+                                   totalvotes = az_data$totalvotes,
+                                   u.totalvotes = az_data$totalvotes,
+                                   tv = sum(az_data$totalvotes),
+                                   utv = sum(az_data$totalvotes),
+                                   N = nrow(az_data)
+                         ),
+                         inits=az_inits,
+                         n.chains=5, n.adapt=12000)
+  update(jagsModel, n.iter=2000)
+
+  az_totalvote_ps <- function(model) {
+    return(expected_values(model,"p_"))
+  }
+  
+  az_rmse_totalvote <- function(model) {
+    estimates <- az_totalvote_ps(model);
+    return(rmse(az_data$totalvotes, estimates$p_white_male*az_data$male.white + estimates$p_white_female*az_data$female.white + estimates$p_black_male*az_data$male.black + estimates$p_black_female*az_data$female.black + estimates$p_latino_male*az_data$male.hispanic + estimates$p_latino_female*az_data$female.hispanic + estimates$p_others*az_data$others));
+  }
+  az_rmse_totalvote(jagsModel)/sum(az_data$totalvotes)
 }
-az_rmse_totalvote <- function(model) {
-  estimates <- az_totalvote_ps(model);
-  return(rmse(az_data$totalvotes, estimates$p_white_male*az_data$male.white + estimates$p_white_female*az_data$female.white + estimates$p_black_male*az_data$male.black + estimates$p_black_female*az_data$female.black + estimates$p_latino_male*az_data$male.hispanic + estimates$p_latino_female*az_data$female.hispanic + estimates$p_others*az_data$others));
-}
 ```
-
-It's hard to gauge how bad this is, since anything over 100 votes "sounds scary". Lets see the RMSE, which is in units of "votes", and what fraction of the total votes is in error:
-
-```{r}
-rmse(az_data$totalvotes, p_white_male*az_data$male.white + p_white_female*az_data$female.white + p_black_male*az_data$male.black + p_black_female*az_data$female.black + p_latino_male*az_data$male.hispanic + p_latino_female*az_data$female.hispanic + p_others*az_data$others)
-```
-
-And as a fraction of total votes:
-
-```{r}
-rmse(az_data$totalvotes, p_white_male*az_data$male.white + p_white_female*az_data$female.white + p_black_male*az_data$male.black + p_black_female*az_data$female.black + p_latino_male*az_data$male.hispanic + p_latino_female*az_data$female.hispanic + p_others*az_data$others)/sum(az_data$totalvotes)
-```
-
+  
 When `tau=16` uniformly,  rmse = 12486.46 and as fraction of vote  0.004749949.
 When `tau` is not uniform, rmse = 7190.069 and fraction of vote is 0.00273516
 When `tau=16**2`,         rmse = 18965.42 and fraction of vote is  0.0072146
@@ -476,6 +464,8 @@ cat(paste0(
 }"), file="az_turnout_with_clinton_election2016.model")
 ```
 
+We have a crude logistic coefficient estimates for the tendency to vote for Clinton.
+
 ```{r}
 national_exit_polls <- log_coefs(national_exit_polls)
 az_race <- log_coefs(exit_poll_df[which(exit_poll_df$state=='Arizona'),])
@@ -495,87 +485,88 @@ beta.others <- national_exit_polls[which(national_exit_polls$questions_id == 7 &
 beta.others.var <- national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Others'),]$log_var
 ```
 
-```{r}
-az_data <- inner_join(election_2016[which(election_2016$party=='democrat' & election_2016$state == 'Arizona'),c('FIPS','candidate','party','candidatevotes','totalvotes')],census_data,by='FIPS')
-colnames(az_data)[colnames(az_data)=='candidatevotes'] <- 'clintonvotes';
-az_data$N <- nrow(az_data)
-az_inits <- function() {
-  N = nrow(az_data)
-  return(list(w_male_white = rbeta(1,48,52),
-       w_female_white = rbeta(1,27,74),
-       w_male_black = rbeta(1,22,78),
-       w_female_black = rbeta(1,21,79),
-       w_male_latino = rbeta(1,30,70),
-       w_female_latino = rbeta(1,27,73),
-       w_others = rbeta(1,47,53),
-       p_male_white = rbeta(N,2,2),
-       p_female_white = rbeta(N,3,7),
-       p_male_black = rbeta(N,2,8),
-       p_female_black = rbeta(N,2,8),
-       p_male_latino = rbeta(N,3,7),
-       p_female_latino = rbeta(N,3,7),
-       p_others = rbeta(N,5,5),
-       number_of_states = 1
-       ))
-}
-jagsModel = jags.model(file="az_turnout_with_clinton_election2016.model" , 
-                       data=list(male.white = az_data$male.white,
-                                 female.white = az_data$female.white,
-                                 male.black = az_data$male.black,
-                                 female.black = az_data$female.black,
-                                 male.hispanic = az_data$male.hispanic,
-                                 female.hispanic = az_data$female.hispanic,
-                                 others = az_data$others,
-                                 totalvotes = az_data$totalvotes,
-                                 u.totalvotes = az_data$totalvotes,
-                                 tv = sum(az_data$totalvotes),
-                                 utv = sum(az_data$totalvotes),
-                                 N = nrow(az_data),
-                                 clintonvotes = az_data$clintonvotes,
-                                 tau_ctv = sum(az_data$clintonvotes),
-                                 u.clintonvotes = az_data$clintonvotes,
-                                 beta.white_male = az_race[which(az_race$questions_id==7 & az_race$options=='White men'),]$clinton_coef,
-                                 beta.white_male.var = az_race[which(az_race$questions_id==7 & az_race$options=='White men'),]$log_var,
-                                 beta.white_female = az_race[which(az_race$questions_id==7 & az_race$options=='White women'),]$clinton_coef,
-                                 beta.white_female.var = az_race[which(az_race$questions_id==7 & az_race$options=='White women'),]$log_var,
-                                 beta.latino_male = az_race[which(az_race$questions_id==7 & az_race$options=='Latino men'),]$clinton_coef,
-                                 beta.latino_male.var = az_race[which(az_race$questions_id==7 & az_race$options=='Latino men'),]$log_var,
-                                 beta.latino_female = az_race[which(az_race$questions_id==7 & az_race$options=='Latino women'),]$clinton_coef,
-                                 beta.latino_female.var = az_race[which(az_race$questions_id==7 & az_race$options=='Latino women'),]$log_var,
-                                 beta.black_male = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black men'),]$clinton_coef,
-                                 beta.black_male.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black men'),]$log_var,
-                                 beta.black_female = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black women'),]$clinton_coef,
-                                 beta.black_female.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black women'),]$log_var,
-                                 beta.others = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Others'),]$clinton_coef,
-                                 beta.others.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Others'),]$log_var
-                       ),
-                       inits=az_inits,
-                       n.chains=4, n.adapt=22000)
-update(jagsModel, n.iter=4000)
-```
-```{r}
-totalvotes_rmse <- az_rmse_totalvote(jagsModel);
-
-totalvotes_rmse/sum(az_data$totalvotes)
-```
-
-Predictions for Clinton votes, we find similarly.
+We now use this to estimate turnout in Arizona, with the additional constraint that the number votes for Clinton has to add up correctly as well.
 
 ```{r}
-az_clinton_betas <- function(model) {
-  expected_values(model, prefix="beta_clinton_");
-}
-```
+estimate_az_turnout <- function() {
+  az_data <- inner_join(election_2016[which(election_2016$party=='democrat' & election_2016$state == 'Arizona'),c('FIPS','candidate','party','candidatevotes','totalvotes')],census_data,by='FIPS')
+  colnames(az_data)[colnames(az_data)=='candidatevotes'] <- 'clintonvotes';
+  az_data$N <- nrow(az_data)
+  az_inits <- function() {
+    N = nrow(az_data)
+    return(list(w_male_white = rbeta(1,48,52),
+                w_female_white = rbeta(1,27,74),
+                w_male_black = rbeta(1,22,78),
+                w_female_black = rbeta(1,21,79),
+                w_male_latino = rbeta(1,30,70),
+                w_female_latino = rbeta(1,27,73),
+                w_others = rbeta(1,47,53),
+                p_male_white = rbeta(N,2,2),
+                p_female_white = rbeta(N,3,7),
+                p_male_black = rbeta(N,2,8),
+                p_female_black = rbeta(N,2,8),
+                p_male_latino = rbeta(N,3,7),
+                p_female_latino = rbeta(N,3,7),
+                p_others = rbeta(N,5,5),
+                number_of_states = 1
+    ))
+  }
+  jagsModel = jags.model(file="az_turnout_with_clinton_election2016.model" , 
+                         data=list(male.white = az_data$male.white,
+                                   female.white = az_data$female.white,
+                                   male.black = az_data$male.black,
+                                   female.black = az_data$female.black,
+                                   male.hispanic = az_data$male.hispanic,
+                                   female.hispanic = az_data$female.hispanic,
+                                   others = az_data$others,
+                                   totalvotes = az_data$totalvotes,
+                                   u.totalvotes = az_data$totalvotes,
+                                   tv = sum(az_data$totalvotes),
+                                   utv = sum(az_data$totalvotes),
+                                   N = nrow(az_data),
+                                   clintonvotes = az_data$clintonvotes,
+                                   tau_ctv = sum(az_data$clintonvotes),
+                                   u.clintonvotes = az_data$clintonvotes,
+                                   beta.white_male = az_race[which(az_race$questions_id==7 & az_race$options=='White men'),]$clinton_coef,
+                                   beta.white_male.var = az_race[which(az_race$questions_id==7 & az_race$options=='White men'),]$log_var,
+                                   beta.white_female = az_race[which(az_race$questions_id==7 & az_race$options=='White women'),]$clinton_coef,
+                                   beta.white_female.var = az_race[which(az_race$questions_id==7 & az_race$options=='White women'),]$log_var,
+                                   beta.latino_male = az_race[which(az_race$questions_id==7 & az_race$options=='Latino men'),]$clinton_coef,
+                                   beta.latino_male.var = az_race[which(az_race$questions_id==7 & az_race$options=='Latino men'),]$log_var,
+                                   beta.latino_female = az_race[which(az_race$questions_id==7 & az_race$options=='Latino women'),]$clinton_coef,
+                                   beta.latino_female.var = az_race[which(az_race$questions_id==7 & az_race$options=='Latino women'),]$log_var,
+                                   beta.black_male = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black men'),]$clinton_coef,
+                                   beta.black_male.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black men'),]$log_var,
+                                   beta.black_female = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black women'),]$clinton_coef,
+                                   beta.black_female.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Black women'),]$log_var,
+                                   beta.others = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Others'),]$clinton_coef,
+                                   beta.others.var = national_exit_polls[which(national_exit_polls$questions_id == 7 & national_exit_polls$options=='Others'),]$log_var
+                         ),
+                         inits=az_inits,
+                         n.chains=4, n.adapt=22000)
+  update(jagsModel, n.iter=4000)
 
-```{r}
-az_rmse_clintonvote <- function(model) {
-  estimates <- az_clinton_betas(model);
-  return(rmse(az_data$totalvotes, invlogit(estimates$beta_clinton_white_male)*az_data$male.white + invlogit(estimates$beta_clinton_white_female)*az_data$female.white + invlogit(estimates$beta_clinton_black_male)*az_data$male.black + invlogit(estimates$beta_clinton_black_female)*az_data$female.black + invlogit(estimates$beta_clinton_latino_male)*az_data$male.hispanic + invlogit(estimates$beta_clinton_latino_female)*az_data$female.hispanic + invlogit(estimates$beta_clinton_others)*az_data$others));
+  totalvotes_rmse <- az_rmse_totalvote(jagsModel);
+  
+  totalvotes_rmse/sum(az_data$totalvotes)
+
+  
+  # Predictions for Clinton votes, we find similarly.
+  
+  az_clinton_betas <- function(model) {
+    expected_values(model, prefix="beta_clinton_");
+  }
+  az_rmse_clintonvote <- function(model) {
+    estimates <- az_clinton_betas(model);
+    return(rmse(az_data$totalvotes, invlogit(estimates$beta_clinton_white_male)*az_data$male.white + invlogit(estimates$beta_clinton_white_female)*az_data$female.white + invlogit(estimates$beta_clinton_black_male)*az_data$male.black + invlogit(estimates$beta_clinton_black_female)*az_data$female.black + invlogit(estimates$beta_clinton_latino_male)*az_data$male.hispanic + invlogit(estimates$beta_clinton_latino_female)*az_data$female.hispanic + invlogit(estimates$beta_clinton_others)*az_data$others));
+  }
+  return(list(az_rmse_clintonvote = az_rmse_clintonvote(jagsModel)
+              ))
 }
 ```
 
 # Post-Stratified Model
-
+  
 We can now use the technique of post-stratification to better estimate the vote turnout.
 
 ```{r}
@@ -658,44 +649,132 @@ cat(paste0(
 }"), file="az_post_stratification_election2016.model")
 ```
 
-We determine the numeric distribution of `a` and `b` by considering the following:
+## Turnout by Age Estimates
+
+We suppose the likelihood someone `x` years old will vote is a logistic regression satisfying `prob = invlogit(beta_age(x))` where `beta_age(x) ~ a + b*x`. We determine the numeric distribution of `a` and `b` by considering the following:
 
 ```{r}
-age <- log_coefs(exit_poll_df[which(exit_poll_df$state=='Arizona' & exit_poll_df$questions_id==3),])
-
-age_wilson_width <- wilson_width(0.01*age$options_perc, age$num_respondents, 2)
-
-age_est <- wilson_center(0.01*age$options_perc, age$num_respondents, 2)
-
-# fraction of age bracket went out to vote
-proportion_of_age <- ((age_est-2*age_wilson_width)*sum(az_data$totalvotes))/c(sum(az_data$age.18_19) + sum(az_data$age.20) + sum(az_data$age.21) + sum(az_data$age.22_24), sum(az_data$age.25_29), sum(az_data$age.30_34 + az_data$age.35_39), sum(az_data$age.40_44 +az_data$age.45_49), sum(az_data$age.50_54 + az_data$age.55_59 + az_data$age.60_61 + az_data$age.62_64), sum(az_data$age.retirees))
-
-beta_age <- log(proportion_of_age/(1.0 - proportion_of_age))
-tau_age <- (4*age_wilson_width/proportion_of_age)**-2
-
-beta_retired <- beta_age[6]
-tau_retired <- tau_age[6]
-
-lm0 <- lm(y ~ x, data.frame(y = beta_age[1:5],
-                            x = 0.5*c(18+24, 25+29, 30+39, 40+49, 50+64)))
-a <- lm0$coefficients[1]
-b <- lm0$coefficients[2]
-a_tau <- (summary(lm0)$coefficients[,2][1])**-2
-b_tau <- (summary(lm0)$coefficients[,2][2])**-2
+age_logistic_coefs_for_state <- function(data_for_state) {
+  # data_for_state = exit_poll_df JOIN census_data ON state
+  # data_for_state$totalvotes <- sum(election_data_for_state$total_votes)
+  id <- sort(unique(data_for_state$questions_id))[2]
+  age <<- log_coefs(data_for_state[which(data_for_state$questions_id==id),])
+  
+  age_wilson_width <<- wilson_width(0.01*age$options_perc, age$num_respondents, 2)
+  
+  age_est <<- wilson_center(0.01*age$options_perc, age$num_respondents, 2)
+  
+  # fraction of age bracket went out to vote
+  proportion_of_age <<- ((age_est - 2*age_wilson_width)*data_for_state$totalvotes)/c(sum(data_for_state$age.18_19) + sum(data_for_state$age.20) + sum(data_for_state$age.21) + sum(data_for_state$age.22_24), sum(data_for_state$age.25_29), sum(data_for_state$age.30_34 + data_for_state$age.35_39), sum(data_for_state$age.40_44 + data_for_state$age.45_49), sum(data_for_state$age.50_54 + data_for_state$age.55_59 + data_for_state$age.60_61 + data_for_state$age.62_64), sum(data_for_state$age.retirees))
+  
+  beta_age <<- log(proportion_of_age/(1.0 - proportion_of_age))
+  tau_age <<- (4*age_wilson_width/proportion_of_age)**-2
+  
+  lm0 <<- lm(y ~ x, data.frame(y = beta_age[1:5],
+                              x = 0.5*c(18+24, 25+29, 30+39, 40+49, 50+64)))
+  # list(a = lm0$coefficients[1],
+  #      b = lm0$coefficients[2],
+  #      a_tau = (summary(lm0)$coefficients[,2][1])**-2,
+  #      b_tau = (summary(lm0)$coefficients[,2][2])**-2,
+  #      beta_retired = beta_age[6],
+  #      tau_retired = tau_age[6])
+  data_for_state$a <- lm0$coefficients[1]
+  data_for_state$b <- lm0$coefficients[2]
+  data_for_state$a_tau <- (summary(lm0)$coefficients[,2][1])**-2
+  data_for_state$b_tau <- (summary(lm0)$coefficients[,2][2])**-2
+  data_for_state$beta_retired <- beta_age[6]
+  data_for_state$tau_retired <- tau_age[6]
+  data_for_state
+}
 ```
 
-Similarly, education coefficients are determined thus:
+TODO: I think I need to make this into a nested group-by, then map it into the previous function.
 
 ```{r}
-education <- log_coefs(exit_poll_df[which(exit_poll_df$questions == "Education" & exit_poll_df$state=='Arizona'),])
-ed_wilson_width <- wilson_width(0.01*education$options_perc, education$num_respondents, 2)
+age_logistic_coefs <- function(exit_poll_data, census_data, election_data) {
+  census_data %>% 
+    mutate(state=as.character(state)) %>%
+    inner_join(election_data %>% 
+                 mutate(state=as.character(state)) %>% 
+                 filter(party=="democrat", !is.na(totalvotes)) %>% 
+                 group_by(state) %>% 
+                 summarise(totalvotes = sum(totalvotes)),
+               by="state") %>%
+    inner_join(exit_poll_data %>%
+                 mutate(state=as.character(state)) %>%
+                 filter(questions=="Age"), 
+               by="state") %>% 
+    group_by(state) %>%
+    nest() %>%
+    mutate(dat = purrr::map(data, age_logistic_coefs_for_state)) %>%
+    unnest(dat)
+}
+```
 
-est <- wilson_center(0.01*education$options_perc, education$num_respondents, 2)
+Example usage, which denormalizes the columns into an amalgamated data frame.
 
-proportion_of_education <- ((est-4*ed_wilson_width)*sum(az_data$totalvotes))/c(sum(az_data$education.high_school), sum(az_data$education.some_college), sum(az_data$education.college_grad), sum(az_data$education.postgrad))
+```{r}
+foo <- age_logistic_coefs(exit_poll_df, census_data, election_2016)
+```
 
-beta_education <- log(proportion_of_education/(1.0 - proportion_of_education))
-tau_education <- (4*ed_wilson_width/proportion_of_education)**-2
+## Turnout by Education Estimates
+
+Similarly, education coefficients are determined thus using crude estimates for logistic regression coefficients:
+
+```{r}
+education_log_coefs <- function(exit_polls, election_data, census_data) {
+  exit_polls %>%
+    filter(questions=="Education",state!="nation") %>%
+    mutate(options = factor(options),
+           state = as.character(state)) %>%
+    group_by(state) %>%
+    mutate(width = wilson_width(0.01*options_perc, num_respondents, z=2),
+           total_votes = sum(election_data[which(election_data$state %in% state & !is.na(election_data$totalvotes)),]$totalvotes),
+           lower_bound = (0.01*options_perc - 4*width)*total_votes,
+           high_school = sum(census_data[which(census_data$state %in% state),]$education.high_school),
+           some_college = sum(census_data[which(census_data$state %in% state),]$education.some_college),
+           college_grad = sum(census_data[which(census_data$state %in% state),]$education.college_grad),
+           postgrad = sum(census_data[which(census_data$state %in% state),]$education.postgrad)
+    ) %>%
+    mutate(proportion = (ifelse(options == "High school or less",
+                                min(0.99, lower_bound/high_school),
+                                ifelse(options == "Some college",
+                                       min(0.99, lower_bound/some_college),
+                                       ifelse(options == "College graduate",
+                                              min(0.99, lower_bound/college_grad),
+                                              ifelse(options == "Postgraduate",
+                                                     min(0.99, lower_bound/postgrad),
+                                                     NaN)))))) %>%
+    transmute(beta_education = log(proportion/(1.0-proportion)),
+              tau_education = 2*(4*width/(0.01*proportion))**-2,
+              options) %>%
+    arrange(state,options)
+}
+```
+
+```{r}
+bad_poll_df <- exit_poll_df[which(exit_poll_df$state %in% c("Florida", "Maine", "Virginia")),]
+bad_election <- election_2016[which(election_2016$state %in% c("Florida", "Maine", "Virginia") &
+                                      election_2016$party == "democrat"),]
+bad_census <- census_data[which(census_data$state %in% c("Florida", "Maine", "Virginia")),]
+education_log_coefs(exit_poll_df, election_2016, census_data)
+```
+
+```{r}
+education_log_coefs <- function(exit_poll_data, census_data) {
+  education <<- exit_poll_data[which(exit_poll_data$questions == "Education"),]
+  ed_wilson_width <<- wilson_width(0.01*education$options_perc, education$num_respondents, z=2)
+  
+  est <<- wilson_center(0.01*education$options_perc, education$num_respondents, z=2)
+  ed_lb <<- ((est-4*ed_wilson_width)*sum(census_data$totalvotes))
+  denominator <<- c(sum(census_data$education.high_school), sum(census_data$education.some_college), sum(census_data$education.college_grad), sum(census_data$education.postgrad))
+  proportion_of_education <<- ed_lb/denominator
+  
+  list(
+    beta_education = log(proportion_of_education/(1.0 - proportion_of_education)),
+    tau_education = (4*ed_wilson_width/proportion_of_education)**-2  
+  )
+}
 ```
 
 Now, time for simulation!
@@ -706,6 +785,7 @@ colnames(az_data)[colnames(az_data)=='candidatevotes'] <- 'clintonvotes';
 az_data$N <- nrow(az_data)
 az_inits <- function() {
   N = nrow(az_data)
+  education_coefs <- education_log_coefs(exit_poll_df[which(exit_poll_df$state=="Arizona"),] az_data)
   return(list(w_male_white = rbeta(1,48,52),
               w_female_white = rbeta(1,27,74),
               w_male_black = rbeta(1,22,78),
@@ -771,8 +851,8 @@ jagsModel = jags.model(file="az_post_stratification_election2016.model" ,
                                  clintonvotes = az_data$clintonvotes,
                                  tau_ctv = sum(az_data$clintonvotes),
                                  u.clintonvotes = az_data$clintonvotes,
-                                 tau_education = tau_education,
-                                 beta_education = beta_education,
+                                 tau_education = education_coefs$tau_education,
+                                 beta_education = education_coefs$beta_education,
                                  a = a,
                                  b = b,
                                  p_age_18_19 = rnorm(1, a + 18.5*b, 1.0/16),
