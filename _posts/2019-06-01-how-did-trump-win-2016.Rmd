@@ -44,8 +44,68 @@ We will use a post-stratified multilevel model training a logistic regression to
 
 - the MRP Primer http://www.princeton.edu/~jkastell/MRP_primer/mrp_primer.pdf
 - David Park, Andrew Gelman, Joseph Bafumi, [Bayesian Multilevel Estimation with Poststratification: State-Level Estimates from National Polls](http://www.stat.columbia.edu/~gelman/research/published/parkgelmanbafumi.pdf)
+- Rob Trangucci, Imad Ali, Andrew Gelman, Doug Rivers, "Voting patterns in 2016: Exploration using multilevel regression and poststratification (MRP) on pre-election polls" [arXiv:1802.00842](https://arxiv.org/abs/1802.00842)
 
-## Exit Poll Data
+
+# Testing Gelman's Model
+
+In [arXiv:1802.00842](https://arxiv.org/abs/1802.00842), Gelman et al. suggest a likely voter model specifically via a logistic regression defined by
+
+```
+logit(voted) ~  1 + female + pre_election_poll_for_state +
+                (1 | state) + (1 | age) +
+                (1 | education) + (1 + pre_election_poll_for_state | ethnicity) +
+                (1 | married) + (1 | married:age) +
+                (1 | married:state) + (1 | married:ethnicity) +
+                (1 | married:gender) + (1 | married:education) +
+                (1 | state:gender) + (1 | age:gender) +
+                (1 | education:gender) + (1 | ethnicity:gender) +
+                (1 | state:ethnicity) + (1 | state:age) +
+                (1 | state:education) + (1 | ethnicity:age) +
+                (1 | ethnicity:education) + (1 | age:education) +
+                (1 | state:education:age) + (1 | education:age:gender)
+```
+
+Independently, given someone voted, Gelman and friends setup a logistic regression describing the probability someone voted for Clinton (or, if you prefer, Trump):
+
+```
+logit(Trump|voted) ~  1 + female + pre_election_poll_for_state +
+                     (1 | state) + (1 | age) +
+                     (1 | education) + (1 + pre_election_poll_for_state | ethnicity) +
+                     (1 | married) + (1 | married:age) +
+                     (1 | married:state) + (1 | married:ethnicity) +
+                     (1 | married:gender) + (1 | married:education) +
+                     (1 | state:gender) + (1 | age:gender) +
+                     (1 | education:gender) + (1 | ethnicity:gender) +
+                     (1 | state:ethnicity) + (1 | state:age) +
+                     (1 | state:education) + (1 | ethnicity:age) +
+                     (1 | ethnicity:education) + (1 | age:education) +
+                     (1 | state:education:age) + (1 | education:age:gender)
+```
+
+The probability that someone voted for Trump may be computed as `Pr(Trump|voted)Pr(voted)`, using the logistic regressions we just assembled.
+
+## Strategy
+
+We can approximate the coefficients for the logistic regression using exit poll data. Admittedly this is rather _ad hoc_, but we can estimate the margin of error for the various coefficients using the Wilson confidence interval as a proxy for the standard deviation of a Gaussian variable centered at the polled percentages.
+
+This will allow us to test certain hypotheses ("young people don't vote", "there were more older white people than expected", etc.) without having to resort to other data sources, we hope.
+
+## Computational Details
+
+So, for the logistic regression coefficients, we will compute the coefficients using a strategy reflected in the following examples for the regression on the probability someone will vote:
+
++ `female = log(((percent women in national exit poll)*(votes cast nationwide)/(exit poll size))/((number of women nationwide eligible to vote) - ((percent women in national exit poll)*(votes cast nationwide)/(exit poll size)))`
++ `(1|state) = log((votes cast in state)/(number of eligible voters who didn't turn out))`
++ `(1|age) = log((exit poll percentage for age)*(votes cast nationwide)/(sample size of exit poll)/((number of people in age bracket nationwide) - (exit poll percentage for age)*(votes cast nationwide)/(sample size of exit poll)))`
++ `(1 | state:age)` computed like `(1 | age)` but working with state specific exit polls and state specific population data
++ `pre_election_poll_for_state` is the source of the greatest variability, since there are various possible choices for a pre-election prior (e.g., we could use some estimates from 538 or Inside Elections or some other source, or we could use an actual poll).
+
+The center of the Wilson confidence interval is "close enough" to the exit poll percentages that we might as well use the exit poll percentages. The usefulness of the Wilson interval is its width will give us an estimate of a `sigma`, and we can transform the exit poll percentage into the mean of a normally distributed random variable with an estimated standard deviation `sigma`. The only caveat is, since exit polls are noisy, we use `z=4` when computing the sigma (or `z=2` for half the sigma).
+
+We then test the hypotheses using this jury-rigged statistical model. There is no shortage of [explanations](https://fivethirtyeight.com/features/the-real-story-of-2016/) for what happened, which we can examine.
+
+# Exit Poll Data
 
 We load CNN's exit poll data. Fortunately, it is stored as a CSV file.
 
@@ -62,7 +122,7 @@ The education brackets are: "High school or less", "Some college", "College grad
 
 The income brackets are `30k-50k`, `50k-100k`, `100k-150k`, `150k-200k`, `200k-250k`, and `250k+`. We can use the `B19037` table from the ACS5 census data to get the estimates of number of householder (i.e., occupant who either owns or rents the residency as determined by whose name is on the deed, renal agreement, etc.) by age, income, and race. The ACS5 data has finer categories of income brackets. Unfortunately, the age-brackets for this are younger than 25, 25-64, 45-64, 65+, so we need to be careful not to toss out all the census data too quickly.
 
-### GOAL: Infer Logistic Regression
+## GOAL: Infer Logistic Regression
 
 We want to construct a logistic regression
 
@@ -123,7 +183,7 @@ log_coefs <- function(r) {
 }
 ```
 
-#### Religion
+### Religion
 
 ```{r}
 religion <- log_coefs(religion)
@@ -131,7 +191,7 @@ religion <- log_coefs(religion)
 kable(religion[,c("options","clinton_coef","trump_coef")])
 ```
 
-#### Married
+### Married
 
 ```{r}
 married <- log_coefs(married)
@@ -139,7 +199,7 @@ married <- log_coefs(married)
 kable(married[,c("options","clinton_coef","trump_coef")])
 ```
 
-#### Gender and Ethnicity
+### Gender and Ethnicity
 
 Then we have the numerators for the coefficients
 
@@ -165,7 +225,7 @@ kable(race_and_gender[,c("options","clinton_coef","trump_coef","log_sd")])
 ```
 
 
-#### Education
+### Education
 
 For education we have:
 
@@ -187,7 +247,7 @@ beta_education <- clm$coefficients[2] # == -tlm$coefficients[2]
 
 kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
 ```
-#### Income
+### Income
 
 
 ```{r}
@@ -201,7 +261,7 @@ df <- data.frame(y = income$clinton_coef, z=income$trump_coef, x=1:6, x2=c(15,0.
 clm <- lm(y~x**2,df)
 ```
 
-#### Age
+### Age
 
 For age we have a partition of ages into 5 or 6 classes. We take the midpoint of these intervals to approximate the value, and take a linear regression of the logistic coefficients.
 
@@ -226,7 +286,7 @@ kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$co
 ```
 
 
-#### Different States
+### Different States
 
 We can consider coefficients for different states, lets see Florida:
 
@@ -239,417 +299,6 @@ fl_race_and_gender <- log_coefs(fl_race_and_gender)
 
 kable(fl_race_and_gender[,c("options","clinton_coef","trump_coef")])
 ```
-
-
-
-## Census Data
-
-We get basic data from the census [ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
-specifically the breakdown by age and demographics. I borrow their terminology in naming the variables.
-
-```{r}
-api_key <- read.table("../data/keys/census.txt", header = FALSE)[[1]]
-census_api_key(api_key)
-```
-
-There are a variety of different "types" of variables we could use from the US Census, they are called [subjects](https://www.census.gov/programs-surveys/acs/guidance/subjects.html).
-
-Note, the estimates are given with 90% margin of error, meaning we are 90% confident the "true value" lies within the "margin of error" of the estimate. We can convert the margin of error into a standard deviation by `sd = moe/qnorm(1 - 0.5*(1 - confidence_level))` where `confidence_level=0.9` (which can be changed by the user). Ostensibly, each variable should be represented by a normal random variable with expected value given by the estimate and the sigma given by the `sd` formula. (This is all "roughly true", there are some nuances surrounding this.)
-
-We also need to request data which will correspond with possible options in the exit polls.
-
-```{r}
-census_fetch <- function(state_abbrev) {
-  gender <- get_acs(geography = "county", 
-               variables = c(male.18_19 = "B01001_007",
-                            male.20 = "B01001_008",
-                            male.21 = "B01001_009",
-                            male.22_24 = "B01001_010",
-                            male.25_29 = "B01001_011",
-                            male.30_34 = "B01001_012",
-                            male.35_39 = "B01001_013",
-                            male.40_44 = "B01001_014",
-                            male.45_49 = "B01001_015",
-                            male.50_54 = "B01001_016",
-                            male.55_59 = "B01001_017",
-                            male.60_61 = "B01001_018",
-                            male.62_64 = "B01001_019",
-                            male.65_66 = "B01001_020",
-                            male.67_69 = "B01001_021",
-                            male.70_74 = "B01001_022",
-                            male.75_79 = "B01001_023",
-                            male.80_84 = "B01001_024",
-                            male.85_plus = "B01001_025",
-                            female.18_19 = "B01001_031",
-                            female.20 = "B01001_032",
-                            female.21 = "B01001_033",
-                            female.22_24 = "B01001_034",
-                            female.25_29 = "B01001_035",
-                            female.30_34 = "B01001_036",
-                            female.35_39 = "B01001_037",
-                            female.40_44 = "B01001_038",
-                            female.45_49 = "B01001_039",
-                            female.50_54 = "B01001_040",
-                            female.55_59 = "B01001_041",
-                            female.60_61 = "B01001_042",
-                            female.62_64 = "B01001_043",
-                            female.65_66 = "B01001_044",
-                            female.67_69 = "B01001_045",
-                            female.70_74 = "B01001_046",
-                            female.75_79 = "B01001_047",
-                            female.80_84 = "B01001_048",
-                            female.85_plus = "B01001_049"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  ethnicity <- get_acs(geography = "county", 
-               variables = c(male.white.18_19 = "B01001A_007",
-                            male.white.20_24 = "B01001A_008",
-                            male.white.25_29 = "B01001A_009",
-                            male.white.30_34 = "B01001A_010",
-                            male.white.35_44 = "B01001A_011",
-                            male.white.45_54 = "B01001A_012",
-                            male.white.55_64 = "B01001A_013",
-                            male.white.65_74 = "B01001A_014",
-                            male.white.75_84 = "B01001A_015",
-                            male.white.85_plus = "B01001A_016",
-                            female.white.18_19 = "B01001A_022",
-                            female.white.20_24 = "B01001A_023",
-                            female.white.25_29 = "B01001A_024",
-                            female.white.30_34 = "B01001A_025",
-                            female.white.35_44 = "B01001A_026",
-                            female.white.45_54 = "B01001A_027",
-                            female.white.55_64 = "B01001A_028",
-                            female.white.65_74 = "B01001A_029",
-                            female.white.75_84 = "B01001A_030",
-                            female.white.85_plus = "B01001A_031",
-                            male.black.18_19 = "B01001B_007",
-                            male.black.20_24 = "B01001B_008",
-                            male.black.25_29 = "B01001B_009",
-                            male.black.30_34 = "B01001B_010",
-                            male.black.35_44 = "B01001B_011",
-                            male.black.45_54 = "B01001B_012",
-                            male.black.55_64 = "B01001B_013",
-                            male.black.65_74 = "B01001B_014",
-                            male.black.75_84 = "B01001B_015",
-                            male.black.85_plus = "B01001B_016",
-                            female.black.18_19 = "B01001B_022",
-                            female.black.20_24 = "B01001B_023",
-                            female.black.25_29 = "B01001B_024",
-                            female.black.30_34 = "B01001B_025",
-                            female.black.35_44 = "B01001B_026",
-                            female.black.45_54 = "B01001B_027",
-                            female.black.55_64 = "B01001B_028",
-                            female.black.65_74 = "B01001B_029",
-                            female.black.75_84 = "B01001B_030",
-                            female.black.85_plus = "B01001B_031",
-                            male.american_indian.18_19 = "B01001C_007",
-                            male.american_indian.20_24 = "B01001C_008",
-                            male.american_indian.25_29 = "B01001C_009",
-                            male.american_indian.30_34 = "B01001C_010",
-                            male.american_indian.35_44 = "B01001C_011",
-                            male.american_indian.45_54 = "B01001C_012",
-                            male.american_indian.55_64 = "B01001C_013",
-                            male.american_indian.65_74 = "B01001C_014",
-                            male.american_indian.75_84 = "B01001C_015",
-                            male.american_indian.85_plus = "B01001C_016",
-                            female.american_indian.18_19 = "B01001C_022",
-                            female.american_indian.20_24 = "B01001C_023",
-                            female.american_indian.25_29 = "B01001C_024",
-                            female.american_indian.30_34 = "B01001C_025",
-                            female.american_indian.35_44 = "B01001C_026",
-                            female.american_indian.45_54 = "B01001C_027",
-                            female.american_indian.55_64 = "B01001C_028",
-                            female.american_indian.65_74 = "B01001C_029",
-                            female.american_indian.75_84 = "B01001C_030",
-                            female.american_indian.85_plus = "B01001C_031",
-                            male.asian.18_19 = "B01001D_007",
-                            male.asian.20_24 = "B01001D_008",
-                            male.asian.25_29 = "B01001D_009",
-                            male.asian.30_34 = "B01001D_010",
-                            male.asian.35_44 = "B01001D_011",
-                            male.asian.45_54 = "B01001D_012",
-                            male.asian.55_64 = "B01001D_013",
-                            male.asian.65_74 = "B01001D_014",
-                            male.asian.75_84 = "B01001D_015",
-                            male.asian.85_plus = "B01001D_016",
-                            female.asian.18_19 = "B01001D_022",
-                            female.asian.20_24 = "B01001D_023",
-                            female.asian.25_29 = "B01001D_024",
-                            female.asian.30_34 = "B01001D_025",
-                            female.asian.35_44 = "B01001D_026",
-                            female.asian.45_54 = "B01001D_027",
-                            female.asian.55_64 = "B01001D_028",
-                            female.asian.65_74 = "B01001D_029",
-                            female.asian.75_84 = "B01001D_030",
-                            female.asian.85_plus = "B01001D_031",
-                            male.pacific_islander.18_19 = "B01001E_007",
-                            male.pacific_islander.20_24 = "B01001E_008",
-                            male.pacific_islander.25_29 = "B01001E_009",
-                            male.pacific_islander.30_34 = "B01001E_010",
-                            male.pacific_islander.35_44 = "B01001E_011",
-                            male.pacific_islander.45_54 = "B01001E_012",
-                            male.pacific_islander.55_64 = "B01001E_013",
-                            male.pacific_islander.65_74 = "B01001E_014",
-                            male.pacific_islander.75_84 = "B01001E_015",
-                            male.pacific_islander.85_plus = "B01001E_016",
-                            female.pacific_islander.18_19 = "B01001E_022",
-                            female.pacific_islander.20_24 = "B01001E_023",
-                            female.pacific_islander.25_29 = "B01001E_024",
-                            female.pacific_islander.30_34 = "B01001E_025",
-                            female.pacific_islander.35_44 = "B01001E_026",
-                            female.pacific_islander.45_54 = "B01001E_027",
-                            female.pacific_islander.55_64 = "B01001E_028",
-                            female.pacific_islander.65_74 = "B01001E_029",
-                            female.pacific_islander.75_84 = "B01001E_030",
-                            female.pacific_islander.85_plus = "B01001E_031",
-                            male.white_only.18_19 = "B01001H_007",
-                            male.white_only.20_24 = "B01001H_008",
-                            male.white_only.25_29 = "B01001H_009",
-                            male.white_only.30_34 = "B01001H_010",
-                            male.white_only.35_44 = "B01001H_011",
-                            male.white_only.45_54 = "B01001H_012",
-                            male.white_only.55_64 = "B01001H_013",
-                            male.white_only.65_74 = "B01001H_014",
-                            male.white_only.75_84 = "B01001H_015",
-                            male.white_only.85_plus = "B01001H_016",
-                            female.white_only.18_19 = "B01001H_022",
-                            female.white_only.20_24 = "B01001H_023",
-                            female.white_only.25_29 = "B01001H_024",
-                            female.white_only.30_34 = "B01001H_025",
-                            female.white_only.35_44 = "B01001H_026",
-                            female.white_only.45_54 = "B01001H_027",
-                            female.white_only.55_64 = "B01001H_028",
-                            female.white_only.65_74 = "B01001H_029",
-                            female.white_only.75_84 = "B01001H_030",
-                            female.white_only.85_plus = "B01001H_031",
-                            male.hispanic.18_19 = "B01001I_007",
-                            male.hispanic.20_24 = "B01001I_008",
-                            male.hispanic.25_29 = "B01001I_009",
-                            male.hispanic.30_34 = "B01001I_010",
-                            male.hispanic.35_44 = "B01001I_011",
-                            male.hispanic.45_54 = "B01001I_012",
-                            male.hispanic.55_64 = "B01001I_013",
-                            male.hispanic.65_74 = "B01001I_014",
-                            male.hispanic.75_84 = "B01001I_015",
-                            male.hispanic.85_plus = "B01001I_016",
-                            female.hispanic.18_19 = "B01001I_022",
-                            female.hispanic.20_24 = "B01001I_023",
-                            female.hispanic.25_29 = "B01001I_024",
-                            female.hispanic.30_34 = "B01001I_025",
-                            female.hispanic.35_44 = "B01001I_026",
-                            female.hispanic.45_54 = "B01001I_027",
-                            female.hispanic.55_64 = "B01001I_028",
-                            female.hispanic.65_74 = "B01001I_029",
-                            female.hispanic.75_84 = "B01001I_030",
-                            female.hispanic.85_plus = "B01001I_031"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  econ <- get_acs(geography = "county", 
-              variables = c(income.median = "B19013_001",
-                            below_poverty_line = "B06012_002E",
-                            between_100_to_149_percent_poverty_line = "B06012_003",
-                            above_150_percent_poverty_line = "B06012_004",
-                            # income.age-bracket.income-bracket
-                            income.under_25.under_10k = "B19037_003",
-                            income.under_25.10k_15k = "B19037_004",
-                            income.under_25.15k_20k = "B19037_005",
-                            income.under_25.20k_25k = "B19037_006",
-                            income.under_25.25k_30k = "B19037_007",
-                            income.under_25.30k_35k = "B19037_008",
-                            income.under_25.35k_40k = "B19037_009",
-                            income.under_25.40k_45k = "B19037_010",
-                            income.under_25.45k_50k = "B19037_011",
-                            income.under_25.50k_60k = "B19037_012",
-                            income.under_25.60k_75k = "B19037_013",
-                            income.under_25.75k_100k = "B19037_014",
-                            income.under_25.100k_125k = "B19037_015",
-                            income.under_25.125k_150k = "B19037_016",
-                            income.under_25.150k_200k = "B19037_017",
-                            income.under_25.200k_plus = "B19037_018",
-                            income.25_44.under_10k = "B19037_020",
-                            income.25_44.10k_15k = "B19037_021",
-                            income.25_44.15k_20k = "B19037_022",
-                            income.25_44.20k_25k = "B19037_023",
-                            income.25_44.25k_30k = "B19037_024",
-                            income.25_44.30k_35k = "B19037_025",
-                            income.25_44.35k_40k = "B19037_026",
-                            income.25_44.40k_45k = "B19037_027",
-                            income.25_44.45k_50k = "B19037_028",
-                            income.25_44.50k_60k = "B19037_029",
-                            income.25_44.60k_75k = "B19037_030",
-                            income.25_44.75k_100k = "B19037_031",
-                            income.25_44.100k_125k = "B19037_032",
-                            income.25_44.125k_150k = "B19037_033",
-                            income.25_44.150k_200k = "B19037_034",
-                            income.25_44.200k_plus = "B19037_035",
-                            income.45_64.under_10k = "B19037_037",
-                            income.45_64.10k_15k = "B19037_038",
-                            income.45_64.15k_20k = "B19037_039",
-                            income.45_64.20k_25k = "B19037_040",
-                            income.45_64.25k_30k = "B19037_041",
-                            income.45_64.30k_35k = "B19037_042",
-                            income.45_64.35k_40k = "B19037_043",
-                            income.45_64.40k_45k = "B19037_044",
-                            income.45_64.45k_50k = "B19037_045",
-                            income.45_64.50k_60k = "B19037_046",
-                            income.45_64.60k_75k = "B19037_047",
-                            income.45_64.75k_100k = "B19037_048",
-                            income.45_64.100k_125k = "B19037_049",
-                            income.45_64.125k_150k = "B19037_050",
-                            income.45_64.150k_200k = "B19037_051",
-                            income.45_64.200k_plus = "B19037_052",
-                            income.65_plus.under_10k = "B19037_054",
-                            income.65_plus.10k_15k = "B19037_055",
-                            income.65_plus.15k_20k = "B19037_056",
-                            income.65_plus.20k_25k = "B19037_057",
-                            income.65_plus.25k_30k = "B19037_058",
-                            income.65_plus.30k_35k = "B19037_059",
-                            income.65_plus.35k_40k = "B19037_060",
-                            income.65_plus.40k_45k = "B19037_061",
-                            income.65_plus.45k_50k = "B19037_062",
-                            income.65_plus.50k_60k = "B19037_063",
-                            income.65_plus.60k_75k = "B19037_064",
-                            income.65_plus.75k_100k = "B19037_065",
-                            income.65_plus.100k_125k = "B19037_066",
-                            income.65_plus.125k_150k = "B19037_067",
-                            income.65_plus.150k_200k = "B19037_068",
-                            income.65_plus.200k_plus = "B19037_069"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  education <- get_acs(geography = "county", 
-              variables = c(male.18_24.less_than_9th_grade = "B15001_004",
-                            male.18_24.less_than_high_school = "B15001_005",
-                            male.18_24.high_school_grad = "B15001_006",
-                            male.18_24.some_college = "B15001_007",
-                            male.18_24.associate_degree = "B15001_008",
-                            male.18_24.bachelor_degree = "B15001_009",
-                            male.18_24.graduate_degree = "B15001_010",
-                            male.25_34.less_than_9th_grade = "B15001_012",
-                            male.25_34.less_than_high_school = "B15001_013",
-                            male.25_34.high_school_grad = "B15001_014",
-                            male.25_34.some_college = "B15001_015",
-                            male.25_34.associate_degree = "B15001_016",
-                            male.25_34.bachelor_degree = "B15001_017",
-                            male.25_34.graduate_degree = "B15001_018",
-                            male.35_44.less_than_9th_grade = "B15001_020",
-                            male.35_44.less_than_high_school = "B15001_021",
-                            male.35_44.high_school_grad = "B15001_022",
-                            male.35_44.some_college = "B15001_023",
-                            male.35_44.associate_degree = "B15001_024",
-                            male.35_44.bachelor_degree = "B15001_025",
-                            male.35_44.graduate_degree = "B15001_026",
-                            male.45_64.less_than_9th_grade = "B15001_028",
-                            male.45_64.less_than_high_school = "B15001_029",
-                            male.45_64.high_school_grad = "B15001_030",
-                            male.45_64.some_college = "B15001_031",
-                            male.45_64.associate_degree = "B15001_032",
-                            male.45_64.bachelor_degree = "B15001_033",
-                            male.45_64.graduate_degree = "B15001_034",
-                            male.65_plus.less_than_9th_grade = "B15001_036",
-                            male.65_plus.less_than_high_school = "B15001_037",
-                            male.65_plus.high_school_grad = "B15001_038",
-                            male.65_plus.some_college = "B15001_039",
-                            male.65_plus.associate_degree = "B15001_040",
-                            male.65_plus.bachelor_degree = "B15001_041",
-                            male.65_plus.graduate_degree = "B15001_042",
-                            # 25-64 
-                            female.18_24.less_than_9th_grade = "B15001_045",
-                            female.18_24.less_than_high_school = "B15001_046",
-                            female.18_24.high_school_grad = "B15001_047",
-                            female.18_24.some_college = "B15001_048",
-                            female.18_24.associate_degree = "B15001_049",
-                            female.18_24.bachelor_degree = "B15001_050",
-                            female.18_24.graduate_degree = "B15001_051",
-                            female.25_34.less_than_9th_grade = "B15001_053",
-                            female.25_34.less_than_high_school = "B15001_054",
-                            female.25_34.high_school_grad = "B15001_055",
-                            female.25_34.some_college = "B15001_056",
-                            female.25_34.associate_degree = "B15001_057",
-                            female.25_34.bachelor_degree = "B15001_058",
-                            female.25_34.graduate_degree = "B15001_059",
-                            female.35_44.less_than_9th_grade = "B15001_061",
-                            female.35_44.less_than_high_school = "B15001_062",
-                            female.35_44.high_school_grad = "B15001_063",
-                            female.35_44.some_college = "B15001_064",
-                            female.35_44.associate_degree = "B15001_065",
-                            female.35_44.bachelor_degree = "B15001_066",
-                            female.35_44.graduate_degree = "B15001_067",
-                            female.45_64.less_than_9th_grade = "B15001_069",
-                            female.45_64.less_than_high_school = "B15001_070",
-                            female.45_64.high_school_grad = "B15001_071",
-                            female.45_64.some_college = "B15001_072",
-                            female.45_64.associate_degree = "B15001_073",
-                            female.45_64.bachelor_degree = "B15001_074",
-                            female.45_64.graduate_degree = "B15001_075",
-                            female.65_plus.less_than_9th_grade = "B15001_077",
-                            female.65_plus.less_than_high_school = "B15001_078",
-                            female.65_plus.high_school_grad = "B15001_079",
-                            female.65_plus.some_college = "B15001_080",
-                            female.65_plus.associate_degree = "B15001_081",
-                            female.65_plus.bachelor_degree = "B15001_082",
-                            female.65_plus.graduate_degree = "B15001_083"
-                            # geographic mobility, B07001_001E et seq.
-                            # geographic mobility AND income (as multiple of poverty level) B07012 et seq
-                            # B08302 time leaving home to go to work
-                            # B08134 how long it takes to get to work by travel time
-  
-                            # how to get to work B08006
-                            # grandparents B10051
-                            # household type [nonfamily, single male, single female, householder living alone, householder not alone]
-                            # B12002 marital status
-                            # B12006 marital status by labor force participation
-                            # B12007 median age at first marriage (by sex, age, race)
-                            # B12504 median duration of current marriage by (sex,age) by marital status
-                            # B13002 women 15 to 50 who had a birth in past 12 months by marital status and age
-                            # B15001 SEX BY AGE BY EDUCATIONAL ATTAINMENT FOR THE POPULATION 18 YEARS AND OVER	
-                            # B16001 language spoken at home
-                            # B17001 poverty status in past 12 months by sex by age
-                            # B18 disability status
-                            # B19 household income
-                            # B20 sex by earnings in past 12 months
-                            # B21 sex by veteran status
-                            # B22 receipts by food stamps
-                            # B23 sex by age by employment status
-                            # B24 sex by occupation and median earnings in past 12 months
-                            # B25 Housing units
-                            # B26 group quarters population
-                            # B27 health insurance coverage status
-                            # B28 types of computers in household
-                            # C02003 detailed race
-                            # C15 sex by educational attainment
-                            # C16 languages spoken at home
-                            # C17 ratio of income to poverty level in past 12 months
-                            # C18 age by number of disabilities
-                            # C21 sex by age by veteran status for civilian population
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  inner_join(gender,ethnicity,by=c('GEOID','NAME')) %>%
-    inner_join(education,by=c('GEOID','NAME')) %>%
-    inner_join(econ,by=c('GEOID','NAME'))
-}
-
-save_census_as_csv <- function(state_abbrev) {
-  write.csv(census_fetch(state_abbrev), file=paste0(state_abbrev,'.csv'), row.names=FALSE)
-}
-
-save_all_exit_polled_states <- function() {
-  for (state in levels(unique(national_exit_polls$state))) {
-    if (state != "nation") {
-      save_census_as_csv(state);
-    }
-  }
-}
-```
-
-Train on the exit polls to create the coefficients for the logistic regression, then use that to predict the turnout by county.
 
 # Maximum turnout
 
@@ -763,17 +412,17 @@ states <- states[which(states!='nation')]
 df <- data.frame(
   state=states
 #  expected_votes = map(states,function(x) {
-#read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
+#read.csv(file=paste0('data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
 #  }),
 #  threshold = map(states,function(x) {
-#    1+floor((read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
+#    1+floor((read.csv(file=paste0('data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
 #  })
 )
 state_expected_votes_from_name <- function(name) {
-  (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
+  (read.csv(file=paste0('data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
 }
 threshold_for_state <- function(name) {
-  1+floor( (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
+  1+floor( (read.csv(file=paste0('data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
 }
 df <- df %>% mutate(expected_votes=map(state,state_expected_votes_from_name),
                     threshold=map(state,threshold_for_state)
@@ -782,7 +431,7 @@ df <- df %>% mutate(expected_votes=map(state,state_expected_votes_from_name),
 max_turnout_test <- function() {
   for (state in levels(unique(national_exit_polls$state))) {
     if (state != "nation") {
-      state_data <- read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
+      state_data <- read.csv(file=paste0('data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
       print(paste0(state,' => ',would_clinton_have_won(state_data)))
     }
   }
@@ -794,7 +443,7 @@ state_census_data <- function() {
   df <- data.frame()
   for (state in levels(unique(national_exit_polls$state))) {
     if (state != "nation") {
-      state_data <- read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
+      state_data <- read.csv(file=paste0('data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
       df <- rbind(df,state_data)
     }
   }
@@ -811,10 +460,11 @@ We are told there were 138,846,571 ballots cast in 2016 but 230,931,921	eligible
 We begin by transforming the census data into a more desirable format.
 
 ```{r}
-categorize_state <- function(state) {
-  return(state %>% transmute(
+categorize <- function(census_df) {
+  return(census_df %>% transmute(
     name = NAME,
     FIPS = GEOID,
+    state = state,
     # age
     age.18_19 = male.18_19E+female.18_19E,
     age.20 = male.20E+female.20E,
@@ -828,16 +478,20 @@ categorize_state <- function(state) {
     age.50_54 = male.50_54E+female.50_54E,
     age.55_59 = male.55_59E+female.55_59E,
     age.60_61 = male.60_61E+female.60_61E,
-    age.62_63 = male.62_64E+female.62_64E,
+    age.62_64 = male.62_64E+female.62_64E,
     age.retirees = male.65_66E+male.67_69E+male.70_74E+male.75_79E+male.80_84E+male.85_plusE+female.65_66E+female.67_69E+female.70_74E+female.75_79E+female.80_84E+female.85_plusE,
     # ethnicity
-    male.white = male.white.18_19E+male.white.20_24E+male.white.25_29E+male.white.30_34E+male.white.35_44E+male.white.45_54E+male.white.55_64E+male.white.65_74E+male.white.75_84E + round(runif(1,1,max(1,sqrt((male.white.18_19M**2) + (male.white.20_24M**2) + (male.white.25_29M**2) + (male.white.30_34M**2) + (male.white.35_44M**2) + (male.white.45_54M**2) + (male.white.55_64M**2) + (male.white.65_74M**2) + (male.white.75_84M**2))))),
-    female.white = female.white.18_19E+female.white.20_24E+female.white.25_29E+female.white.30_34E+female.white.35_44E+female.white.45_54E+female.white.55_64E+female.white.65_74E+female.white.75_84E+female.white.85_plusE + round(runif(1,1,max(1,sqrt((female.white.18_19M**2) + (female.white.20_24M**2) + (female.white.25_29M**2) + (female.white.30_34M**2) + (female.white.35_44M**2) + (female.white.45_54M**2) + (female.white.55_64M**2) + (female.white.65_74M**2) + (female.white.75_84E**2))))),
-    male.black = male.black.18_19E+male.black.20_24E+male.black.25_29E+male.black.30_34E+male.black.35_44E+male.black.45_54E+male.black.55_64E+male.black.65_74E+male.black.75_84E+male.black.85_plusE + round(runif(1,1,max(1,round(sqrt((male.black.18_19M**2) + (male.black.20_24M**2) + (male.black.25_29M**2) + (male.black.30_34M**2) + (male.black.35_44M**2) + (male.black.45_54M**2) + (male.black.55_64M**2) + (male.black.65_74M**2) + (male.black.75_84M**2)))))),
-    female.black = female.black.18_19E+female.black.20_24E+female.black.25_29E+female.black.30_34E+female.black.35_44E+female.black.45_54E+female.black.55_64E+female.black.65_74E+female.black.75_84E+female.black.85_plusE + round(runif(1,1,max(1,round(sqrt((female.black.18_19M**2) + (female.black.20_24M**2) + (female.black.25_29M**2) + (female.black.30_34M**2) + (female.black.35_44M**2) + (female.black.45_54M**2) + (female.black.55_64M**2) + (female.black.65_74M**2) + (female.black.75_84M**2)))))),
-    male.hispanic = male.hispanic.18_19E+male.hispanic.20_24E+male.hispanic.25_29E+male.hispanic.30_34E+male.hispanic.35_44E+male.hispanic.45_54E+male.hispanic.55_64E+male.hispanic.65_74E+male.hispanic.75_84E+male.hispanic.85_plusE + round(runif(1,1,max(1,round(sqrt((male.hispanic.18_19M**2) + (male.hispanic.20_24M**2) + (male.hispanic.25_29M**2) + (male.hispanic.30_34M**2) + (male.hispanic.35_44M**2) + (male.hispanic.45_54M**2) + (male.hispanic.55_64M**2) + (male.hispanic.65_74M**2) + (male.hispanic.75_84M**2)))))),
-    female.hispanic = female.hispanic.18_19E+female.hispanic.20_24E+female.hispanic.25_29E+female.hispanic.30_34E+female.hispanic.35_44E+female.hispanic.45_54E+female.hispanic.55_64E+female.hispanic.65_74E+female.hispanic.75_84E+female.hispanic.85_plusE + round(runif(1,1,max(1,round(sqrt((female.hispanic.18_19M**2) + (female.hispanic.20_24M**2) + (female.hispanic.25_29M**2) + (female.hispanic.30_34M**2) + (female.hispanic.35_44M**2) + (female.hispanic.45_54M**2) + (female.hispanic.55_64M**2) + (female.hispanic.65_74M**2) + (female.hispanic.75_84M**2)))))),
-    others = male.american_indian.18_19E+male.american_indian.20_24E+male.american_indian.25_29E+male.american_indian.30_34E+male.american_indian.35_44E+male.american_indian.45_54E+male.american_indian.55_64E+male.american_indian.65_74E+male.american_indian.75_84E+male.american_indian.85_plusE+female.american_indian.18_19E+female.american_indian.20_24E+female.american_indian.25_29E+female.american_indian.30_34E+female.american_indian.35_44E+female.american_indian.45_54E+female.american_indian.55_64E+female.american_indian.65_74E+female.american_indian.75_84E+female.american_indian.85_plusE+male.asian.18_19E+male.asian.20_24E+male.asian.25_29E+male.asian.30_34E+male.asian.35_44E+male.asian.45_54E+male.asian.55_64E+male.asian.65_74E+male.asian.75_84E+male.asian.85_plusE+female.asian.18_19E+female.asian.20_24E+female.asian.25_29E+female.asian.30_34E+female.asian.35_44E+female.asian.45_54E+female.asian.55_64E+female.asian.65_74E+female.asian.75_84E+female.asian.85_plusE+male.pacific_islander.18_19E+male.pacific_islander.20_24E+male.pacific_islander.25_29E+male.pacific_islander.30_34E+male.pacific_islander.35_44E+male.pacific_islander.45_54E+male.pacific_islander.55_64E+male.pacific_islander.65_74E+male.pacific_islander.75_84E+male.pacific_islander.85_plusE+female.pacific_islander.18_19E+female.pacific_islander.20_24E+female.pacific_islander.25_29E+female.pacific_islander.30_34E+female.pacific_islander.35_44E+female.pacific_islander.45_54E+female.pacific_islander.55_64E+female.pacific_islander.65_74E+female.pacific_islander.75_84E+female.pacific_islander.85_plusE + round(runif(1,1,max(1,round(sqrt((male.american_indian.18_19M**2) + (male.american_indian.20_24M**2) + (male.american_indian.25_29M**2) + (male.american_indian.30_34M**2) + (male.american_indian.35_44M**2) + (male.american_indian.45_54M**2) + (male.american_indian.55_64M**2) + (male.american_indian.65_74M**2) + (male.american_indian.75_84M**2) + (male.american_indian.85_plusM**2) + (female.american_indian.18_19M**2) + (female.american_indian.20_24M**2) + (female.american_indian.25_29M**2) + (female.american_indian.30_34M**2) + (female.american_indian.35_44M**2) + (female.american_indian.45_54M**2) + (female.american_indian.55_64M**2) + (female.american_indian.65_74M**2) + (female.american_indian.75_84M**2) + (female.american_indian.85_plusM**2) + (male.asian.18_19M**2) + (male.asian.20_24M**2) + (male.asian.25_29M**2) + (male.asian.30_34M**2) + (male.asian.35_44M**2) + (male.asian.45_54M**2) + (male.asian.55_64M**2) + (male.asian.65_74M**2) + (male.asian.75_84M**2) + (male.asian.85_plusM**2) + (female.asian.18_19M**2) + (female.asian.20_24M**2) + (female.asian.25_29M**2) + (female.asian.30_34M**2) + (female.asian.35_44M**2) + (female.asian.45_54M**2) + (female.asian.55_64M**2) + (female.asian.65_74M**2) + (female.asian.75_84M**2) + (female.asian.85_plusM**2) + (male.pacific_islander.18_19M**2) + (male.pacific_islander.20_24M**2) + (male.pacific_islander.25_29M**2) + (male.pacific_islander.30_34M**2) + (male.pacific_islander.35_44M**2) + (male.pacific_islander.45_54M**2) + (male.pacific_islander.55_64M**2) + (male.pacific_islander.65_74M**2) + (male.pacific_islander.75_84M**2) + (male.pacific_islander.85_plusM**2) + (female.pacific_islander.18_19M**2) + (female.pacific_islander.20_24M**2) + (female.pacific_islander.25_29M**2) + (female.pacific_islander.30_34M**2) + (female.pacific_islander.35_44M**2) + (female.pacific_islander.45_54M**2) + (female.pacific_islander.55_64M**2) + (female.pacific_islander.65_74M**2) + (female.pacific_islander.75_84M**2) + (female.pacific_islander.85_plusM**2)))))),
+    # male.white = male.white.18_19E+male.white.20_24E+male.white.25_29E+male.white.30_34E+male.white.35_44E+male.white.45_54E+male.white.55_64E+male.white.65_74E+male.white.75_84E + male.white.85_plusE + male.white_only.18_19E+male.white_only.20_24E+male.white_only.25_29E+male.white_only.30_34E+male.white_only.35_44E+male.white_only.45_54E+male.white_only.55_64E+male.white_only.65_74E+male.white_only.75_84E + male.white_only.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white.18_19M**2) + (male.white.20_24M**2) + (male.white.25_29M**2) + (male.white.30_34M**2) + (male.white.35_44M**2) + (male.white.45_54M**2) + (male.white.55_64M**2) + (male.white.65_74M**2) + (male.white.75_84M**2) + (male.white.85_plusM**2) + (male.white_only.18_19M**2) + (male.white_only.20_24M**2) + (male.white_only.25_29M**2) + (male.white_only.30_34M**2) + (male.white_only.35_44M**2) + (male.white_only.45_54M**2) + (male.white_only.55_64M**2) + (male.white_only.65_74M**2) + (male.white_only.75_84M**2) + (male.white_only.85_plusM**2)))))),
+    # female.white = female.white.18_19E+female.white.20_24E+female.white.25_29E+female.white.30_34E+female.white.35_44E+female.white.45_54E+female.white.55_64E+female.white.65_74E+female.white.75_84E+female.white.85_plusE + female.white_only.18_19E+female.white_only.20_24E+female.white_only.25_29E+female.white_only.30_34E+female.white_only.35_44E+female.white_only.45_54E+female.white_only.55_64E+female.white_only.65_74E+female.white_only.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white.18_19M**2) + (female.white.20_24M**2) + (female.white.25_29M**2) + (female.white.30_34M**2) + (female.white.35_44M**2) + (female.white.45_54M**2) + (female.white.55_64M**2) + (female.white.65_74M**2) + (female.white.75_84M**2) + (female.white.85_plusM**2) + (female.white_only.18_19M**2) + (female.white_only.20_24M**2) + (female.white_only.25_29M**2) + (female.white_only.30_34M**2) + (female.white_only.35_44M**2) + (female.white_only.45_54M**2) + (female.white_only.55_64M**2) + (female.white_only.65_74M**2) + (female.white_only.75_84M**2) + (female.white_only.85_plusM**2)))))),
+    male.white = male.white_only.18_19E+male.white_only.20_24E+male.white_only.25_29E+male.white_only.30_34E+male.white_only.35_44E+male.white_only.45_54E+male.white_only.55_64E+male.white_only.65_74E+male.white_only.75_84E + male.white_only.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white_only.18_19M**2) + (male.white_only.20_24M**2) + (male.white_only.25_29M**2) + (male.white_only.30_34M**2) + (male.white_only.35_44M**2) + (male.white_only.45_54M**2) + (male.white_only.55_64M**2) + (male.white_only.65_74M**2) + (male.white_only.75_84M**2) + (male.white_only.85_plusM**2)))))),
+    female.white = female.white_only.18_19E+female.white_only.20_24E+female.white_only.25_29E+female.white_only.30_34E+female.white_only.35_44E+female.white_only.45_54E+female.white_only.55_64E+female.white_only.65_74E+female.white_only.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white_only.18_19M**2) + (female.white_only.20_24M**2) + (female.white_only.25_29M**2) + (female.white_only.30_34M**2) + (female.white_only.35_44M**2) + (female.white_only.45_54M**2) + (female.white_only.55_64M**2) + (female.white_only.65_74M**2) + (female.white_only.75_84M**2) + (female.white_only.85_plusM**2)))))),
+    # male.white = male.white.18_19E+male.white.20_24E+male.white.25_29E+male.white.30_34E+male.white.35_44E+male.white.45_54E+male.white.55_64E+male.white.65_74E+male.white.75_84E + male.white.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white.18_19M**2) + (male.white.20_24M**2) + (male.white.25_29M**2) + (male.white.30_34M**2) + (male.white.35_44M**2) + (male.white.45_54M**2) + (male.white.55_64M**2) + (male.white.65_74M**2) + (male.white.75_84M**2) + (male.white.85_plusM**2)))))),
+    # female.white = female.white.18_19E+female.white.20_24E+female.white.25_29E+female.white.30_34E+female.white.35_44E+female.white.45_54E+female.white.55_64E+female.white.65_74E+female.white.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white.18_19M**2) + (female.white.20_24M**2) + (female.white.25_29M**2) + (female.white.30_34M**2) + (female.white.35_44M**2) + (female.white.45_54M**2) + (female.white.55_64M**2) + (female.white.65_74M**2) + (female.white.75_84M**2) + (female.white.85_plusM**2)))))),
+    male.black = male.black.18_19E+male.black.20_24E+male.black.25_29E+male.black.30_34E+male.black.35_44E+male.black.45_54E+male.black.55_64E+male.black.65_74E+male.black.75_84E+male.black.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.black.18_19M**2) + (male.black.20_24M**2) + (male.black.25_29M**2) + (male.black.30_34M**2) + (male.black.35_44M**2) + (male.black.45_54M**2) + (male.black.55_64M**2) + (male.black.65_74M**2) + (male.black.75_84M**2) + (male.black.85_plusM**2)))))),
+    female.black = female.black.18_19E+female.black.20_24E+female.black.25_29E+female.black.30_34E+female.black.35_44E+female.black.45_54E+female.black.55_64E+female.black.65_74E+female.black.75_84E+female.black.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((female.black.18_19M**2) + (female.black.20_24M**2) + (female.black.25_29M**2) + (female.black.30_34M**2) + (female.black.35_44M**2) + (female.black.45_54M**2) + (female.black.55_64M**2) + (female.black.65_74M**2) + (female.black.75_84M**2) + (female.black.85_plusM**2)))))))),
+    male.hispanic = male.hispanic.18_19E+male.hispanic.20_24E+male.hispanic.25_29E+male.hispanic.30_34E+male.hispanic.35_44E+male.hispanic.45_54E+male.hispanic.55_64E+male.hispanic.65_74E+male.hispanic.75_84E+male.hispanic.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((male.hispanic.18_19M**2) + (male.hispanic.20_24M**2) + (male.hispanic.25_29M**2) + (male.hispanic.30_34M**2) + (male.hispanic.35_44M**2) + (male.hispanic.45_54M**2) + (male.hispanic.55_64M**2) + (male.hispanic.65_74M**2) + (male.hispanic.75_84M**2) + (male.hispanic.85_plusM**2)))))))),
+    female.hispanic = female.hispanic.18_19E+female.hispanic.20_24E+female.hispanic.25_29E+female.hispanic.30_34E+female.hispanic.35_44E+female.hispanic.45_54E+female.hispanic.55_64E+female.hispanic.65_74E+female.hispanic.75_84E+female.hispanic.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((female.hispanic.18_19M**2) + (female.hispanic.20_24M**2) + (female.hispanic.25_29M**2) + (female.hispanic.30_34M**2) + (female.hispanic.35_44M**2) + (female.hispanic.45_54M**2) + (female.hispanic.55_64M**2) + (female.hispanic.65_74M**2) + (female.hispanic.75_84M**2) + (female.hispanic.85_plusM**2)))))))),
+    others = male.american_indian.18_19E+male.american_indian.20_24E+male.american_indian.25_29E+male.american_indian.30_34E+male.american_indian.35_44E+male.american_indian.45_54E+male.american_indian.55_64E+male.american_indian.65_74E+male.american_indian.75_84E+male.american_indian.85_plusE+female.american_indian.18_19E+female.american_indian.20_24E+female.american_indian.25_29E+female.american_indian.30_34E+female.american_indian.35_44E+female.american_indian.45_54E+female.american_indian.55_64E+female.american_indian.65_74E+female.american_indian.75_84E+female.american_indian.85_plusE+male.asian.18_19E+male.asian.20_24E+male.asian.25_29E+male.asian.30_34E+male.asian.35_44E+male.asian.45_54E+male.asian.55_64E+male.asian.65_74E+male.asian.75_84E+male.asian.85_plusE+female.asian.18_19E+female.asian.20_24E+female.asian.25_29E+female.asian.30_34E+female.asian.35_44E+female.asian.45_54E+female.asian.55_64E+female.asian.65_74E+female.asian.75_84E+female.asian.85_plusE+male.pacific_islander.18_19E+male.pacific_islander.20_24E+male.pacific_islander.25_29E+male.pacific_islander.30_34E+male.pacific_islander.35_44E+male.pacific_islander.45_54E+male.pacific_islander.55_64E+male.pacific_islander.65_74E+male.pacific_islander.75_84E+male.pacific_islander.85_plusE+female.pacific_islander.18_19E+female.pacific_islander.20_24E+female.pacific_islander.25_29E+female.pacific_islander.30_34E+female.pacific_islander.35_44E+female.pacific_islander.45_54E+female.pacific_islander.55_64E+female.pacific_islander.65_74E+female.pacific_islander.75_84E+female.pacific_islander.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((male.american_indian.18_19M**2) + (male.american_indian.20_24M**2) + (male.american_indian.25_29M**2) + (male.american_indian.30_34M**2) + (male.american_indian.35_44M**2) + (male.american_indian.45_54M**2) + (male.american_indian.55_64M**2) + (male.american_indian.65_74M**2) + (male.american_indian.75_84M**2) + (male.american_indian.85_plusM**2) + (female.american_indian.18_19M**2) + (female.american_indian.20_24M**2) + (female.american_indian.25_29M**2) + (female.american_indian.30_34M**2) + (female.american_indian.35_44M**2) + (female.american_indian.45_54M**2) + (female.american_indian.55_64M**2) + (female.american_indian.65_74M**2) + (female.american_indian.75_84M**2) + (female.american_indian.85_plusM**2) + (male.asian.18_19M**2) + (male.asian.20_24M**2) + (male.asian.25_29M**2) + (male.asian.30_34M**2) + (male.asian.35_44M**2) + (male.asian.45_54M**2) + (male.asian.55_64M**2) + (male.asian.65_74M**2) + (male.asian.75_84M**2) + (male.asian.85_plusM**2) + (female.asian.18_19M**2) + (female.asian.20_24M**2) + (female.asian.25_29M**2) + (female.asian.30_34M**2) + (female.asian.35_44M**2) + (female.asian.45_54M**2) + (female.asian.55_64M**2) + (female.asian.65_74M**2) + (female.asian.75_84M**2) + (female.asian.85_plusM**2) + (male.pacific_islander.18_19M**2) + (male.pacific_islander.20_24M**2) + (male.pacific_islander.25_29M**2) + (male.pacific_islander.30_34M**2) + (male.pacific_islander.35_44M**2) + (male.pacific_islander.45_54M**2) + (male.pacific_islander.55_64M**2) + (male.pacific_islander.65_74M**2) + (male.pacific_islander.75_84M**2) + (male.pacific_islander.85_plusM**2) + (female.pacific_islander.18_19M**2) + (female.pacific_islander.20_24M**2) + (female.pacific_islander.25_29M**2) + (female.pacific_islander.30_34M**2) + (female.pacific_islander.35_44M**2) + (female.pacific_islander.45_54M**2) + (female.pacific_islander.55_64M**2) + (female.pacific_islander.65_74M**2) + (female.pacific_islander.75_84M**2) + (female.pacific_islander.85_plusM**2)))))))),
     # education
     education.high_school = male.18_24.less_than_9th_gradeE +  male.18_24.less_than_high_schoolE +  male.18_24.high_school_gradE +  male.25_34.less_than_9th_gradeE +  male.25_34.less_than_high_schoolE +  male.25_34.high_school_gradE +  male.35_44.less_than_9th_gradeE +  male.35_44.less_than_high_schoolE +  male.35_44.high_school_gradE +  male.45_64.less_than_9th_gradeE +  male.45_64.less_than_high_schoolE +  male.45_64.high_school_gradE +  male.65_plus.less_than_9th_gradeE +  male.65_plus.less_than_high_schoolE +  male.65_plus.high_school_gradE +  female.18_24.less_than_9th_gradeE+female.18_24.less_than_high_schoolE+female.18_24.high_school_gradE +  female.25_34.less_than_9th_gradeE +  female.25_34.less_than_high_schoolE +  female.25_34.high_school_gradE +  female.35_44.less_than_9th_gradeE +  female.35_44.less_than_high_schoolE +  female.35_44.high_school_gradE +  female.45_64.less_than_9th_gradeE +  female.45_64.less_than_high_schoolE +  female.45_64.high_school_gradE +  female.65_plus.less_than_9th_gradeE +  female.65_plus.less_than_high_schoolE +  female.65_plus.high_school_gradE,
     education.some_college = male.18_24.some_collegeE+male.18_24.associate_degreeE+male.25_34.some_collegeE+male.25_34.associate_degreeE+male.45_64.some_collegeE+male.45_64.associate_degreeE+male.65_plus.some_collegeE+male.65_plus.associate_degreeE+female.18_24.some_collegeE+female.18_24.associate_degreeE+female.25_34.some_collegeE+female.25_34.associate_degreeE+female.45_64.some_collegeE+female.45_64.associate_degreeE+female.65_plus.some_collegeE+female.65_plus.associate_degreeE,
@@ -850,7 +504,7 @@ categorize_state <- function(state) {
 ## Matching County Wide results
 
 ```{r}
-load('D:/src/pa/data/elections/presidential/county/countypres_2000-2016.RData')
+load('data/elections/presidential/county/countypres_2000-2016.RData')
 election_2016 <- x[which(x$year == 2016),]
 #data <- inner_join(election_2016[which(election_2016$party=='democrat' | election_2016$party == 'republican'),c('FIPS','candidate','party','candidatevotes','totalvotes')],categorize_state(fl_census_data),by='FIPS')
 raw0 <- state_census_data()
