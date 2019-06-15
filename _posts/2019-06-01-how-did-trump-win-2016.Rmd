@@ -37,7 +37,7 @@ library(rmarkdown)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, include=FALSE}
 # local code
 source("../R/states.R")
 source("../R/census.R")
@@ -272,7 +272,9 @@ ethnicity_by_state <- function(state_iter, exit_poll_by_state, election_data, ce
               pop = sum(census_data[which(census_data$state %in% state_iter), unlist(k)]),
               proportion = min(estimates/pop, 0.99)) %>% 
     transmute(state = state_iter,
-              beta_ethnicity_by_state = log(proportion/(1 - proportion)) - state_effect[which(state_effect$state %in% state_iter),]$beta_state) %>%
+              beta_ethnicity_by_state = log(proportion/(1 - proportion)) -
+                (state_effect[which(state_effect$state %in% state_iter),]$beta_state - beta_0) -
+                beta_0)%>%
     as.data.frame()
 }
 ```
@@ -280,7 +282,7 @@ ethnicity_by_state <- function(state_iter, exit_poll_by_state, election_data, ce
 Alas, I could not get a slicker way to combine the results together to work, at least not as expected.
 
 ```{r}
-fun <- function(exit_poll, election_data, census_data, z=2) {
+turnout_ethnicity_state_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
   results = c()
   for (state_iter in unique(exit_poll$state)) {
     if (state_iter != "nation") {
@@ -290,6 +292,10 @@ fun <- function(exit_poll, election_data, census_data, z=2) {
   }
   results
 }
+```
+
+```{r}
+kable(turnout_ethnicity_state_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
 ```
 
 ### Ethnicity and Gender

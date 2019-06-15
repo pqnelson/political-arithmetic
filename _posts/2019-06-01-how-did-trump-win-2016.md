@@ -21,12 +21,6 @@
           - [Overall Factor](#overall-factor)
           - [Interacting with State](#interacting-with-state)
 
-``` r
-# local code
-source("../R/states.R")
-source("../R/census.R")
-```
-
 # How did Trump Win the White House?
 
 Although we just found, by accident, one way to explain how Trump won
@@ -799,16 +793,19 @@ ethnicity_by_state <- function(state_iter, exit_poll_by_state, election_data, ce
               pop = sum(census_data[which(census_data$state %in% state_iter), unlist(k)]),
               proportion = min(estimates/pop, 0.99)) %>% 
     transmute(state = state_iter,
-              beta_ethnicity_by_state = log(proportion/(1 - proportion)) - state_effect[which(state_effect$state %in% state_iter),]$beta_state) %>%
+              beta_ethnicity_by_state = log(proportion/(1 - proportion)) -
+                (state_effect[which(state_effect$state %in% state_iter),]$beta_state - beta_0) -
+                beta_0)%>%
     as.data.frame()
 }
 ```
 
 Alas, I could not get a slicker way to combine the results together to
-work, at least not as expected.
+work, at least not as
+expected.
 
 ``` r
-fun <- function(exit_poll, election_data, census_data, z=2) {
+turnout_ethnicity_state_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
   results = c()
   for (state_iter in unique(exit_poll$state)) {
     if (state_iter != "nation") {
@@ -819,6 +816,3124 @@ fun <- function(exit_poll, election_data, census_data, z=2) {
   results
 }
 ```
+
+``` r
+kable(turnout_ethnicity_state_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_ethnicity\_by\_state
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+0.8294261
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3034084
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7377429
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9908577
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.6539098
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+0.5972545
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+0.0807952
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+0.0715229
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1724401
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1355046
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+0.5591674
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3541654
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8473370
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4980359
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4074182
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.5167413
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.0540924
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2530922
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.6276510
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.7338685
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+0.4460487
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+0.2314130
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0027545
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4693545
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2224203
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+0.4079921
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+0.3287592
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4971198
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2759083
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9990198
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+0.3742707
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+0.1194478
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1711357
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6084947
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5717536
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+0.4296161
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9591224
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+0.2903177
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6988187
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7331453
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+0.3804439
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0118837
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2276995
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4817729
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.7058569
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+0.3327562
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8472464
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+0.8424335
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9843119
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0993408
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.2640795
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.4492228
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.5951546
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8375093
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3601128
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+0.4788521
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7639794
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3665517
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.7824715
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3821950
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+0.2688492
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+0.7149143
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+0.3030612
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.5650174
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+0.2431962
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+0.5759662
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+0.2812411
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2852457
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4934692
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3205193
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+0.3778848
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0666135
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+1.1827597
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9512133
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8356745
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+0.6611383
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+0.2094820
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3154899
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3579703
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3516358
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+0.5949394
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4731346
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+0.0827263
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.1416185
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1302302
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+0.5648156
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+0.8629137
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8969490
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1290674
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6147339
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.4771057
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.1063050
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5969138
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6919428
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4653057
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+0.3156913
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+0.6546082
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+0.0135409
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4465592
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3847516
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+0.4057870
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0214394
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3149128
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4591827
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9397544
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.4163404
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.0262010
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.2292688
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0276028
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0543507
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.5768109
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4984077
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5388754
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8882016
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5997317
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.7076489
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.0462374
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3296450
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.2247874
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7689630
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+0.4704854
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.1210158
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4989875
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1781905
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9491003
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+0.4104170
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+0.4645187
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4497964
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2574486
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3284723
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+0.5728826
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4604228
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.6882853
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4275579
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6162002
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.4211253
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.6571685
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5877595
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Asian
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8450388
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Other race
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.1264294
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 ### Ethnicity and Gender
 
