@@ -15,8 +15,8 @@ library(kableExtra)
 
 library(dplyr)
 library(car) # for vif()
-library(usmap)
-library(urbnmapr)
+
+library(assertthat)
 
 library(lsei)
 library(mgcv)
@@ -33,7 +33,14 @@ library(ggplot2)
 library(ggmcmc)
 library(scales) # for muted()
 library(rmarkdown)
+
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# local code
+source("../R/states.R")
+source("../R/census.R")
 ```
 
 # How did Trump Win the White House?
@@ -91,6 +98,10 @@ We can approximate the coefficients for the logistic regression using exit poll 
 
 This will allow us to test certain hypotheses ("young people don't vote", "there were more older white people than expected", etc.) without having to resort to other data sources, we hope.
 
+## Data Caveat: Exit Polls noisier than CPS estimates
+
+We are using exit polls from CNN and friends, whereas Gelman _et al._ are using CPS estimates, which are much cleaner and much more accurate. Therefore, we should not expect to perfectly reproduce their findings. But it is a starting point for computation.
+
 ## Computational Details
 
 So, for the logistic regression coefficients, we will compute the coefficients using a strategy reflected in the following examples for the regression on the probability someone will vote:
@@ -105,13 +116,28 @@ The center of the Wilson confidence interval is "close enough" to the exit poll 
 
 We then test the hypotheses using this jury-rigged statistical model. There is no shortage of [explanations](https://fivethirtyeight.com/features/the-real-story-of-2016/) for what happened, which we can examine.
 
-# Exit Poll Data
+# Loading Data
+
+## Official Results
+
+We load the official results.
+
+```{r}
+load('../data/elections/presidential/county/countypres_2000-2016.RData')
+states_factors <- factor(append(states(),c("District of Columbia", "nation")))
+x$state <- factor(x$state, levels(states_factors))
+election_2016 <- x[which(x$year == 2016),]
+election_2016$totalvotes[is.na(election_2016$totalvotes)] <- 0
+```
+
+## Exit Poll Data
 
 We load CNN's exit poll data. Fortunately, it is stored as a CSV file.
 
 ```{r}
 exit_poll_path <- "../data/elections/presidential/exit_polls/cnn_04022017.csv"
-exit_poll_df <- read.csv(file=exit_poll_path, header=TRUE, sep=",")
+exit_poll_df <- read.csv(file=exit_poll_path, header=TRUE, sep=",", stringsAsFactors= FALSE)
+exit_poll_df$state <- factor(exit_poll_df$state, levels(states_factors))
 ```
 
 We combine race and gender into a single variable with 7 categories (the 3 race categories [white, black, hispanic] and 2 genders [men, women] combinations, and 1 `other` category). Asians constitute about 4% of the respondents, and "others" constitutes 3%. Whites constitute 71% of respondents, non-whites constitute 29%.
@@ -122,749 +148,166 @@ The education brackets are: "High school or less", "Some college", "College grad
 
 The income brackets are `30k-50k`, `50k-100k`, `100k-150k`, `150k-200k`, `200k-250k`, and `250k+`. We can use the `B19037` table from the ACS5 census data to get the estimates of number of householder (i.e., occupant who either owns or rents the residency as determined by whose name is on the deed, renal agreement, etc.) by age, income, and race. The ACS5 data has finer categories of income brackets. Unfortunately, the age-brackets for this are younger than 25, 25-64, 45-64, 65+, so we need to be careful not to toss out all the census data too quickly.
 
-## GOAL: Infer Logistic Regression
+### Wilson Interval
 
-We want to construct a logistic regression
-
-```
-prob_clinton(ethnicity,gender,education,income) = invlogit(b0 + b1*ethnicity + b2*gender + b3*education + b4*income)
-```
-
-...and similarly for Trump, but we need to compute the coefficients `b0`, ..., `b4`. The constant coefficient is just the `logit(clinton_votes/(clinton_votes + trump_votes)) = logit(65853514.0/(62984828.0 + 65853514.0)) = 0.04453892`.
-
-```{r}
-beta0 <- log(65853514.0/62984828.0)
-```
-
-Although left unstated, exit polls are usually plus-or-minus 4%, and assuming it is with 95% confidence, (so approximating the numerator and denominator as normally distributed random variables with expected values given, and standard deviation being 2%) the [propagation  of uncertainty](https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae) implies the variance of `beta0` is
-
-```{r}
-var_beta <- function(A,B) {
-  return( ((3.0/A)**2)+((3.0/B)**2) );
-}
-var_beta0 <- var_beta(65853514.0, 62984828.0) # nearly machine epsilon
-```
-
-The variance for other betas will be closer to half a percent. (It is bounded from above for `A=B=50`, `var_beta(50,50)~0.06**2`.) Even if one were to insist on the margin of error being twice that of a normal poll (i.e., it should be 6% instead of our 4%), the variance's upper bound is moved to approximately `0.08485**2`. (["This makes the margins for error somewhere between 50-90% higher than they would be for comparable telephone surveys."](https://fivethirtyeight.com/features/ten-reasons-why-you-should-ignore-exit/))
-
-We can estimate the coefficients for any group by taking `beta_clinton(group) = log(percent_clinton(group)/percent_trump(group)) - beta0`. This is the basic strategy of one-factor models, after all.
-
-```{r}
-national_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'nation'),]
-
-race_and_gender <- national_exit_polls[which(national_exit_polls$questions=="Race and gender"),]
-age <- national_exit_polls[which(national_exit_polls$questions_id==3),]
-income <- national_exit_polls[which(national_exit_polls$questions_id==13),]
-married <- national_exit_polls[which(national_exit_polls$questions_id==20),]
-religion <- national_exit_polls[which(national_exit_polls$questions_id==23),]
-education <- national_exit_polls[which(national_exit_polls$questions == "Education"),]
-```
-
-We can estimate the error using the Wilson confidence interval.
+Before moving on, we will require usage of Wilson confidence intervals to estimate the noisiness of exit poll data.
 
 ```{r}
 wilson_center <- function(p, n, z) {
+  assert_that(all(is.numeric(p)))
+  assert_that(all(0 <= p && p <= 1))
+  assert_that(all(is.numeric(n)))
+  assert_that(all(n > 0))
+  assert_that(all(is.numeric(z)))
+  assert_that(all(z > 0))
   (p + 0.5*z*z/n)/(1.0 + z*z*1.0/n);
 }
+
 wilson_width <- function(p, n, z) {
+  assert_that(all(is.numeric(p)))
+  assert_that(all(0 <= p && p <= 1))
+  assert_that(all(is.numeric(n)))
+  assert_that(all(n > 0))
+  assert_that(all(is.numeric(z)))
+  assert_that(all(z > 0))
   (z/(1.0 + z*z*1.0/n))*sqrt(p*(1.0-p)/n  + (z*0.5/n)**2);
 }
-log_coefs <- function(r) {
-  c <- wilson_center(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
-  t <- wilson_center(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
-  r$clinton_numerator <- c/t
-  r$trump_numerator <- t/c
-  
-  r$clinton_coef <- log(r$clinton_numerator)
-  r$trump_coef <- log(r$trump_numerator)
-  r$log_var <- (2*wilson_width(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/c)**2 + (2*wilson_width(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/t)**2;
-  r$log_sd <- sqrt(r$log_var);
-  return(r);
-}
 ```
 
-### Religion
+## Census Data
 
-```{r}
-religion <- log_coefs(religion)
+We load the census data for each state appearing in the exit poll.
 
-kable(religion[,c("options","clinton_coef","trump_coef")])
-```
-
-### Married
-
-```{r}
-married <- log_coefs(married)
-
-kable(married[,c("options","clinton_coef","trump_coef")])
-```
-
-### Gender and Ethnicity
-
-Then we have the numerators for the coefficients
-
-```{r}
-race_and_gender <- log_coefs(race_and_gender)
-
-beta_white_male = race_and_gender[which(race_and_gender$options=='White men'),c('clinton_coef')]
-beta_white_female = race_and_gender[which(race_and_gender$options=='White women'),c('clinton_coef')]
-beta_black_male = race_and_gender[which(race_and_gender$options=='Black men'),c('clinton_coef')]
-beta_black_female = race_and_gender[which(race_and_gender$options=='Black women'),c('clinton_coef')]
-beta_latino_male = race_and_gender[which(race_and_gender$options=='Latino men'),c('clinton_coef')]
-beta_latino_female = race_and_gender[which(race_and_gender$options=='Latino women'),c('clinton_coef')]
-beta_others_gender = race_and_gender[which(race_and_gender$options=='Others'),c('clinton_coef')]
-beta_white_male_sd = race_and_gender[which(race_and_gender$options=='White men'),c('log_sd')]
-beta_white_female_sd = race_and_gender[which(race_and_gender$options=='White women'),c('log_sd')]
-beta_black_male_sd = race_and_gender[which(race_and_gender$options=='Black men'),c('log_sd')]
-beta_black_female_sd = race_and_gender[which(race_and_gender$options=='Black women'),c('log_sd')]
-beta_latino_male_sd = race_and_gender[which(race_and_gender$options=='Latino men'),c('log_sd')]
-beta_latino_female_sd = race_and_gender[which(race_and_gender$options=='Latino women'),c('log_sd')]
-beta_others_gender_sd = race_and_gender[which(race_and_gender$options=='Others'),c('log_sd')]
-
-kable(race_and_gender[,c("options","clinton_coef","trump_coef","log_sd")])
-```
-
-
-### Education
-
-For education we have:
-
-```{r}
-education <- log_coefs(education)
-
-kable(education[,c("options","clinton_coef","trump_coef")])
-```
-
-Observe that education is linear progressing. We can assign the following weights to education level: -1 to "High school or less", 0 to "Some college", 1 to "College graduate", and 2 to "Postgraduate". Then we find a linear regression the coefficient is better approximated by `x1` in the following table:
-
-```{r}
-df <- data.frame(y=education$clinton_coef, z=education$trump_coef,x=1:4,x0=0:3,x1=-1:2)
-
-clm <- lm(y~x1,df)
-tlm <- lm(z~x1,df)
-
-beta_education <- clm$coefficients[2] # == -tlm$coefficients[2]
-
-kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
-```
-### Income
-
-
-```{r}
-income <- log_coefs(income)
-
-kable(income[,c("options","clinton_coef","trump_coef")])
-```
-```{r}
-df <- data.frame(y = income$clinton_coef, z=income$trump_coef, x=1:6, x2=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300),x3=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300)**2)
-
-clm <- lm(y~x**2,df)
-```
-
-### Age
-
-For age we have a partition of ages into 5 or 6 classes. We take the midpoint of these intervals to approximate the value, and take a linear regression of the logistic coefficients.
-
-```{r}
-age <- log_coefs(age)
-
-kable(age[,c("options","clinton_coef","trump_coef")])
-```
-We try to approximate this using a linear regression, taking `age-46` as the input signal appears to be best (note the intercept is approximately `-beta0`):
-
-```{r}
-df <- data.frame(y=age$clinton_coef, z=age$trump_coef,x=c(21,27,34.5,44.5,57,75),x0=-3:2,x1=c(21,27,34.5,44.5,57,75)-46)
-df2 <- data.frame(y=age$clinton_coef[1:5], z=age$trump_coef[1:5], x=c(21,27,34.5,44.5,57),x0=-3:1,x1=c(21,27,34.5,44.5,57)-46)
-clm <- lm(y~x1,df2)
-tlm <- lm(z~x1,df2)
-
-beta_age <- clm$coefficients[2] # == -tlm$coefficients[2] to machine epsilon
-beta_retiree <- age[which(age$options=="65 and older"),c('clinton_coef')]
-
-
-kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
-```
-
-
-### Different States
-
-We can consider coefficients for different states, lets see Florida:
-
-```{r}
-fl_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'Florida'),]
-
-fl_race_and_gender <- fl_exit_polls[which(fl_exit_polls$questions=="Race and gender"),]
-
-fl_race_and_gender <- log_coefs(fl_race_and_gender)
-
-kable(fl_race_and_gender[,c("options","clinton_coef","trump_coef")])
-```
-
-# Maximum turnout
-
-Assuming there was maximum voter turnout, what would the election have looked like in our polled states? We can use post-stratification to estimate the proportion of each county won by Clinton, then multiply by the voting age population to estimate the votes per county. Adding up all the counties's votes will give us the estimated votes for the state, and if it is 50%+1 or greater of the voting age population Clinton would have won the state.
-
-We begin with computing the voting age population for a given county (row of the CSV file):
-
-```{r}
-voting_age_pop <- function(row) {
-  sum(row[,c("female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE","male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE")])
-}
-```
-
-## Post Stratified Terms
-
-We start with the race and gender terms, age (for non-retirees), and education.
-
-```{r}
-safe_sum <- function(row) {
-  if (nrow(row) == 0 | ncol(row) == 0) {
-    return(0);
-  }
-  return(sum(row,na.rm=TRUE))
-}
-count_high_school_educated <- function(row) {
-  safe_sum(row[,grep('.(less_than_9th_gradeE|less_than_high_schoolE|high_school_gradE)$',names(row))])
-}
-count_some_college <- function(row) {
-  safe_sum(row[,grep(".(some_collegeE|associate_degreeE)$",names(row))])
-}
-count_college_grads <- function(row) {
-  safe_sum(row[,grep(".bachelor_degreeE$",names(row))])
-}
-count_postgrads <- function(row) {
-  safe_sum(row[,grep(".graduate_degreeE$",names(row))])
-}
-count_retirees <- function(row) {
-  safe_sum(row[,c("male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE")])
-}
-weigh_county <- function(row) {
-  (safe_sum(row[,grep(pattern='^male.white.*E$',names(row))])*invlogit(beta0+beta_white_male) +
-    safe_sum(row[,grep(pattern='^female.white.*E$',names(row))])*invlogit(beta0+beta_white_female) +
-    safe_sum(row[,grep(pattern='^male.black.*E$',names(row))])*invlogit(beta0+beta_black_male) +
-    safe_sum(row[,grep(pattern='^female.black.*E$',names(row))])*invlogit(beta0+beta_black_female) +
-    safe_sum(row[,grep(pattern='^male.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_male) +
-    safe_sum(row[,grep(pattern='^female.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_female) +
-    safe_sum(row[,grep(pattern='male.a*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
-    safe_sum(row[,grep(pattern='male.p*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
-    count_high_school_educated(row)*invlogit(beta0-1*beta_education) +
-    count_some_college(row)*invlogit(beta0+0*beta_education) + 
-    count_college_grads(row)*invlogit(beta0+1*beta_education) + 
-    count_postgrads(row)*invlogit(beta0+2*beta_education) + 
-     safe_sum(row[,c("male.18_19E","female.18_19E")])*invlogit(beta_age*(18.5-46)) +
-     safe_sum(row[,c("male.20E","female.20E")])*invlogit(beta_age*(20-46)) +
-     safe_sum(row[,c("male.21E","female.21E")])*invlogit(beta_age*(21-46)) +
-     safe_sum(row[,c("male.22_24E","female.22_24E")])*invlogit(beta_age*(23-46)) +
-     safe_sum(row[,c("male.25_29E","female.25_29E")])*invlogit(beta_age*(0.5*(25+29)-46)) +
-     safe_sum(row[,c("male.30_34E","female.30_34E")])*invlogit(beta_age*(0.5*(30+34)-46)) +
-     safe_sum(row[,c("male.35_39E","female.35_39E")])*invlogit(beta_age*(0.5*(35+39) - 46)) + 
-     safe_sum(row[,c("male.40_44E","female.40_44E")])*invlogit(beta_age*(0.5*(40+44) - 46)) + 
-     safe_sum(row[,c("male.45_49E","female.45_49E")])*invlogit(beta_age*(0.5*(45+49) - 46)) + 
-     safe_sum(row[,c("male.50_54E","female.50_54E")])*invlogit(beta_age*(0.5*(50+54) - 46)) + 
-     safe_sum(row[,c("male.55_59E","female.55_59E")])*invlogit(beta_age*(0.5*(55+59) - 46)) + 
-     safe_sum(row[,c("male.60_61E","female.60_61E")])*invlogit(beta_age*(60.5 - 46)) + 
-     safe_sum(row[,c("male.62_64E","female.62_64E")])*invlogit(beta_age*(63 - 46)) + 
-    count_retirees(row)*invlogit(beta0+beta_retiree))/(
-  safe_sum(row[,grep(pattern="male.white.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.black.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.hispanic.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.a*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.p*E$",names(row))]) + 
-    count_high_school_educated(row) +
-    count_some_college(row) + 
-    count_college_grads(row) + 
-    count_postgrads(row) +
-    safe_sum(row[,c("male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E"
-)]) +
-    count_retirees(row)
-  )
-}
-```
-
-The expected number of votes per county would be the county's weight multiplied by its voting age population:
-
-```{r}
-county_expected_votes <- function(row) {
-  weigh_county(row)*voting_age_pop(row)
-}
-```
-
-```{r}
-state_expected_votes <- function(state) {
-  state %>% rowwise %>% county_expected_votes %>% sum
-}
-```
-
-We can then estimate if Clinton will win the state by comparing the expected votes (summed over counties) to 50%+1 of the population:
-
-```{r}
-would_clinton_have_won <- function(state) {
-  expected_votes <- (state %>% rowwise %>% county_expected_votes %>% sum);
-  vap <- voting_age_pop(state);
-  print(paste0(expected_votes,' > ',vap*0.5))
-  return(expected_votes > floor(vap*0.5))
-}
-```
-
-```{r}
-states <- levels(unique(national_exit_polls$state))
-states <- states[which(states!='nation')]
-df <- data.frame(
-  state=states
-#  expected_votes = map(states,function(x) {
-#read.csv(file=paste0('data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
-#  }),
-#  threshold = map(states,function(x) {
-#    1+floor((read.csv(file=paste0('data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
-#  })
-)
-state_expected_votes_from_name <- function(name) {
-  (read.csv(file=paste0('data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
-}
-threshold_for_state <- function(name) {
-  1+floor( (read.csv(file=paste0('data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
-}
-df <- df %>% mutate(expected_votes=map(state,state_expected_votes_from_name),
-                    threshold=map(state,threshold_for_state)
-                    )
-
-max_turnout_test <- function() {
-  for (state in levels(unique(national_exit_polls$state))) {
-    if (state != "nation") {
-      state_data <- read.csv(file=paste0('data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
-      print(paste0(state,' => ',would_clinton_have_won(state_data)))
-    }
-  }
-}
-kable(df)
-```
 ```{r}
 state_census_data <- function() {
   df <- data.frame()
-  for (state in levels(unique(national_exit_polls$state))) {
+  for (state in unique(exit_poll_df$state)) {
     if (state != "nation") {
-      state_data <- read.csv(file=paste0('data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
-      df <- rbind(df,state_data)
+      state_data <- read.csv(file=paste0('../data/census/acs5/2016/', state, '.csv'), header=TRUE, sep=',')
+      state_data$state = state;
+      df <- rbind(df, state_data)
     }
   }
   df
 }
 ```
 
-# Voter turnout
-
-We are told there were 138,846,571 ballots cast in 2016 but 230,931,921	eligible voters in 2016 (and 250,055,734 people of voting age). (http://www.electproject.org/2016g)
-
-## Categorize States
-
-We begin by transforming the census data into a more desirable format.
+We load the census data and renormalize the states, to match the exit poll's `state` factors.
 
 ```{r}
-categorize <- function(census_df) {
-  return(census_df %>% transmute(
-    name = NAME,
-    FIPS = GEOID,
-    state = state,
-    # age
-    age.18_19 = male.18_19E+female.18_19E,
-    age.20 = male.20E+female.20E,
-    age.21 = male.21E+female.21E,
-    age.22_24 = male.22_24E+female.22_24E,
-    age.25_29 = male.25_29E+female.25_29E,
-    age.30_34 = male.30_34E+female.30_34E,
-    age.35_39 = male.35_39E+female.35_39E,
-    age.40_44 = male.40_44E+female.40_44E,
-    age.45_49 = male.45_49E+female.45_49E,
-    age.50_54 = male.50_54E+female.50_54E,
-    age.55_59 = male.55_59E+female.55_59E,
-    age.60_61 = male.60_61E+female.60_61E,
-    age.62_64 = male.62_64E+female.62_64E,
-    age.retirees = male.65_66E+male.67_69E+male.70_74E+male.75_79E+male.80_84E+male.85_plusE+female.65_66E+female.67_69E+female.70_74E+female.75_79E+female.80_84E+female.85_plusE,
-    # ethnicity
-    # male.white = male.white.18_19E+male.white.20_24E+male.white.25_29E+male.white.30_34E+male.white.35_44E+male.white.45_54E+male.white.55_64E+male.white.65_74E+male.white.75_84E + male.white.85_plusE + male.white_only.18_19E+male.white_only.20_24E+male.white_only.25_29E+male.white_only.30_34E+male.white_only.35_44E+male.white_only.45_54E+male.white_only.55_64E+male.white_only.65_74E+male.white_only.75_84E + male.white_only.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white.18_19M**2) + (male.white.20_24M**2) + (male.white.25_29M**2) + (male.white.30_34M**2) + (male.white.35_44M**2) + (male.white.45_54M**2) + (male.white.55_64M**2) + (male.white.65_74M**2) + (male.white.75_84M**2) + (male.white.85_plusM**2) + (male.white_only.18_19M**2) + (male.white_only.20_24M**2) + (male.white_only.25_29M**2) + (male.white_only.30_34M**2) + (male.white_only.35_44M**2) + (male.white_only.45_54M**2) + (male.white_only.55_64M**2) + (male.white_only.65_74M**2) + (male.white_only.75_84M**2) + (male.white_only.85_plusM**2)))))),
-    # female.white = female.white.18_19E+female.white.20_24E+female.white.25_29E+female.white.30_34E+female.white.35_44E+female.white.45_54E+female.white.55_64E+female.white.65_74E+female.white.75_84E+female.white.85_plusE + female.white_only.18_19E+female.white_only.20_24E+female.white_only.25_29E+female.white_only.30_34E+female.white_only.35_44E+female.white_only.45_54E+female.white_only.55_64E+female.white_only.65_74E+female.white_only.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white.18_19M**2) + (female.white.20_24M**2) + (female.white.25_29M**2) + (female.white.30_34M**2) + (female.white.35_44M**2) + (female.white.45_54M**2) + (female.white.55_64M**2) + (female.white.65_74M**2) + (female.white.75_84M**2) + (female.white.85_plusM**2) + (female.white_only.18_19M**2) + (female.white_only.20_24M**2) + (female.white_only.25_29M**2) + (female.white_only.30_34M**2) + (female.white_only.35_44M**2) + (female.white_only.45_54M**2) + (female.white_only.55_64M**2) + (female.white_only.65_74M**2) + (female.white_only.75_84M**2) + (female.white_only.85_plusM**2)))))),
-    male.white = male.white_only.18_19E+male.white_only.20_24E+male.white_only.25_29E+male.white_only.30_34E+male.white_only.35_44E+male.white_only.45_54E+male.white_only.55_64E+male.white_only.65_74E+male.white_only.75_84E + male.white_only.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white_only.18_19M**2) + (male.white_only.20_24M**2) + (male.white_only.25_29M**2) + (male.white_only.30_34M**2) + (male.white_only.35_44M**2) + (male.white_only.45_54M**2) + (male.white_only.55_64M**2) + (male.white_only.65_74M**2) + (male.white_only.75_84M**2) + (male.white_only.85_plusM**2)))))),
-    female.white = female.white_only.18_19E+female.white_only.20_24E+female.white_only.25_29E+female.white_only.30_34E+female.white_only.35_44E+female.white_only.45_54E+female.white_only.55_64E+female.white_only.65_74E+female.white_only.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white_only.18_19M**2) + (female.white_only.20_24M**2) + (female.white_only.25_29M**2) + (female.white_only.30_34M**2) + (female.white_only.35_44M**2) + (female.white_only.45_54M**2) + (female.white_only.55_64M**2) + (female.white_only.65_74M**2) + (female.white_only.75_84M**2) + (female.white_only.85_plusM**2)))))),
-    # male.white = male.white.18_19E+male.white.20_24E+male.white.25_29E+male.white.30_34E+male.white.35_44E+male.white.45_54E+male.white.55_64E+male.white.65_74E+male.white.75_84E + male.white.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.white.18_19M**2) + (male.white.20_24M**2) + (male.white.25_29M**2) + (male.white.30_34M**2) + (male.white.35_44M**2) + (male.white.45_54M**2) + (male.white.55_64M**2) + (male.white.65_74M**2) + (male.white.75_84M**2) + (male.white.85_plusM**2)))))),
-    # female.white = female.white.18_19E+female.white.20_24E+female.white.25_29E+female.white.30_34E+female.white.35_44E+female.white.45_54E+female.white.55_64E+female.white.65_74E+female.white.75_84E + 0*abs(round(rnorm(1,0,max(1,sqrt((female.white.18_19M**2) + (female.white.20_24M**2) + (female.white.25_29M**2) + (female.white.30_34M**2) + (female.white.35_44M**2) + (female.white.45_54M**2) + (female.white.55_64M**2) + (female.white.65_74M**2) + (female.white.75_84M**2) + (female.white.85_plusM**2)))))),
-    male.black = male.black.18_19E+male.black.20_24E+male.black.25_29E+male.black.30_34E+male.black.35_44E+male.black.45_54E+male.black.55_64E+male.black.65_74E+male.black.75_84E+male.black.85_plusE + 0*abs(round(rnorm(1,0,max(1,sqrt((male.black.18_19M**2) + (male.black.20_24M**2) + (male.black.25_29M**2) + (male.black.30_34M**2) + (male.black.35_44M**2) + (male.black.45_54M**2) + (male.black.55_64M**2) + (male.black.65_74M**2) + (male.black.75_84M**2) + (male.black.85_plusM**2)))))),
-    female.black = female.black.18_19E+female.black.20_24E+female.black.25_29E+female.black.30_34E+female.black.35_44E+female.black.45_54E+female.black.55_64E+female.black.65_74E+female.black.75_84E+female.black.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((female.black.18_19M**2) + (female.black.20_24M**2) + (female.black.25_29M**2) + (female.black.30_34M**2) + (female.black.35_44M**2) + (female.black.45_54M**2) + (female.black.55_64M**2) + (female.black.65_74M**2) + (female.black.75_84M**2) + (female.black.85_plusM**2)))))))),
-    male.hispanic = male.hispanic.18_19E+male.hispanic.20_24E+male.hispanic.25_29E+male.hispanic.30_34E+male.hispanic.35_44E+male.hispanic.45_54E+male.hispanic.55_64E+male.hispanic.65_74E+male.hispanic.75_84E+male.hispanic.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((male.hispanic.18_19M**2) + (male.hispanic.20_24M**2) + (male.hispanic.25_29M**2) + (male.hispanic.30_34M**2) + (male.hispanic.35_44M**2) + (male.hispanic.45_54M**2) + (male.hispanic.55_64M**2) + (male.hispanic.65_74M**2) + (male.hispanic.75_84M**2) + (male.hispanic.85_plusM**2)))))))),
-    female.hispanic = female.hispanic.18_19E+female.hispanic.20_24E+female.hispanic.25_29E+female.hispanic.30_34E+female.hispanic.35_44E+female.hispanic.45_54E+female.hispanic.55_64E+female.hispanic.65_74E+female.hispanic.75_84E+female.hispanic.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((female.hispanic.18_19M**2) + (female.hispanic.20_24M**2) + (female.hispanic.25_29M**2) + (female.hispanic.30_34M**2) + (female.hispanic.35_44M**2) + (female.hispanic.45_54M**2) + (female.hispanic.55_64M**2) + (female.hispanic.65_74M**2) + (female.hispanic.75_84M**2) + (female.hispanic.85_plusM**2)))))))),
-    others = male.american_indian.18_19E+male.american_indian.20_24E+male.american_indian.25_29E+male.american_indian.30_34E+male.american_indian.35_44E+male.american_indian.45_54E+male.american_indian.55_64E+male.american_indian.65_74E+male.american_indian.75_84E+male.american_indian.85_plusE+female.american_indian.18_19E+female.american_indian.20_24E+female.american_indian.25_29E+female.american_indian.30_34E+female.american_indian.35_44E+female.american_indian.45_54E+female.american_indian.55_64E+female.american_indian.65_74E+female.american_indian.75_84E+female.american_indian.85_plusE+male.asian.18_19E+male.asian.20_24E+male.asian.25_29E+male.asian.30_34E+male.asian.35_44E+male.asian.45_54E+male.asian.55_64E+male.asian.65_74E+male.asian.75_84E+male.asian.85_plusE+female.asian.18_19E+female.asian.20_24E+female.asian.25_29E+female.asian.30_34E+female.asian.35_44E+female.asian.45_54E+female.asian.55_64E+female.asian.65_74E+female.asian.75_84E+female.asian.85_plusE+male.pacific_islander.18_19E+male.pacific_islander.20_24E+male.pacific_islander.25_29E+male.pacific_islander.30_34E+male.pacific_islander.35_44E+male.pacific_islander.45_54E+male.pacific_islander.55_64E+male.pacific_islander.65_74E+male.pacific_islander.75_84E+male.pacific_islander.85_plusE+female.pacific_islander.18_19E+female.pacific_islander.20_24E+female.pacific_islander.25_29E+female.pacific_islander.30_34E+female.pacific_islander.35_44E+female.pacific_islander.45_54E+female.pacific_islander.55_64E+female.pacific_islander.65_74E+female.pacific_islander.75_84E+female.pacific_islander.85_plusE + 0*abs(round(rnorm(1,0,max(1,abs(round(sqrt((male.american_indian.18_19M**2) + (male.american_indian.20_24M**2) + (male.american_indian.25_29M**2) + (male.american_indian.30_34M**2) + (male.american_indian.35_44M**2) + (male.american_indian.45_54M**2) + (male.american_indian.55_64M**2) + (male.american_indian.65_74M**2) + (male.american_indian.75_84M**2) + (male.american_indian.85_plusM**2) + (female.american_indian.18_19M**2) + (female.american_indian.20_24M**2) + (female.american_indian.25_29M**2) + (female.american_indian.30_34M**2) + (female.american_indian.35_44M**2) + (female.american_indian.45_54M**2) + (female.american_indian.55_64M**2) + (female.american_indian.65_74M**2) + (female.american_indian.75_84M**2) + (female.american_indian.85_plusM**2) + (male.asian.18_19M**2) + (male.asian.20_24M**2) + (male.asian.25_29M**2) + (male.asian.30_34M**2) + (male.asian.35_44M**2) + (male.asian.45_54M**2) + (male.asian.55_64M**2) + (male.asian.65_74M**2) + (male.asian.75_84M**2) + (male.asian.85_plusM**2) + (female.asian.18_19M**2) + (female.asian.20_24M**2) + (female.asian.25_29M**2) + (female.asian.30_34M**2) + (female.asian.35_44M**2) + (female.asian.45_54M**2) + (female.asian.55_64M**2) + (female.asian.65_74M**2) + (female.asian.75_84M**2) + (female.asian.85_plusM**2) + (male.pacific_islander.18_19M**2) + (male.pacific_islander.20_24M**2) + (male.pacific_islander.25_29M**2) + (male.pacific_islander.30_34M**2) + (male.pacific_islander.35_44M**2) + (male.pacific_islander.45_54M**2) + (male.pacific_islander.55_64M**2) + (male.pacific_islander.65_74M**2) + (male.pacific_islander.75_84M**2) + (male.pacific_islander.85_plusM**2) + (female.pacific_islander.18_19M**2) + (female.pacific_islander.20_24M**2) + (female.pacific_islander.25_29M**2) + (female.pacific_islander.30_34M**2) + (female.pacific_islander.35_44M**2) + (female.pacific_islander.45_54M**2) + (female.pacific_islander.55_64M**2) + (female.pacific_islander.65_74M**2) + (female.pacific_islander.75_84M**2) + (female.pacific_islander.85_plusM**2)))))))),
-    # education
-    education.high_school = male.18_24.less_than_9th_gradeE +  male.18_24.less_than_high_schoolE +  male.18_24.high_school_gradE +  male.25_34.less_than_9th_gradeE +  male.25_34.less_than_high_schoolE +  male.25_34.high_school_gradE +  male.35_44.less_than_9th_gradeE +  male.35_44.less_than_high_schoolE +  male.35_44.high_school_gradE +  male.45_64.less_than_9th_gradeE +  male.45_64.less_than_high_schoolE +  male.45_64.high_school_gradE +  male.65_plus.less_than_9th_gradeE +  male.65_plus.less_than_high_schoolE +  male.65_plus.high_school_gradE +  female.18_24.less_than_9th_gradeE+female.18_24.less_than_high_schoolE+female.18_24.high_school_gradE +  female.25_34.less_than_9th_gradeE +  female.25_34.less_than_high_schoolE +  female.25_34.high_school_gradE +  female.35_44.less_than_9th_gradeE +  female.35_44.less_than_high_schoolE +  female.35_44.high_school_gradE +  female.45_64.less_than_9th_gradeE +  female.45_64.less_than_high_schoolE +  female.45_64.high_school_gradE +  female.65_plus.less_than_9th_gradeE +  female.65_plus.less_than_high_schoolE +  female.65_plus.high_school_gradE,
-    education.some_college = male.18_24.some_collegeE+male.18_24.associate_degreeE+male.25_34.some_collegeE+male.25_34.associate_degreeE+male.45_64.some_collegeE+male.45_64.associate_degreeE+male.65_plus.some_collegeE+male.65_plus.associate_degreeE+female.18_24.some_collegeE+female.18_24.associate_degreeE+female.25_34.some_collegeE+female.25_34.associate_degreeE+female.45_64.some_collegeE+female.45_64.associate_degreeE+female.65_plus.some_collegeE+female.65_plus.associate_degreeE,
-    education.college_grad = male.18_24.bachelor_degreeE + male.25_34.bachelor_degreeE + male.35_44.bachelor_degreeE + male.45_64.bachelor_degreeE + male.65_plus.bachelor_degreeE + female.18_24.bachelor_degreeE + female.25_34.bachelor_degreeE + female.35_44.bachelor_degreeE + female.45_64.bachelor_degreeE + female.65_plus.bachelor_degreeE,
-    education.postgrad = male.18_24.graduate_degreeE + male.25_34.graduate_degreeE + male.35_44.graduate_degreeE + male.45_64.graduate_degreeE + male.65_plus.graduate_degreeE + female.18_24.graduate_degreeE + female.25_34.graduate_degreeE + female.35_44.graduate_degreeE + female.45_64.graduate_degreeE + female.65_plus.graduate_degreeE
-  ))
-}
+census_data <- categorize(state_census_data())
+census_data$state <- factor(census_data$state, levels(states_factors))
 ```
 
-## Matching County Wide results
+# Estimating Voter Turnout
 
-```{r}
-load('data/elections/presidential/county/countypres_2000-2016.RData')
-election_2016 <- x[which(x$year == 2016),]
-#data <- inner_join(election_2016[which(election_2016$party=='democrat' | election_2016$party == 'republican'),c('FIPS','candidate','party','candidatevotes','totalvotes')],categorize_state(fl_census_data),by='FIPS')
-raw0 <- state_census_data()
-raw0[is.na(raw0)] <- 0
+## Education
+
+The coefficients of interest are:
+
+```
+                     (1 | education) + (1 | married:education) +
+                     (1 | education:gender) + (1 | state:education) +
+                     (1 | ethnicity:education) + (1 | age:education) +
+                     (1 | state:education:age) + (1 | education:age:gender)
+                     + (non education coefficients)
 ```
 
-Then we randomly sample the margin of error, to avoid zeroes.
+Similarly, education coefficients are determined thus using crude estimates for logistic regression coefficients. We estimate the number of voters with a level `ed` of education by taking the `options_perc - 2z*wilson_interval_width` proportion of the total votes cast (this is the assumption that the exit polls reflect the composition of voters). This lower bound of the Wilson interval is stored in the `lower_bound` which we use as the numerator of the logistic coefficient computation (the logarithm of the ratio of `ed` voters to `ed` non-voters).
+
+### Overall Factor
+
+We compute the `(1|education)` coefficient thus:
 
 ```{r}
-data <- merge(election_2016[which(election_2016$party=='democrat' | election_2016$party == 'republican'),c('FIPS','candidate','party','candidatevotes','totalvotes','state')],categorize_state(raw0),by='FIPS')
-```
-
-### MCMC model of voter turnout
-
-```{r}
-cat(paste0(
-"model
-{
-  for (s in 1:number_of_states) {
-    w_male_white[s] ~ dbeta(5.0,7.0)
-    w_female_white[s] ~ dbeta(5.0,7.0)
-    w_male_black[s] ~ dbeta(1,1)
-    w_female_black[s] ~ dbeta(1,1)
-    w_male_latino[s] ~ dbeta(1,1)
-    w_female_latino[s] ~ dbeta(1,1)
-    w_others[s] ~ dbeta(1,1)
-    
-    beta_male_white[s] ~ dnorm(",beta_white_male,",",(1.0/beta_white_male_sd)**2,")
-    beta_female_white[s] ~ dnorm(",beta_white_female,",",(1.0/beta_white_female_sd)**2,")
-    beta_male_black[s] ~ dnorm(",beta_black_male,",",(1.0/beta_black_male_sd)**2,")
-    beta_female_black[s] ~ dnorm(",beta_black_female,",",(1.0/beta_black_female_sd)**2,")
-    beta_male_latino[s] ~ dnorm(",beta_latino_male,",",(1.0/beta_latino_male_sd)**2,")
-    beta_female_latino[s] ~ dnorm(",beta_latino_female,",",(1.0/beta_latino_female_sd)**2,")
-    beta_others[s] ~ dnorm(",beta_others_gender,",",(1.0/beta_others_gender_sd)**2,")
-  }
-  
-  for (i in 1:N) {
-    p_male_white[i] ~ dbeta(w_male_white[state[i]]*(male.white[i] - 2) + 1, (1 - w_male_white[state[i]])*(male.white[i] - 2) + 1)
-    p_female_white[i] ~ dbeta(w_female_white[state[i]]*(female.white[i] - 2) + 1, (1 - w_female_white[state[i]])*(female.white[i] - 2) + 1)
-    p_male_black[i] ~ dbeta(w_male_black[state[i]]*(male.black[i] - 2) + 1, (1 - w_male_black[state[i]])*(male.black[i] - 2) + 1)
-    p_female_black[i] ~ dbeta(w_female_black[state[i]]*(female.black[i] - 2) + 1, (1 - w_female_black[state[i]])*(female.black[i] - 2) + 1)
-    p_male_latino[i] ~ dbeta(w_male_latino[state[i]]*(male.latino[i] - 2) + 1, (1 - w_male_latino[state[i]])*(male.latino[i] - 2) + 1)
-    p_female_latino[i] ~ dbeta(w_female_latino[state[i]]*(female.latino[i] - 2) + 1, (1 - w_female_latino[state[i]])*(female.latino[i] - 2) + 1)
-    p_others[i] ~ dbeta(w_others[state[i]]*(others[i] - 2) + 1, (1 - w_others[state[i]])*(others[i] - 2) + 1)
-  }
-  
-  for (i in 1:N) {
-    mw[i] ~ dbin(p_male_white[i], male.white[i]);
-    fw[i] ~ dbin(p_female_white[i], female.white[i]);
-    mb[i] ~ dbin(p_male_black[i], max(1, male.black[i]));
-    fb[i] ~ dbin(p_female_black[i], max(1, female.black[i]));
-    ml[i] ~ dbin(p_male_latino[i], max(1,male.latino[i]));
-    fl[i] ~ dbin(p_female_latino[i], max(1,female.latino[i]));
-    ov[i] ~ dbin(p_others[i], max(1, others[i]));
-      
-    c_mw[i] ~ dbin(ilogit(beta_male_white[state[i]]), mw[i]);
-    c_fw[i] ~ dbin(ilogit(beta_female_white[state[i]]), fw[i]);
-    c_mb[i] ~ dbin(ilogit(beta_male_black[state[i]]), max(1, mb[i]));
-    c_fb[i] ~ dbin(ilogit(beta_female_black[state[i]]), max(1, fb[i]));
-    c_ml[i] ~ dbin(ilogit(beta_male_latino[state[i]]), max(1,ml[i]));
-    c_fl[i] ~ dbin(ilogit(beta_female_latino[state[i]]), max(1,fl[i]));
-    c_ov[i] ~ dbin(ilogit(beta_others[state[i]]), max(1, ov[i]));
-    # remember, dnorm's second argument is precision = 1/variance
-    clintonvotes[i] ~ dnorm(sum(c_mw[i], c_fw[i], c_mb[i], c_fb[i], c_ml[i], c_fl[i], c_ov[i]),1e12);
-    totalvotes[i] ~ dnorm(sum(mw[i], fw[i], mb[i], fb[i], ml[i], fl[i], ov[i]), 1e12);
-  }
-
-}"), file="election2016.model")
-```
-
-```{r}
-data$state <- factor(data$state)
-data2 <- data[which(data$party=="democrat"),]
-data2$state <- as.integer(data2$state)
-
-data3 <- list(male.white = data2$male.white,
-              female.white = data2$female.white,
-              male.black = data2$male.black,
-              female.black = data2$female.black,
-              male.latino = data2$male.hispanic,
-              female.latino = data2$female.hispanic,
-              others = data2$others,
-              state = as.integer(data2$state),
-              totalvotes = data2$totalvotes,
-              clintonvotes = data2$candidatevotes,
-              number_of_states = length(unique(data2$state)),
-              N = nrow(data2))
-```
-```{r}
-inits <- function() { list(w_male_white = rbeta(28,1,1),
-                           w_female_white = rbeta(28,1,1),
-                           w_male_black = rbeta(28,1,1),
-                           w_female_black = rbeta(28,1,1),
-                           w_male_latino = rbeta(28,1,1),
-                           w_female_latino = rbeta(28,1,1),
-                           w_others = rbeta(28,1,1),
-                           beta_male_white = rep(beta_white_male,28),
-                           beta_female_white = rep(beta_white_female,28),
-                           beta_male_black = rep(beta_black_male,28),
-                           beta_female_black = rep(beta_black_female,28),
-                           beta_male_latino = rep(beta_latino_male,28),
-                           beta_female_latino = rep(beta_latino_female,28),
-                           beta_others = rep(beta_others_gender,28)
-                           )
-  
-  }
-
-jagsModel = jags.model(file="election2016.model" , data=data3, inits=inits(),
-                       n.chains=5, n.adapt=12000 )
-update(jagsModel, n.iter=2000)
-params <- c('w_male_white','w_female_white','w_male_black','w_female_black','w_male_latino','w_female_latino','w_others')
-# params <- c('p_male_white')
-samps <- coda.samples(jagsModel, params, n.iter=3500)
-```
-
-
-#### Voter Turnout by Ethnicity and Gender
-
-We sample the counties for the various voting rates, for each group:
-```{r}
-params <- c('w_male_white','w_female_white','w_male_black','w_female_black','w_male_latino','w_female_latino','w_others')
-# params <- c('p_male_white')
-samps <- coda.samples(jagsModel, params, n.iter=3500)
-```
-
-
-Now we get into the meat of the analysis, using the results.
-
-```{r}
-states <- unique(factor(data$state))
-df <- data.frame(female.white.expected=rep(0,data3$N),
-                 female.white.p.mean=rep(0,data3$N),
-                 female.white.p.sd=rep(0,data3$N),
-                 male.white.expected=rep(0,data3$N),
-                 male.white.p.mean=rep(0,data3$N),
-                 male.white.p.sd=rep(0,data3$N),
-                 female.black.expected=rep(0,data3$N),
-                 female.black.p.mean=rep(0,data3$N),
-                 female.black.p.sd=rep(0,data3$N),
-                 male.black.expected=rep(0,data3$N),
-                 male.black.p.mean=rep(0,data3$N),
-                 male.black.p.sd=rep(0,data3$N),
-                 female.latino.expected=rep(0,data3$N),
-                 female.latino.p.mean=rep(0,data3$N),
-                 female.latino.p.sd=rep(0,data3$N),
-                 male.latino.expected=rep(0,data3$N),
-                 male.latino.p.mean=rep(0,data3$N),
-                 male.latino.p.sd=rep(0,data3$N),
-                 other.expected=rep(0,data3$N),
-                 other.p.mean=rep(0,data3$N),
-                 other.p.sd=rep(0,data3$N),
-                 states = rep("",data3$N))
-df$state <- data3$state
-df$state <- factor(df$state, labels=states)
-mc1 <- as.data.frame(as.matrix(samps))
-```
-
-```{r}
-mc1 <- as.data.frame(as.matrix(samps))
-hdi1 <- data.frame(hdi = rep(0,data3$N));
-bad1 <- c();
-j <- 1;
-for (i in 1:28) {
-  k1 <- paste0("w_female_latino[",i,"]")
-  r1 <- hdi(mc1[k1])
-  hdi1$hdi[i] <- max(r1) - min(r1);
-  if (hdi1$hdi[i] > 0.1) {
-    bad1[j] <- i;
-    j <- j+1;
-  }
+turnout_education_log_coefs <- function(exit_polls, election_data, census_data, z = 2) {
+  assert_that(all(is.state(exit_polls$state) || exit_polls$state == "nation"))
+  assert_that(all(is.numeric(exit_polls$num_respondents)))
+  assert_that(all(is.numeric(exit_polls$options_perc)))
+  assert_that(all(is.numeric(census_data$education_high_school)))
+  assert_that(all(is.numeric(census_data$education_some_college)))
+  assert_that(all(is.numeric(census_data$education_college_grad)))
+  assert_that(all(is.numeric(census_data$education_postgrad)))
+  assert_that(all(is.state(census_data$state)))
+  assert_that(all(has.electoral_delegates(election_data$state)))
+  assert_that(all(is.numeric(election_data$totalvotes)))
+  exit_polls %>%
+    filter(questions=="Education", state=="nation") %>%
+    group_by(options) %>%
+    mutate(p = sum(0.01*options_perc*num_respondents)/sum(num_respondents),
+           count = sum(num_respondents),
+           width = wilson_width(p, count, z),
+           total_votes = sum(election_data$totalvotes),
+           lower_bound = (p - 2*z*width)*total_votes,
+           high_school = sum(census_data$education_high_school),
+           some_college = sum(census_data$education_some_college) + 0.5*sum(census_data$education_assoc_degree),
+           college_grad = sum(census_data$education_college_grad) + 0.5*sum(census_data$education_assoc_degree),
+           postgrad = sum(census_data$education_postgrad),
+           proportion = (ifelse(options == "High school or less",
+                                   min(0.99, lower_bound/high_school),
+                                   ifelse(options == "Some college",
+                                          min(0.99, lower_bound/some_college),
+                                          ifelse(options == "College graduate",
+                                                 min(0.99, lower_bound/college_grad),
+                                                 ifelse(options == "Postgraduate",
+                                                        min(0.99, lower_bound/postgrad),
+                                                        NaN)))))) %>%
+    transmute(beta_education = log(proportion/(1.0-proportion)),
+              tau_education = 2*(4*width/(0.01*proportion))**-2) %>%
+    unique
 }
 ```
 
 ```{r}
-for (i in 1:data3$N) {
-  # df$state[i] <- data3$state[i]
-  # print(i)
-  k1 <- paste0("p_female_white[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$female.white.expected[i] = mean(hdi(r1))*data3$female.white[i]
-  df$female.white.p.mean[i] <- mean(r1)
-  df$female.white.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_male_white[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$male.white.expected[i] = mean(hdi(r1))*data3$male.white[i]
-  df$male.white.p.mean[i] <- mean(r1)
-  df$male.white.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_female_black[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$female.black.expected[i] = mean(r1)*data3$female.black[i]
-  df$female.black.p.mean[i] <- mean(r1)
-  df$female.black.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_male_black[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$male.black.expected[i] = mean(hdi(r1))*data3$male.black[i]
-  df$male.black.p.mean[i] <- mean(r1)
-  df$male.black.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_female_latino[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$female.latino.expected[i] = mean(hdi(r1))*data3$female.latino[i]
-  df$female.latino.p.mean[i] <- mean(r1)
-  df$female.latino.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_male_latino[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$male.latino.expected[i] = mean(hdi(r1))*data3$male.latino[i]
-  df$male.latino.p.mean[i] <- mean(r1)
-  df$male.latino.p.sd[i] <- sd(r1)
-  k1 <- paste0("p_others[",i,"]")
-  r1 <- unlist(mc1[k1])
-  df$other.expected[i] = mean(hdi(r1))*data3$male.latino[i]
-  df$other.p.mean[i] <- mean(r1)
-  df$other.p.sd[i] <- sd(r1)
-}
-
-turnout_by_state <- df %>%
-  group_by(state) %>%
-  summarize(
-    male.white = sum(male.white.expected),
-    female.white = sum(female.white.expected),
-    male.black = sum(male.black.expected),
-    female.black = sum(female.black.expected),
-    male.latino = sum(male.latino.expected),
-    female.latino = sum(female.latino.expected),
-    other = sum(other.expected))
-
-proportions <- data.frame(
-  female.white=c(sum(df$female.white.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected))),
-  male.white=c(sum(df$male.white.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected))),
-  female.black=c(sum(df$female.black.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected))),
-  male.black=c(sum(df$male.black.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected))),
-  female.latino=c(sum(df$female.latino.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected))),
-  male.latino=c(sum(df$male.latino.expected)/(sum(df$male.black.expected) + sum(df$female.black.expected) + sum(df$male.latino.expected) + sum(df$male.white.expected) + sum(df$female.latino.expected) + sum(df$female.white.expected)))
-)
-kable(proportions)
+kable(turnout_education_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
 ```
 
-##### Residual Plots by County
+The difficulty is there are more people in the exit polls claiming to be educated than the census data corroborates. Although postgrads are within the margin of error (roughly 21.9m people claim to be postgrads in the exit poll, whereas the census claims there should be 20.1m postgrads), the number of college graduates is off by 5m. I suspect people may consider receiving an associate's degree as being a "college graduate", which complicates the analysis. For simplicity, I suppose 50% of associate degrees call themselves college graduates, the other 50% say they have "some college" level of education.
 
-How does the residual plot look like for the predicted total votes?
+### Interacting with State
 
-```{r}
-res <- data.frame(
-  residuals = (df$male.white.expected + df$female.white.expected + df$male.black.expected + df$female.black.expected + df$male.latino.expected + df$female.latino.expected + df$other.expected) - data3$totalvotes
-)
-summary(res)
-```
-
-tau=1e7, Q1 = -249.2, Q3 = 6894.7
-tau=1e9, Q1 = -10.6, Q3 = 6889.0
-tau=1e13, Q1= -367, Q3=6740
-tau=2**52, Q1 = -353.2, Q3=7091.7
+We compute the `(1|education:state)` coefficient thus:
 
 ```{r}
-wo_outliers <- res[-270 < res[,"residuals"] & res[,"residuals"] < 6450,,drop=FALSE]
-```
-
-```{r}
-ggplot(wo_outliers, aes(residuals)) +
-  geom_histogram(bins = 100)
-```
-
-#### Clinton's support by Ethnicity and Gender
-
-Now we consider the beta samplings to tell us _how_ people voted:
-
-```{r}
-params <- c('beta_male_white','beta_female_white','beta_male_black','beta_female_black','beta_male_latino','beta_female_latino','beta_others')
-beta_samps <- coda.samples(jagsModel, params, n.iter=100)
-beta_mc1 <- as.data.frame(as.matrix(beta_samps))
-```
-
-Then we compute the expected number of Clinton voters for each of these ethnic groups.
-
-```{r}
-states <- unique(factor(data$state))
-beta_df <- data.frame(
-                 female.white.expected=rep(0,length(states)),
-                 female.white.mean=rep(0,length(states)),
-                 female.white.sd=rep(0,length(states)),
-                 male.white.expected=rep(0,length(states)),
-                 male.white.p.mean=rep(0,length(states)),
-                 male.white.p.sd=rep(0,length(states)),
-                 female.black.expected=rep(0,length(states)),
-                 female.black.p.mean=rep(0,length(states)),
-                 female.black.p.sd=rep(0,length(states)),
-                 male.black.expected=rep(0,length(states)),
-                 male.black.p.mean=rep(0,length(states)),
-                 male.black.p.sd=rep(0,length(states)),
-                 female.latino.expected=rep(0,length(states)),
-                 female.latino.p.mean=rep(0,length(states)),
-                 female.latino.p.sd=rep(0,length(states)),
-                 male.latino.expected=rep(0,length(states)),
-                 male.latino.p.mean=rep(0,length(states)),
-                 male.latino.p.sd=rep(0,length(states)),
-                 other.expected=rep(0,length(states)),
-                 other.p.mean=rep(0,length(states)),
-                 other.p.sd=rep(0,length(states)))
-
-beta_df$states <- states
-
-for (i in 1:length(states)) {
-  # beta_df$state[i] <- data3$state[i]
-  # print(i)
-  turnout <- turnout_by_state[which(turnout_by_state$state==states[i]),]
-  #print(turnout)
-  k1 <- paste0("beta_female_white[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$female.white.expected[i] <- invlogit(mean(r1))*turnout$female.white
-  beta_df$female.white.p.mean[i] <- mean(r1)
-  beta_df$female.white.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_male_white[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$male.white.expected[i] <- invlogit(mean(r1))*turnout$male.white
-  beta_df$male.white.p.mean[i] <- mean(r1)
-  beta_df$male.white.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_female_black[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$female.black.expected[i] <- invlogit(mean(r1))*turnout$female.black
-  beta_df$female.black.p.mean[i] <- mean(r1)
-  beta_df$female.black.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_male_black[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$male.black.expected[i] <- invlogit(mean(r1))*turnout$male.black
-  beta_df$male.black.p.mean[i] <- mean(r1)
-  beta_df$male.black.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_female_latino[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$female.latino.expected[i] <- invlogit(mean(r1))*turnout$female.latino
-  beta_df$female.latino.p.mean[i] <- mean(r1)
-  beta_df$female.latino.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_male_latino[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$male.latino.expected[i] <- invlogit(mean(r1))*turnout$male.latino
-  beta_df$male.latino.p.mean[i] <- mean(r1)
-  beta_df$male.latino.p.sd[i] <- sd(r1)
-  k1 <- paste0("beta_others[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$other.expected[i] <- invlogit(mean(r1))*turnout$other
-  beta_df$other.p.mean[i] <- mean(r1)
-  beta_df$other.p.sd[i] <- sd(r1)
+turnout_education_state_log_coefs <- function(exit_polls, election_data, census_data, z = 2) {
+  assert_that(all(is.state(exit_polls$state) || exit_polls$state == "nation"))
+  assert_that(all(is.numeric(exit_polls$num_respondents)))
+  assert_that(all(is.numeric(exit_polls$options_perc)))
+  assert_that(all(is.numeric(census_data$education_high_school)))
+  assert_that(all(is.numeric(census_data$education_some_college)))
+  assert_that(all(is.numeric(census_data$education_college_grad)))
+  assert_that(all(is.numeric(census_data$education_postgrad)))
+  assert_that(all(is.state(census_data$state)))
+  assert_that(all(has.electoral_delegates(election_data$state)))
+  assert_that(all(is.numeric(election_data$totalvotes)))
+  exit_polls %>%
+    filter(questions=="Education", state!="nation") %>%
+    mutate(options = factor(options)) %>%
+    group_by(state) %>% # this group_by is responsible for the ":state" factor in `(1|education:state)`
+    mutate(width = wilson_width(0.01*options_perc, num_respondents, z),
+           total_votes = sum(election_data[which(election_data$state %in% state & !is.na(election_data$totalvotes)),]$totalvotes),
+           lower_bound = (0.01*options_perc + 2*z*width)*total_votes,
+           high_school = sum(census_data[which(census_data$state %in% state),]$education_high_school),
+           some_college = sum(census_data[which(census_data$state %in% state),]$education_some_college) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
+           college_grad = sum(census_data[which(census_data$state %in% state),]$education_college_grad) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
+           postgrad = sum(census_data[which(census_data$state %in% state),]$education_postgrad)
+    ) %>%
+    mutate(proportion = (ifelse(options == "High school or less",
+                                min(0.99, lower_bound/high_school),
+                                ifelse(options == "Some college",
+                                       min(0.99, lower_bound/some_college),
+                                       ifelse(options == "College graduate",
+                                              min(0.99, lower_bound/college_grad),
+                                              ifelse(options == "Postgraduate",
+                                                     min(0.99, lower_bound/postgrad),
+                                                     NaN)))))) %>%
+    transmute(beta_education = log(proportion/(1.0-proportion)),
+              tau_education = 2*(4*width/(0.01*proportion))**-2,
+              options) %>%
+    arrange(state,options)
 }
 ```
 
 ```{r}
-for (i in 1:length(states)) {
-  # beta_df$state[i] <- data3$state[i]
-  # print(i)
-  turnout <- turnout_by_state[which(turnout_by_state$state==states[i]),]
-  #print(turnout)
-  k1 <- paste0("beta_female_white[",i,"]")
-  r1 <- unlist(beta_mc1[k1])
-  beta_df$female.white.expected[i] <- invlogit(mean(r1))*turnout$female.white
-  beta_df$female.white.p.mean[i] <- mean(r1)
-  beta_df$female.white.p.sd[i] <- sd(r1)
-}
-
+kable(turnout_education_state_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
 ```
-
-```{r}
-kable(beta_df)
-```
-
-

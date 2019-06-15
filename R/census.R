@@ -30,13 +30,16 @@ categorize <- function(census_df) {
     # education
     education_high_school_male = male.18_24.less_than_9th_gradeE +  male.18_24.less_than_high_schoolE +  male.18_24.high_school_gradE +  male.25_34.less_than_9th_gradeE +  male.25_34.less_than_high_schoolE +  male.25_34.high_school_gradE +  male.35_44.less_than_9th_gradeE +  male.35_44.less_than_high_schoolE +  male.35_44.high_school_gradE +  male.45_64.less_than_9th_gradeE +  male.45_64.less_than_high_schoolE +  male.45_64.high_school_gradE +  male.65_plus.less_than_9th_gradeE +  male.65_plus.less_than_high_schoolE +  male.65_plus.high_school_gradE,
     education_high_school_female = female.18_24.less_than_9th_gradeE+female.18_24.less_than_high_schoolE+female.18_24.high_school_gradE +  female.25_34.less_than_9th_gradeE +  female.25_34.less_than_high_schoolE +  female.25_34.high_school_gradE +  female.35_44.less_than_9th_gradeE +  female.35_44.less_than_high_schoolE +  female.35_44.high_school_gradE +  female.45_64.less_than_9th_gradeE +  female.45_64.less_than_high_schoolE +  female.45_64.high_school_gradE +  female.65_plus.less_than_9th_gradeE +  female.65_plus.less_than_high_schoolE +  female.65_plus.high_school_gradE,
-    education_some_college_male = male.18_24.some_collegeE+male.18_24.associate_degreeE+male.25_34.some_collegeE+male.25_34.associate_degreeE+male.45_64.some_collegeE+male.45_64.associate_degreeE+male.65_plus.some_collegeE+male.65_plus.associate_degreeE,
-    education_some_college_female = female.18_24.some_collegeE+female.18_24.associate_degreeE+female.25_34.some_collegeE+female.25_34.associate_degreeE+female.45_64.some_collegeE+female.45_64.associate_degreeE+female.65_plus.some_collegeE+female.65_plus.associate_degreeE,
+    education_some_college_male = male.18_24.some_collegeE + male.25_34.some_collegeE + male.45_64.some_collegeE + male.65_plus.some_collegeE,
+    education_some_college_female = female.18_24.some_collegeE + female.25_34.some_collegeE + female.45_64.some_collegeE + female.65_plus.some_collegeE,
+    education_assoc_degree_male = male.18_24.associate_degreeE + male.25_34.associate_degreeE + male.45_64.associate_degreeE + male.65_plus.associate_degreeE,
+    education_assoc_degree_female = female.18_24.associate_degreeE + female.25_34.associate_degreeE + female.45_64.associate_degreeE + female.65_plus.associate_degreeE,
     education_college_grad_male = male.18_24.bachelor_degreeE + male.25_34.bachelor_degreeE + male.35_44.bachelor_degreeE + male.45_64.bachelor_degreeE + male.65_plus.bachelor_degreeE,
     education_college_grad_female = female.18_24.bachelor_degreeE + female.25_34.bachelor_degreeE + female.35_44.bachelor_degreeE + female.45_64.bachelor_degreeE + female.65_plus.bachelor_degreeE,
     education_postgrad_male = male.18_24.graduate_degreeE + male.25_34.graduate_degreeE + male.35_44.graduate_degreeE + male.45_64.graduate_degreeE + male.65_plus.graduate_degreeE,
     education_postgrad_female = female.18_24.graduate_degreeE + female.25_34.graduate_degreeE + female.35_44.graduate_degreeE + female.45_64.graduate_degreeE + female.65_plus.graduate_degreeE,
     education_high_school = education_high_school_male + education_high_school_female,
+    education_assoc_degree = education_assoc_degree_male + education_assoc_degree_female,
     education_some_college = education_some_college_male + education_some_college_female,
     education_college_grad = education_college_grad_male + education_college_grad_female,
     education_postgrad = education_postgrad_male + education_postgrad_female
