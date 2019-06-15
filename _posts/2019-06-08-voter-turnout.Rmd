@@ -722,15 +722,15 @@ foo <- age_logistic_coefs(exit_poll_df, census_data, election_2016)
 Similarly, education coefficients are determined thus using crude estimates for logistic regression coefficients:
 
 ```{r}
-education_log_coefs <- function(exit_polls, election_data, census_data) {
+education_log_coefs <- function(exit_polls, election_data, census_data, z = 2) {
   exit_polls %>%
     filter(questions=="Education",state!="nation") %>%
     mutate(options = factor(options),
            state = as.character(state)) %>%
     group_by(state) %>%
-    mutate(width = wilson_width(0.01*options_perc, num_respondents, z=2),
+    mutate(width = wilson_width(0.01*options_perc, num_respondents, z),
            total_votes = sum(election_data[which(election_data$state %in% state & !is.na(election_data$totalvotes)),]$totalvotes),
-           lower_bound = (0.01*options_perc - 4*width)*total_votes,
+           lower_bound = (0.01*options_perc - 2*z*width)*total_votes,
            high_school = sum(census_data[which(census_data$state %in% state),]$education.high_school),
            some_college = sum(census_data[which(census_data$state %in% state),]$education.some_college),
            college_grad = sum(census_data[which(census_data$state %in% state),]$education.college_grad),
