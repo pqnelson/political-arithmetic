@@ -102,6 +102,20 @@ This will allow us to test certain hypotheses ("young people don't vote", "there
 
 We are using exit polls from CNN and friends, whereas Gelman _et al._ are using CPS estimates, which are much cleaner and much more accurate. Therefore, we should not expect to perfectly reproduce their findings. But it is a starting point for computation.
 
+## Data Caveat 2: Exit Polls Limited in Questions
+
+We cannot approximate every coefficient in the logistic regression from Gelman and friends. We have to restrict it to:
+
+```
+logit(voted) ~  1 + female +
+                (1 | state) + 
+                (1 | age) + (1 | state:age) +
+                (1 | state:gender) + (1 | age:gender) +
+                (1 | married) + (1 | married:age) + (1 | married:state) + (1 | married:gender) + 
+                (1 | state:ethnicity) + (1 | ethnicity:gender) + (1 | ethnicity:age) +
+                (1 | education) + (1 | state:education)
+```
+
 ## Computational Details
 
 So, for the logistic regression coefficients, we will compute the coefficients using a strategy reflected in the following examples for the regression on the probability someone will vote:
@@ -201,6 +215,14 @@ census_data$state <- factor(census_data$state, levels(states_factors))
 
 # Estimating Voter Turnout
 
+The constant for logistic regressions is the log odds of the desired result. For us, that's the number of people who turned out to vote, over the number of people who abstained. Using the [election project's estimates](http://www.electproject.org/2016g):
+
+```{r}
+votes_for_highest_office <- 136700729.0
+eligible_voters <- 230931921.0
+beta_0 <- log(votes_for_highest_office/(eligible_voters - votes_for_highest_office))
+```
+
 ## State Effects
 
 We will compute the coefficient `(1 | state)`. This is `log(Pr(turnout|state)/Pr(!turnout|state)) - log(Pr(turnout)/Pr(!turnout))`.
@@ -214,7 +236,7 @@ turnout_state_log_coefs <- function(election_data, census_data) {
     transmute(state,
               proportion = tv/vap) %>%
     transmute(state,
-              beta_state = log(proportion/(1 - proportion))) %>%
+              beta_state = log(proportion/(1 - proportion)) - beta_0) %>%
     unique
 }
 ```
@@ -225,16 +247,124 @@ kable(turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_da
 
 
 
+## Ethnicity
+
+Computing `(1 | state:ethnicity)` requires doing this piece-wise, by each state.
+
+
+```{r}
+ethnicity_by_state <- function(state_iter, exit_poll_by_state, election_data, census_data, z=2) {
+  lookup <- list("White" = c("white_male", "white_female"),
+                 "Black" = c("black_male", "black_female"),
+                 "Latino" = c("hispanic_male", "hispanic_female"),
+                 "Asian" = c("asian_male", "asian_female"),
+                 "Other race" = c("others"))
+  
+  id <- min(filter(exit_poll_by_state,questions=="Race")$questions_id)
+  state_effect <<- turnout_state_log_coefs(filter(election_data, state==state_iter), 
+                                           filter(census_data, state == state_iter))
+
+  exit_poll_by_state %>%
+    filter(questions_id == id) %>%
+    group_by(options) %>%
+    transmute(k = lookup[options],
+              estimates = (0.01*options_perc - wilson_width(0.01*options_perc, num_respondents, z))*sum(election_data[which(election_data$state %in% state_iter),]$totalvotes),
+              pop = sum(census_data[which(census_data$state %in% state_iter), unlist(k)]),
+              proportion = min(estimates/pop, 0.99)) %>% 
+    transmute(state = state_iter,
+              beta_ethnicity_by_state = log(proportion/(1 - proportion)) - state_effect[which(state_effect$state %in% state_iter),]$beta_state) %>%
+    as.data.frame()
+}
+```
+
+Alas, I could not get a slicker way to combine the results together to work, at least not as expected.
+
+```{r}
+fun <- function(exit_poll, election_data, census_data, z=2) {
+  results = c()
+  for (state_iter in unique(exit_poll$state)) {
+    if (state_iter != "nation") {
+      state_data <- ethnicity_by_state(state_iter, filter(exit_poll, state==state_iter), election_data, census_data, z)
+      results <- rbind(results,state_data)
+    }
+  }
+  results
+}
+```
+
+### Ethnicity and Gender
+
+We can compute`(1 | ethnicity:gender)`
+
+```{r}
+turnout_ethnicity_gender_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  lookup <- list(`White men` = "white_male",
+                 `White women` = "white_female",
+                 `Black men` = "black_male",
+                 `Black women` = "black_female",
+                 `Latino men` = "hispanic_male",
+                 `Latino women` = "hispanic_female",
+                 `Others` = "others")
+  exit_poll %>%
+    filter(questions=="Race and gender", state=="nation") %>%
+    transmute(options,
+              k = unlist(lookup[options]),
+              estimated_voters = options_perc*0.01*sum(election_data$totalvotes),
+              proportion = estimated_voters/sum(census_data[k])
+              ) %>%
+    transmute(options,
+              beta_ethnicity_gender = log(proportion/(1 - proportion)) - beta_0)
+}
+```
+
+```{r}
+kable(turnout_ethnicity_gender_log_coefs(exit_poll_df, election_2016, census_data))
+```
+
+
+### Ethnicity and Age
+
+We compute `(1 | ethnicity:age)`
+
+```{r}
+turnout_ethnicity_age_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  lookup <- list("Whites 18-29" = c("white_male_18_29", "white_female_18_29"),
+                 "Whites 30-44" = c("white_male_30_44", "white_female_30_44"),
+                 "Whites 45-64" = c("white_male_45_64", "white_female_45_64"),
+                 "Whites 65 and older" = c("white_male_retirees", "white_female_retirees"),
+                 "Blacks 18-29" = c("black_male_18_29", "black_female_18_29"),
+                 "Blacks 30-44" = c("black_male_30_44", "black_female_30_44"),
+                 "Blacks 45-64" = c("black_male_45_64", "black_female_45_64"),
+                 "Blacks 65 and older" = c("black_male_retirees", "black_female_retirees"),
+                 "Latinos 18-29" = c("hispanic_male_18_29", "hispanic_female_18_29"),
+                 "Latinos 30-44" = c("hispanic_male_30_44", "hispanic_female_30_44"),
+                 "Latinos 45-64" = c("hispanic_male_45_64", "hispanic_female_45_64"),
+                 "Latinos 65 and older" = c("hispanic_male_retirees", "hispanic_female_retirees"),
+                 "All others" = c("others")
+                 )
+  exit_poll %>%
+    filter(questions=="Age by race", state=="nation") %>%
+    transmute(options,
+              k = lookup[options],
+              estimated_voters = options_perc*0.01*sum(election_data$totalvotes),
+              proportion = estimated_voters/sum(census_data[unlist(k)])
+    ) %>%
+    transmute(options,
+              beta_ethnicity_age = log(proportion/(1 - proportion)) - beta_0)
+}
+```
+
+```{r}
+kable(turnout_ethnicity_age_log_coefs(exit_poll_df, election_2016, census_data))
+```
+
 ## Education
 
 The coefficients of interest are:
 
 ```
-                     (1 | education) + (1 | married:education) +
-                     (1 | education:gender) + (1 | state:education) +
-                     (1 | ethnicity:education) + (1 | age:education) +
-                     (1 | state:education:age) + (1 | education:age:gender)
-                     + (non education coefficients)
+logit(x) ~ (1 | education) + (1 | state:education) + 
+           (non-education coefficients)
 ```
 
 Similarly, education coefficients are determined thus using crude estimates for logistic regression coefficients. We estimate the number of voters with a level `ed` of education by taking the `options_perc - 2z*wilson_interval_width` proportion of the total votes cast (this is the assumption that the exit polls reflect the composition of voters). This lower bound of the Wilson interval is stored in the `lower_bound` which we use as the numerator of the logistic coefficient computation (the logarithm of the ratio of `ed` voters to `ed` non-voters).
@@ -276,7 +406,7 @@ turnout_education_log_coefs <- function(exit_polls, election_data, census_data, 
                                                  ifelse(options == "Postgraduate",
                                                         min(0.99, lower_bound/postgrad),
                                                         NaN)))))) %>%
-    transmute(beta_education = log(proportion/(1.0-proportion)),
+    transmute(beta_education = log(proportion/(1.0-proportion)) - beta_0,
               tau_education = 2*(4*width/(0.01*proportion))**-2) %>%
     unique
 }
@@ -328,7 +458,7 @@ turnout_education_state_log_coefs <- function(exit_polls, election_data, census_
                                               ifelse(options == "Postgraduate",
                                                      min(0.99, estimate_voters_by_education/postgrad),
                                                      NaN)))))) %>%
-    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state,
+    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state - 3*beta_0,
               tau_education = 2*(4*width/(0.01*proportion))**-2,
               options) %>%
     arrange(state,options)

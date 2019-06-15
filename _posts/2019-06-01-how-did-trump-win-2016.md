@@ -4,6 +4,8 @@
       - [Strategy](#strategy)
       - [Data Caveat: Exit Polls noisier than CPS
         estimates](#data-caveat-exit-polls-noisier-than-cps-estimates)
+      - [Data Caveat 2: Exit Polls Limited in
+        Questions](#data-caveat-2-exit-polls-limited-in-questions)
       - [Computational Details](#computational-details)
   - [Loading Data](#loading-data)
       - [Official Results](#official-results)
@@ -12,6 +14,9 @@
       - [Census Data](#census-data)
   - [Estimating Voter Turnout](#estimating-voter-turnout)
       - [State Effects](#state-effects)
+      - [Ethnicity](#ethnicity)
+          - [Ethnicity and Gender](#ethnicity-and-gender)
+          - [Ethnicity and Age](#ethnicity-and-age)
       - [Education](#education)
           - [Overall Factor](#overall-factor)
           - [Interacting with State](#interacting-with-state)
@@ -105,6 +110,19 @@ We are using exit polls from CNN and friends, whereas Gelman *et al.*
 are using CPS estimates, which are much cleaner and much more accurate.
 Therefore, we should not expect to perfectly reproduce their findings.
 But it is a starting point for computation.
+
+## Data Caveat 2: Exit Polls Limited in Questions
+
+We cannot approximate every coefficient in the logistic regression from
+Gelman and friends. We have to restrict it to:
+
+    logit(voted) ~  1 + female +
+                    (1 | state) + 
+                    (1 | age) + (1 | state:age) +
+                    (1 | state:gender) + (1 | age:gender) +
+                    (1 | married) + (1 | married:age) + (1 | married:state) + (1 | married:gender) + 
+                    (1 | state:ethnicity) + (1 | ethnicity:gender) + (1 | ethnicity:age) +
+                    (1 | education) + (1 | state:education)
 
 ## Computational Details
 
@@ -244,6 +262,17 @@ census_data$state <- factor(census_data$state, levels(states_factors))
 
 # Estimating Voter Turnout
 
+The constant for logistic regressions is the log odds of the desired
+result. For us, that’s the number of people who turned out to vote, over
+the number of people who abstained. Using the [election project’s
+estimates](http://www.electproject.org/2016g):
+
+``` r
+votes_for_highest_office <- 136700729.0
+eligible_voters <- 230931921.0
+beta_0 <- log(votes_for_highest_office/(eligible_voters - votes_for_highest_office))
+```
+
 ## State Effects
 
 We will compute the coefficient `(1 | state)`. This is
@@ -259,7 +288,7 @@ turnout_state_log_coefs <- function(election_data, census_data) {
     transmute(state,
               proportion = tv/vap) %>%
     transmute(state,
-              beta_state = log(proportion/(1 - proportion))) %>%
+              beta_state = log(proportion/(1 - proportion)) - beta_0) %>%
     unique
 }
 ```
@@ -302,7 +331,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0581703
+\-0.3138725
 
 </td>
 
@@ -318,7 +347,7 @@ California
 
 <td style="text-align:right;">
 
-\-0.0780185
+\-0.4500614
 
 </td>
 
@@ -334,7 +363,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.7351775
+0.3631347
 
 </td>
 
@@ -350,7 +379,7 @@ Florida
 
 <td style="text-align:right;">
 
-0.3790481
+0.0070053
 
 </td>
 
@@ -366,7 +395,7 @@ Georgia
 
 <td style="text-align:right;">
 
-0.1648291
+\-0.2072138
 
 </td>
 
@@ -382,7 +411,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.2562046
+\-0.1158382
 
 </td>
 
@@ -398,7 +427,7 @@ Indiana
 
 <td style="text-align:right;">
 
-0.1851792
+\-0.1868636
 
 </td>
 
@@ -414,7 +443,7 @@ Iowa
 
 <td style="text-align:right;">
 
-0.6555144
+0.2834716
 
 </td>
 
@@ -430,7 +459,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-0.2667415
+\-0.1053013
 
 </td>
 
@@ -446,7 +475,7 @@ Maine
 
 <td style="text-align:right;">
 
-0.8235900
+0.4515472
 
 </td>
 
@@ -462,7 +491,7 @@ Michigan
 
 <td style="text-align:right;">
 
-0.5097904
+0.1377476
 
 </td>
 
@@ -478,7 +507,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-0.8779563
+0.5059134
 
 </td>
 
@@ -494,7 +523,7 @@ Missouri
 
 <td style="text-align:right;">
 
-0.4132111
+0.0411683
 
 </td>
 
@@ -510,7 +539,7 @@ Nevada
 
 <td style="text-align:right;">
 
-0.0701401
+\-0.3019027
 
 </td>
 
@@ -526,7 +555,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-0.8559753
+0.4839325
 
 </td>
 
@@ -542,7 +571,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-0.2452099
+\-0.1268329
 
 </td>
 
@@ -558,7 +587,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0198866
+\-0.3521563
 
 </td>
 
@@ -574,7 +603,7 @@ New York
 
 <td style="text-align:right;">
 
-\-0.0072810
+\-0.3793238
 
 </td>
 
@@ -590,7 +619,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-0.4877199
+0.1156771
 
 </td>
 
@@ -606,7 +635,7 @@ Ohio
 
 <td style="text-align:right;">
 
-0.4655628
+0.0935199
 
 </td>
 
@@ -622,7 +651,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.5809006
+0.2088578
 
 </td>
 
@@ -638,7 +667,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-0.4334794
+0.0614366
 
 </td>
 
@@ -654,7 +683,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.2451518
+\-0.1268911
 
 </td>
 
@@ -670,7 +699,7 @@ Texas
 
 <td style="text-align:right;">
 
-\-0.1908018
+\-0.5628446
 
 </td>
 
@@ -686,7 +715,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.2158158
+\-0.1562270
 
 </td>
 
@@ -702,7 +731,7 @@ Virginia
 
 <td style="text-align:right;">
 
-0.4822370
+0.1101942
 
 </td>
 
@@ -718,7 +747,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.3509546
+\-0.0210882
 
 </td>
 
@@ -734,7 +763,497 @@ Wisconsin
 
 <td style="text-align:right;">
 
-0.7001138
+0.3280710
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+## Ethnicity
+
+Computing `(1 | state:ethnicity)` requires doing this piece-wise, by
+each
+state.
+
+``` r
+ethnicity_by_state <- function(state_iter, exit_poll_by_state, election_data, census_data, z=2) {
+  lookup <- list("White" = c("white_male", "white_female"),
+                 "Black" = c("black_male", "black_female"),
+                 "Latino" = c("hispanic_male", "hispanic_female"),
+                 "Asian" = c("asian_male", "asian_female"),
+                 "Other race" = c("others"))
+  
+  id <- min(filter(exit_poll_by_state,questions=="Race")$questions_id)
+  state_effect <<- turnout_state_log_coefs(filter(election_data, state==state_iter), 
+                                           filter(census_data, state == state_iter))
+
+  exit_poll_by_state %>%
+    filter(questions_id == id) %>%
+    group_by(options) %>%
+    transmute(k = lookup[options],
+              estimates = (0.01*options_perc - wilson_width(0.01*options_perc, num_respondents, z))*sum(election_data[which(election_data$state %in% state_iter),]$totalvotes),
+              pop = sum(census_data[which(census_data$state %in% state_iter), unlist(k)]),
+              proportion = min(estimates/pop, 0.99)) %>% 
+    transmute(state = state_iter,
+              beta_ethnicity_by_state = log(proportion/(1 - proportion)) - state_effect[which(state_effect$state %in% state_iter),]$beta_state) %>%
+    as.data.frame()
+}
+```
+
+Alas, I could not get a slicker way to combine the results together to
+work, at least not as expected.
+
+``` r
+fun <- function(exit_poll, election_data, census_data, z=2) {
+  results = c()
+  for (state_iter in unique(exit_poll$state)) {
+    if (state_iter != "nation") {
+      state_data <- ethnicity_by_state(state_iter, filter(exit_poll, state==state_iter), election_data, census_data, z)
+      results <- rbind(results,state_data)
+    }
+  }
+  results
+}
+```
+
+### Ethnicity and Gender
+
+We can compute`(1 |
+ethnicity:gender)`
+
+``` r
+turnout_ethnicity_gender_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  lookup <- list(`White men` = "white_male",
+                 `White women` = "white_female",
+                 `Black men` = "black_male",
+                 `Black women` = "black_female",
+                 `Latino men` = "hispanic_male",
+                 `Latino women` = "hispanic_female",
+                 `Others` = "others")
+  exit_poll %>%
+    filter(questions=="Race and gender", state=="nation") %>%
+    transmute(options,
+              k = unlist(lookup[options]),
+              estimated_voters = options_perc*0.01*sum(election_data$totalvotes),
+              proportion = estimated_voters/sum(census_data[k])
+              ) %>%
+    transmute(options,
+              beta_ethnicity_gender = log(proportion/(1 - proportion)) - beta_0)
+}
+```
+
+``` r
+kable(turnout_ethnicity_gender_log_coefs(exit_poll_df, election_2016, census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_ethnicity\_gender
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+White men
+
+</td>
+
+<td style="text-align:right;">
+
+0.5525753
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+White women
+
+</td>
+
+<td style="text-align:right;">
+
+0.8887179
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black men
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5118082
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Black women
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1271190
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino men
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5118082
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latino women
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3056687
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Others
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3056687
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+### Ethnicity and Age
+
+We compute `(1 |
+ethnicity:age)`
+
+``` r
+turnout_ethnicity_age_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  lookup <- list("Whites 18-29" = c("white_male_18_29", "white_female_18_29"),
+                 "Whites 30-44" = c("white_male_30_44", "white_female_30_44"),
+                 "Whites 45-64" = c("white_male_45_64", "white_female_45_64"),
+                 "Whites 65 and older" = c("white_male_retirees", "white_female_retirees"),
+                 "Blacks 18-29" = c("black_male_18_29", "black_female_18_29"),
+                 "Blacks 30-44" = c("black_male_30_44", "black_female_30_44"),
+                 "Blacks 45-64" = c("black_male_45_64", "black_female_45_64"),
+                 "Blacks 65 and older" = c("black_male_retirees", "black_female_retirees"),
+                 "Latinos 18-29" = c("hispanic_male_18_29", "hispanic_female_18_29"),
+                 "Latinos 30-44" = c("hispanic_male_30_44", "hispanic_female_30_44"),
+                 "Latinos 45-64" = c("hispanic_male_45_64", "hispanic_female_45_64"),
+                 "Latinos 65 and older" = c("hispanic_male_retirees", "hispanic_female_retirees"),
+                 "All others" = c("others")
+                 )
+  exit_poll %>%
+    filter(questions=="Age by race", state=="nation") %>%
+    transmute(options,
+              k = lookup[options],
+              estimated_voters = options_perc*0.01*sum(election_data$totalvotes),
+              proportion = estimated_voters/sum(census_data[unlist(k)])
+    ) %>%
+    transmute(options,
+              beta_ethnicity_age = log(proportion/(1 - proportion)) - beta_0)
+}
+```
+
+``` r
+kable(turnout_ethnicity_age_log_coefs(exit_poll_df, election_2016, census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_ethnicity\_age
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Whites 18-29
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4563087
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latinos 30-44
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7582155
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latinos 45-64
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7582155
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latinos 65 and older
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.2112202
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+All others
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3056687
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Whites 30-44
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.0490358
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Whites 45-64
+
+</td>
+
+<td style="text-align:right;">
+
+0.1676844
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Whites 65 and older
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3476822
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Blacks 18-29
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0686324
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Blacks 30-44
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7582155
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Blacks 45-64
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5118082
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Blacks 65 and older
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.2112202
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Latinos 18-29
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0686324
 
 </td>
 
@@ -748,13 +1267,8 @@ Wisconsin
 
 The coefficients of interest are:
 
-``` 
-                     (1 | education) + (1 | married:education) +
-                     (1 | education:gender) + (1 | state:education) +
-                     (1 | ethnicity:education) + (1 | age:education) +
-                     (1 | state:education:age) + (1 | education:age:gender)
-                     + (non education coefficients)
-```
+    logit(x) ~ (1 | education) + (1 | state:education) + 
+               (non-education coefficients)
 
 Similarly, education coefficients are determined thus using crude
 estimates for logistic regression coefficients. We estimate the number
@@ -803,7 +1317,7 @@ turnout_education_log_coefs <- function(exit_polls, election_data, census_data, 
                                                  ifelse(options == "Postgraduate",
                                                         min(0.99, lower_bound/postgrad),
                                                         NaN)))))) %>%
-    transmute(beta_education = log(proportion/(1.0-proportion)),
+    transmute(beta_education = log(proportion/(1.0-proportion)) - beta_0,
               tau_education = 2*(4*width/(0.01*proportion))**-2) %>%
     unique
 }
@@ -853,7 +1367,7 @@ High school or less
 
 <td style="text-align:right;">
 
-\-0.9967572
+\-1.3688000
 
 </td>
 
@@ -875,13 +1389,13 @@ Some college
 
 <td style="text-align:right;">
 
-1.9105408
+0.6622764
 
 </td>
 
 <td style="text-align:right;">
 
-0.2676457
+0.1919843
 
 </td>
 
@@ -897,13 +1411,13 @@ College graduate
 
 <td style="text-align:right;">
 
-3.4126658
+2.2753560
 
 </td>
 
 <td style="text-align:right;">
 
-0.3305849
+0.3076090
 
 </td>
 
@@ -919,7 +1433,7 @@ Postgraduate
 
 <td style="text-align:right;">
 
-4.5951199
+4.2230770
 
 </td>
 
@@ -986,7 +1500,7 @@ turnout_education_state_log_coefs <- function(exit_polls, election_data, census_
                                               ifelse(options == "Postgraduate",
                                                      min(0.99, estimate_voters_by_education/postgrad),
                                                      NaN)))))) %>%
-    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state,
+    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state - 3*beta_0,
               tau_education = 2*(4*width/(0.01*proportion))**-2,
               options) %>%
     arrange(state,options)
@@ -1043,13 +1557,13 @@ Arizona
 
 <td style="text-align:right;">
 
-\-3.1415552
+\-2.8349808
 
 </td>
 
 <td style="text-align:right;">
 
-0.0079489
+0.0073794
 
 </td>
 
@@ -1071,7 +1585,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0275928
+\-0.3444501
 
 </td>
 
@@ -1099,7 +1613,7 @@ Arizona
 
 <td style="text-align:right;">
 
-\-0.0581703
+\-0.4302131
 
 </td>
 
@@ -1127,13 +1641,13 @@ Arizona
 
 <td style="text-align:right;">
 
-\-2.2712988
+\-2.0373214
 
 </td>
 
 <td style="text-align:right;">
 
-0.0046544
+0.0033518
 
 </td>
 
@@ -1155,13 +1669,13 @@ California
 
 <td style="text-align:right;">
 
-\-3.4878580
+\-3.1485672
 
 </td>
 
 <td style="text-align:right;">
 
-0.0072423
+0.0068289
 
 </td>
 
@@ -1183,7 +1697,7 @@ California
 
 <td style="text-align:right;">
 
-0.0105853
+\-0.3614575
 
 </td>
 
@@ -1211,7 +1725,7 @@ California
 
 <td style="text-align:right;">
 
-\-1.2859139
+\-1.6579568
 
 </td>
 
@@ -1239,13 +1753,13 @@ California
 
 <td style="text-align:right;">
 
-\-2.1827746
+\-1.9352648
 
 </td>
 
 <td style="text-align:right;">
 
-0.0061705
+0.0044948
 
 </td>
 
@@ -1267,13 +1781,13 @@ Colorado
 
 <td style="text-align:right;">
 
-\-3.1720948
+\-2.8835674
 
 </td>
 
 <td style="text-align:right;">
 
-0.0098322
+0.0092639
 
 </td>
 
@@ -1295,7 +1809,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.5866196
+0.2145768
 
 </td>
 
@@ -1323,7 +1837,7 @@ Colorado
 
 <td style="text-align:right;">
 
-\-0.7351775
+\-1.1072204
 
 </td>
 
@@ -1351,13 +1865,13 @@ Colorado
 
 <td style="text-align:right;">
 
-\-1.4262590
+\-1.5073440
 
 </td>
 
 <td style="text-align:right;">
 
-0.0126414
+0.0090575
 
 </td>
 
@@ -1379,13 +1893,13 @@ Florida
 
 <td style="text-align:right;">
 
-\-3.4054107
+\-3.1105638
 
 </td>
 
 <td style="text-align:right;">
 
-0.0192356
+0.0177220
 
 </td>
 
@@ -1407,7 +1921,7 @@ Florida
 
 <td style="text-align:right;">
 
-\-0.2823325
+\-0.6543754
 
 </td>
 
@@ -1435,7 +1949,7 @@ Florida
 
 <td style="text-align:right;">
 
-\-0.3790481
+\-0.7510910
 
 </td>
 
@@ -1463,13 +1977,13 @@ Florida
 
 <td style="text-align:right;">
 
-\-2.1667263
+\-1.9729481
 
 </td>
 
 <td style="text-align:right;">
 
-0.0167640
+0.0122292
 
 </td>
 
@@ -1491,13 +2005,13 @@ Georgia
 
 <td style="text-align:right;">
 
-\-3.0551759
+\-2.7593332
 
 </td>
 
 <td style="text-align:right;">
 
-0.0152014
+0.0141065
 
 </td>
 
@@ -1519,7 +2033,7 @@ Georgia
 
 <td style="text-align:right;">
 
-\-0.0809546
+\-0.4529975
 
 </td>
 
@@ -1547,7 +2061,7 @@ Georgia
 
 <td style="text-align:right;">
 
-\-0.1648291
+\-0.5368719
 
 </td>
 
@@ -1575,13 +2089,13 @@ Georgia
 
 <td style="text-align:right;">
 
-\-1.8726722
+\-1.7446144
 
 </td>
 
 <td style="text-align:right;">
 
-0.0122656
+0.0084437
 
 </td>
 
@@ -1603,13 +2117,13 @@ Illinois
 
 <td style="text-align:right;">
 
-\-2.7365448
+\-2.4534385
 
 </td>
 
 <td style="text-align:right;">
 
-0.0069153
+0.0064820
 
 </td>
 
@@ -1631,7 +2145,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.3899782
+0.0179353
 
 </td>
 
@@ -1659,7 +2173,7 @@ Illinois
 
 <td style="text-align:right;">
 
-\-0.2562046
+\-0.6282474
 
 </td>
 
@@ -1687,13 +2201,13 @@ Illinois
 
 <td style="text-align:right;">
 
-\-1.3692142
+\-1.3212699
 
 </td>
 
 <td style="text-align:right;">
 
-0.0061774
+0.0044400
 
 </td>
 
@@ -1715,13 +2229,13 @@ Indiana
 
 <td style="text-align:right;">
 
-\-2.8873302
+\-2.6357149
 
 </td>
 
 <td style="text-align:right;">
 
-0.0117537
+0.0106585
 
 </td>
 
@@ -1743,7 +2257,7 @@ Indiana
 
 <td style="text-align:right;">
 
-\-0.2509909
+\-0.6230337
 
 </td>
 
@@ -1771,7 +2285,7 @@ Indiana
 
 <td style="text-align:right;">
 
-\-0.1851792
+\-0.5572220
 
 </td>
 
@@ -1799,13 +2313,13 @@ Indiana
 
 <td style="text-align:right;">
 
-\-2.0045932
+\-1.8483879
 
 </td>
 
 <td style="text-align:right;">
 
-0.0070317
+0.0048944
 
 </td>
 
@@ -1827,13 +2341,13 @@ Iowa
 
 <td style="text-align:right;">
 
-\-3.7313277
+\-3.4525422
 
 </td>
 
 <td style="text-align:right;">
 
-0.0150704
+0.0136561
 
 </td>
 
@@ -1855,7 +2369,7 @@ Iowa
 
 <td style="text-align:right;">
 
-\-0.4248224
+\-0.7968652
 
 </td>
 
@@ -1883,7 +2397,7 @@ Iowa
 
 <td style="text-align:right;">
 
-\-0.6555144
+\-1.0275573
 
 </td>
 
@@ -1911,13 +2425,13 @@ Iowa
 
 <td style="text-align:right;">
 
-\-2.5977181
+\-2.3839914
 
 </td>
 
 <td style="text-align:right;">
 
-0.0101835
+0.0074242
 
 </td>
 
@@ -1939,13 +2453,13 @@ Kentucky
 
 <td style="text-align:right;">
 
-\-1.7917464
+\-1.7335983
 
 </td>
 
 <td style="text-align:right;">
 
-0.0142346
+0.0128537
 
 </td>
 
@@ -1967,7 +2481,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-\-0.2301632
+\-0.6022060
 
 </td>
 
@@ -1995,7 +2509,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-\-0.2667415
+\-0.6387843
 
 </td>
 
@@ -2023,13 +2537,13 @@ Kentucky
 
 <td style="text-align:right;">
 
-\-1.7749679
+\-1.6747387
 
 </td>
 
 <td style="text-align:right;">
 
-0.0053705
+0.0037328
 
 </td>
 
@@ -2051,13 +2565,13 @@ Maine
 
 <td style="text-align:right;">
 
-\-3.0802997
+\-2.8454335
 
 </td>
 
 <td style="text-align:right;">
 
-0.0183473
+0.0169280
 
 </td>
 
@@ -2079,7 +2593,7 @@ Maine
 
 <td style="text-align:right;">
 
-\-0.2473596
+\-0.6194024
 
 </td>
 
@@ -2107,7 +2621,7 @@ Maine
 
 <td style="text-align:right;">
 
-\-0.8235900
+\-1.1956328
 
 </td>
 
@@ -2135,13 +2649,13 @@ Maine
 
 <td style="text-align:right;">
 
-\-1.8142094
+\-1.7800495
 
 </td>
 
 <td style="text-align:right;">
 
-0.0154023
+0.0112326
 
 </td>
 
@@ -2163,13 +2677,13 @@ Michigan
 
 <td style="text-align:right;">
 
-\-3.2339711
+\-2.9575443
 
 </td>
 
 <td style="text-align:right;">
 
-0.0193335
+0.0178260
 
 </td>
 
@@ -2191,7 +2705,7 @@ Michigan
 
 <td style="text-align:right;">
 
-\-0.2695681
+\-0.6416110
 
 </td>
 
@@ -2219,7 +2733,7 @@ Michigan
 
 <td style="text-align:right;">
 
-\-0.5097904
+\-0.8818332
 
 </td>
 
@@ -2247,13 +2761,13 @@ Michigan
 
 <td style="text-align:right;">
 
-\-2.4637958
+\-2.2543481
 
 </td>
 
 <td style="text-align:right;">
 
-0.0089357
+0.0064710
 
 </td>
 
@@ -2275,13 +2789,13 @@ Minnesota
 
 <td style="text-align:right;">
 
-\-4.2494033
+\-3.9367221
 
 </td>
 
 <td style="text-align:right;">
 
-0.0057913
+0.0053434
 
 </td>
 
@@ -2303,7 +2817,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-\-0.3394692
+\-0.7115120
 
 </td>
 
@@ -2331,7 +2845,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-\-0.8779563
+\-1.2499991
 
 </td>
 
@@ -2359,13 +2873,13 @@ Minnesota
 
 <td style="text-align:right;">
 
-\-2.6897048
+\-2.5052879
 
 </td>
 
 <td style="text-align:right;">
 
-0.0064813
+0.0046619
 
 </td>
 
@@ -2387,13 +2901,13 @@ Missouri
 
 <td style="text-align:right;">
 
-\-2.7132638
+\-2.4615538
 
 </td>
 
 <td style="text-align:right;">
 
-0.0167136
+0.0155240
 
 </td>
 
@@ -2415,7 +2929,7 @@ Missouri
 
 <td style="text-align:right;">
 
-\-0.0850333
+\-0.4570761
 
 </td>
 
@@ -2443,7 +2957,7 @@ Missouri
 
 <td style="text-align:right;">
 
-\-0.4132111
+\-0.7852539
 
 </td>
 
@@ -2471,13 +2985,13 @@ Missouri
 
 <td style="text-align:right;">
 
-\-1.9507140
+\-1.8068547
 
 </td>
 
 <td style="text-align:right;">
 
-0.0094967
+0.0068563
 
 </td>
 
@@ -2499,13 +3013,13 @@ Nevada
 
 <td style="text-align:right;">
 
-\-2.9946169
+\-2.7072987
 
 </td>
 
 <td style="text-align:right;">
 
-0.0158929
+0.0146238
 
 </td>
 
@@ -2527,7 +3041,7 @@ Nevada
 
 <td style="text-align:right;">
 
-\-0.2269524
+\-0.5989952
 
 </td>
 
@@ -2555,7 +3069,7 @@ Nevada
 
 <td style="text-align:right;">
 
-\-0.0701401
+\-0.4421829
 
 </td>
 
@@ -2583,13 +3097,13 @@ Nevada
 
 <td style="text-align:right;">
 
-\-2.3467749
+\-2.1305132
 
 </td>
 
 <td style="text-align:right;">
 
-0.0064952
+0.0045330
 
 </td>
 
@@ -2611,13 +3125,13 @@ New Hampshire
 
 <td style="text-align:right;">
 
-\-4.1971225
+\-3.8713804
 
 </td>
 
 <td style="text-align:right;">
 
-0.0107975
+0.0101057
 
 </td>
 
@@ -2639,7 +3153,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-\-0.4788045
+\-0.8508473
 
 </td>
 
@@ -2667,7 +3181,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-\-0.8559753
+\-1.2280182
 
 </td>
 
@@ -2695,13 +3209,13 @@ New Hampshire
 
 <td style="text-align:right;">
 
-\-2.5165930
+\-2.3301839
 
 </td>
 
 <td style="text-align:right;">
 
-0.0129428
+0.0095563
 
 </td>
 
@@ -2723,13 +3237,13 @@ New Jersey
 
 <td style="text-align:right;">
 
-\-4.0819715
+\-3.7274337
 
 </td>
 
 <td style="text-align:right;">
 
-0.0036186
+0.0034521
 
 </td>
 
@@ -2751,7 +3265,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-\-0.3686516
+\-0.7406945
 
 </td>
 
@@ -2779,7 +3293,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-\-3.7145390
+\-4.0865819
 
 </td>
 
@@ -2807,13 +3321,13 @@ New Jersey
 
 <td style="text-align:right;">
 
-\-2.1348069
+\-1.9360802
 
 </td>
 
 <td style="text-align:right;">
 
-0.0061023
+0.0044069
 
 </td>
 
@@ -2835,13 +3349,13 @@ New Mexico
 
 <td style="text-align:right;">
 
-\-2.5073519
+\-2.2585345
 
 </td>
 
 <td style="text-align:right;">
 
-0.0160333
+0.0147073
 
 </td>
 
@@ -2863,7 +3377,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0436729
+\-0.3283700
 
 </td>
 
@@ -2891,7 +3405,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-\-0.0198866
+\-0.3919294
 
 </td>
 
@@ -2919,13 +3433,13 @@ New Mexico
 
 <td style="text-align:right;">
 
-\-2.0428231
+\-1.8222807
 
 </td>
 
 <td style="text-align:right;">
 
-0.0062576
+0.0045465
 
 </td>
 
@@ -2947,13 +3461,13 @@ New York
 
 <td style="text-align:right;">
 
-\-3.2802108
+\-2.9594623
 
 </td>
 
 <td style="text-align:right;">
 
-0.0058617
+0.0054695
 
 </td>
 
@@ -2975,7 +3489,7 @@ New York
 
 <td style="text-align:right;">
 
-0.1293945
+\-0.2426483
 
 </td>
 
@@ -3003,7 +3517,7 @@ New York
 
 <td style="text-align:right;">
 
-\-2.5420632
+\-2.9141060
 
 </td>
 
@@ -3031,13 +3545,13 @@ New York
 
 <td style="text-align:right;">
 
-\-1.5369690
+\-1.3743016
 
 </td>
 
 <td style="text-align:right;">
 
-0.0077766
+0.0057134
 
 </td>
 
@@ -3059,13 +3573,13 @@ North Carolina
 
 <td style="text-align:right;">
 
-\-3.3244549
+\-3.0404668
 
 </td>
 
 <td style="text-align:right;">
 
-0.0249066
+0.0229596
 
 </td>
 
@@ -3087,7 +3601,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-\-0.2032084
+\-0.5752512
 
 </td>
 
@@ -3115,7 +3629,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-\-0.4877199
+\-0.8597627
 
 </td>
 
@@ -3143,13 +3657,13 @@ North Carolina
 
 <td style="text-align:right;">
 
-\-2.1559519
+\-2.0146589
 
 </td>
 
 <td style="text-align:right;">
 
-0.0193872
+0.0136363
 
 </td>
 
@@ -3171,13 +3685,13 @@ Ohio
 
 <td style="text-align:right;">
 
-\-3.0958338
+\-2.8302967
 
 </td>
 
 <td style="text-align:right;">
 
-0.0248165
+0.0228238
 
 </td>
 
@@ -3199,7 +3713,7 @@ Ohio
 
 <td style="text-align:right;">
 
-\-0.3598185
+\-0.7318613
 
 </td>
 
@@ -3227,7 +3741,7 @@ Ohio
 
 <td style="text-align:right;">
 
-\-0.4655628
+\-0.8376056
 
 </td>
 
@@ -3255,13 +3769,13 @@ Ohio
 
 <td style="text-align:right;">
 
-\-2.1030040
+\-1.9545963
 
 </td>
 
 <td style="text-align:right;">
 
-0.0150625
+0.0107330
 
 </td>
 
@@ -3283,13 +3797,13 @@ Oregon
 
 <td style="text-align:right;">
 
-\-2.7443023
+\-2.4982226
 
 </td>
 
 <td style="text-align:right;">
 
-0.0103692
+0.0096737
 
 </td>
 
@@ -3311,7 +3825,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.3269813
+\-0.0450616
 
 </td>
 
@@ -3339,7 +3853,7 @@ Oregon
 
 <td style="text-align:right;">
 
-\-0.5809006
+\-0.9529435
 
 </td>
 
@@ -3367,13 +3881,13 @@ Oregon
 
 <td style="text-align:right;">
 
-\-2.0574347
+\-1.9116136
 
 </td>
 
 <td style="text-align:right;">
 
-0.0058027
+0.0042430
 
 </td>
 
@@ -3395,13 +3909,13 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-\-2.7395006
+\-2.4859586
 
 </td>
 
 <td style="text-align:right;">
 
-0.0251842
+0.0234078
 
 </td>
 
@@ -3423,7 +3937,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-\-0.1630623
+\-0.5351051
 
 </td>
 
@@ -3451,7 +3965,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-\-0.4334794
+\-0.8055223
 
 </td>
 
@@ -3479,13 +3993,13 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-\-1.1140067
+\-1.1718421
 
 </td>
 
 <td style="text-align:right;">
 
-0.0261818
+0.0191070
 
 </td>
 
@@ -3507,13 +4021,13 @@ South Carolina
 
 <td style="text-align:right;">
 
-\-2.5041533
+\-2.2793183
 
 </td>
 
 <td style="text-align:right;">
 
-0.0074558
+0.0068408
 
 </td>
 
@@ -3535,7 +4049,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.0576706
+\-0.3143722
 
 </td>
 
@@ -3563,7 +4077,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-\-0.2451518
+\-0.6171946
 
 </td>
 
@@ -3591,13 +4105,13 @@ South Carolina
 
 <td style="text-align:right;">
 
-\-1.6721323
+\-1.5636715
 
 </td>
 
 <td style="text-align:right;">
 
-0.0046641
+0.0033206
 
 </td>
 
@@ -3619,13 +4133,13 @@ Texas
 
 <td style="text-align:right;">
 
-\-3.1159160
+\-2.7931877
 
 </td>
 
 <td style="text-align:right;">
 
-0.0109253
+0.0102070
 
 </td>
 
@@ -3647,7 +4161,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.0161257
+\-0.3559171
 
 </td>
 
@@ -3675,7 +4189,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.1908018
+\-0.1812410
 
 </td>
 
@@ -3703,13 +4217,13 @@ Texas
 
 <td style="text-align:right;">
 
-\-1.9615298
+\-1.7641303
 
 </td>
 
 <td style="text-align:right;">
 
-0.0078639
+0.0054509
 
 </td>
 
@@ -3731,13 +4245,13 @@ Utah
 
 <td style="text-align:right;">
 
-\-3.6836140
+\-3.3752515
 
 </td>
 
 <td style="text-align:right;">
 
-0.0040313
+0.0036880
 
 </td>
 
@@ -3759,7 +4273,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.0546513
+\-0.3173915
 
 </td>
 
@@ -3787,7 +4301,7 @@ Utah
 
 <td style="text-align:right;">
 
-\-0.2158158
+\-0.5878587
 
 </td>
 
@@ -3815,13 +4329,13 @@ Utah
 
 <td style="text-align:right;">
 
-\-2.6198522
+\-2.3925931
 
 </td>
 
 <td style="text-align:right;">
 
-0.0023246
+0.0016194
 
 </td>
 
@@ -3843,13 +4357,13 @@ Virginia
 
 <td style="text-align:right;">
 
-\-3.8098734
+\-3.4786526
 
 </td>
 
 <td style="text-align:right;">
 
-0.0116911
+0.0110066
 
 </td>
 
@@ -3871,7 +4385,7 @@ Virginia
 
 <td style="text-align:right;">
 
-\-0.2205189
+\-0.5925617
 
 </td>
 
@@ -3899,7 +4413,7 @@ Virginia
 
 <td style="text-align:right;">
 
-\-3.2802748
+\-3.6523176
 
 </td>
 
@@ -3927,13 +4441,13 @@ Virginia
 
 <td style="text-align:right;">
 
-\-2.2595532
+\-2.0791508
 
 </td>
 
 <td style="text-align:right;">
 
-0.0122362
+0.0088109
 
 </td>
 
@@ -3955,13 +4469,13 @@ Washington
 
 <td style="text-align:right;">
 
-\-3.1204453
+\-2.8319288
 
 </td>
 
 <td style="text-align:right;">
 
-0.0061480
+0.0057058
 
 </td>
 
@@ -3983,7 +4497,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.4799200
+0.1078772
 
 </td>
 
@@ -4011,7 +4525,7 @@ Washington
 
 <td style="text-align:right;">
 
-\-0.3509546
+\-0.7229975
 
 </td>
 
@@ -4039,13 +4553,13 @@ Washington
 
 <td style="text-align:right;">
 
-\-1.8505398
+\-1.7207863
 
 </td>
 
 <td style="text-align:right;">
 
-0.0056368
+0.0040410
 
 </td>
 
@@ -4067,13 +4581,13 @@ Wisconsin
 
 <td style="text-align:right;">
 
-\-3.5838905
+\-3.3074749
 
 </td>
 
 <td style="text-align:right;">
 
-0.0179711
+0.0164271
 
 </td>
 
@@ -4095,7 +4609,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-\-0.4001897
+\-0.7722326
 
 </td>
 
@@ -4123,7 +4637,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-\-0.7001138
+\-1.0721567
 
 </td>
 
@@ -4151,13 +4665,13 @@ Wisconsin
 
 <td style="text-align:right;">
 
-\-2.3706769
+\-2.2050533
 
 </td>
 
 <td style="text-align:right;">
 
-0.0131274
+0.0094695
 
 </td>
 
