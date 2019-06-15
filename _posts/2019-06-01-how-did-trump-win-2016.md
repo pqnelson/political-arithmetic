@@ -1,19 +1,26 @@
   - [How did Trump Win the White
     House?](#how-did-trump-win-the-white-house)
+  - [Testing Gelman’s Model](#testing-gelmans-model)
+      - [Strategy](#strategy)
+      - [Data Caveat: Exit Polls noisier than CPS
+        estimates](#data-caveat-exit-polls-noisier-than-cps-estimates)
+      - [Computational Details](#computational-details)
+  - [Loading Data](#loading-data)
+      - [Official Results](#official-results)
       - [Exit Poll Data](#exit-poll-data)
-          - [GOAL: Infer Logistic
-            Regression](#goal-infer-logistic-regression)
-              - [Religion](#religion)
-              - [Married](#married)
-              - [Gender and Ethnicity](#gender-and-ethnicity)
-              - [Education](#education)
-              - [Income](#income)
-              - [Age](#age)
-              - [Different States](#different-states)
+          - [Wilson Interval](#wilson-interval)
       - [Census Data](#census-data)
-  - [Maximum turnout](#maximum-turnout)
-      - [Post Stratified Terms](#post-stratified-terms)
-  - [Voter turnout](#voter-turnout)
+  - [Estimating Voter Turnout](#estimating-voter-turnout)
+      - [State Effects](#state-effects)
+      - [Education](#education)
+          - [Overall Factor](#overall-factor)
+          - [Interacting with State](#interacting-with-state)
+
+``` r
+# local code
+source("../R/states.R")
+source("../R/census.R")
+```
 
 # How did Trump Win the White House?
 
@@ -35,6 +42,121 @@ this approach, see:
     Estimation with Poststratification: State-Level Estimates from
     National
     Polls](http://www.stat.columbia.edu/~gelman/research/published/parkgelmanbafumi.pdf)
+  - Rob Trangucci, Imad Ali, Andrew Gelman, Doug Rivers, “Voting
+    patterns in 2016: Exploration using multilevel regression and
+    poststratification (MRP) on pre-election polls”
+    [arXiv:1802.00842](https://arxiv.org/abs/1802.00842)
+
+# Testing Gelman’s Model
+
+In [arXiv:1802.00842](https://arxiv.org/abs/1802.00842), Gelman et
+al. suggest a likely voter model specifically via a logistic regression
+defined by
+
+    logit(voted) ~  1 + female + pre_election_poll_for_state +
+                    (1 | state) + (1 | age) +
+                    (1 | education) + (1 + pre_election_poll_for_state | ethnicity) +
+                    (1 | married) + (1 | married:age) +
+                    (1 | married:state) + (1 | married:ethnicity) +
+                    (1 | married:gender) + (1 | married:education) +
+                    (1 | state:gender) + (1 | age:gender) +
+                    (1 | education:gender) + (1 | ethnicity:gender) +
+                    (1 | state:ethnicity) + (1 | state:age) +
+                    (1 | state:education) + (1 | ethnicity:age) +
+                    (1 | ethnicity:education) + (1 | age:education) +
+                    (1 | state:education:age) + (1 | education:age:gender)
+
+Independently, given someone voted, Gelman and friends setup a logistic
+regression describing the probability someone voted for Clinton (or, if
+you prefer, Trump):
+
+    logit(Trump|voted) ~  1 + female + pre_election_poll_for_state +
+                         (1 | state) + (1 | age) +
+                         (1 | education) + (1 + pre_election_poll_for_state | ethnicity) +
+                         (1 | married) + (1 | married:age) +
+                         (1 | married:state) + (1 | married:ethnicity) +
+                         (1 | married:gender) + (1 | married:education) +
+                         (1 | state:gender) + (1 | age:gender) +
+                         (1 | education:gender) + (1 | ethnicity:gender) +
+                         (1 | state:ethnicity) + (1 | state:age) +
+                         (1 | state:education) + (1 | ethnicity:age) +
+                         (1 | ethnicity:education) + (1 | age:education) +
+                         (1 | state:education:age) + (1 | education:age:gender)
+
+The probability that someone voted for Trump may be computed as
+`Pr(Trump|voted)Pr(voted)`, using the logistic regressions we just
+assembled.
+
+## Strategy
+
+We can approximate the coefficients for the logistic regression using
+exit poll data. Admittedly this is rather *ad hoc*, but we can estimate
+the margin of error for the various coefficients using the Wilson
+confidence interval as a proxy for the standard deviation of a Gaussian
+variable centered at the polled percentages.
+
+This will allow us to test certain hypotheses (“young people don’t
+vote”, “there were more older white people than expected”, etc.)
+without having to resort to other data sources, we hope.
+
+## Data Caveat: Exit Polls noisier than CPS estimates
+
+We are using exit polls from CNN and friends, whereas Gelman *et al.*
+are using CPS estimates, which are much cleaner and much more accurate.
+Therefore, we should not expect to perfectly reproduce their findings.
+But it is a starting point for computation.
+
+## Computational Details
+
+So, for the logistic regression coefficients, we will compute the
+coefficients using a strategy reflected in the following examples for
+the regression on the probability someone will vote:
+
+  - `female = log(((percent women in national exit poll)*(votes cast
+    nationwide)/(exit poll size))/((number of women nationwide eligible
+    to vote) - ((percent women in national exit poll)*(votes cast
+    nationwide)/(exit poll size)))`
+  - `(1|state) = log((votes cast in state)/(number of eligible voters
+    who didn't turn out))`
+  - `(1|age) = log((exit poll percentage for age)*(votes cast
+    nationwide)/(sample size of exit poll)/((number of people in age
+    bracket nationwide) - (exit poll percentage for age)*(votes cast
+    nationwide)/(sample size of exit poll)))`
+  - `(1 | state:age)` computed like `(1 | age)` but working with state
+    specific exit polls and state specific population data
+  - `pre_election_poll_for_state` is the source of the greatest
+    variability, since there are various possible choices for a
+    pre-election prior (e.g., we could use some estimates from 538 or
+    Inside Elections or some other source, or we could use an actual
+    poll).
+
+The center of the Wilson confidence interval is “close enough” to the
+exit poll percentages that we might as well use the exit poll
+percentages. The usefulness of the Wilson interval is its width will
+give us an estimate of a `sigma`, and we can transform the exit poll
+percentage into the mean of a normally distributed random variable with
+an estimated standard deviation `sigma`. The only caveat is, since exit
+polls are noisy, we use `z=4` when computing the sigma (or `z=2` for
+half the sigma).
+
+We then test the hypotheses using this jury-rigged statistical model.
+There is no shortage of
+[explanations](https://fivethirtyeight.com/features/the-real-story-of-2016/)
+for what happened, which we can examine.
+
+# Loading Data
+
+## Official Results
+
+We load the official results.
+
+``` r
+load('../data/elections/presidential/county/countypres_2000-2016.RData')
+states_factors <- factor(append(states(),c("District of Columbia", "nation")))
+x$state <- factor(x$state, levels(states_factors))
+election_2016 <- x[which(x$year == 2016),]
+election_2016$totalvotes[is.na(election_2016$totalvotes)] <- 0
+```
 
 ## Exit Poll Data
 
@@ -43,7 +165,8 @@ file.
 
 ``` r
 exit_poll_path <- "../data/elections/presidential/exit_polls/cnn_04022017.csv"
-exit_poll_df <- read.csv(file=exit_poll_path, header=TRUE, sep=",")
+exit_poll_df <- read.csv(file=exit_poll_path, header=TRUE, sep=",", stringsAsFactors= FALSE)
+exit_poll_df$state <- factor(exit_poll_df$state, levels(states_factors))
 ```
 
 We combine race and gender into a single variable with 7 categories (the
@@ -66,2327 +189,83 @@ The ACS5 data has finer categories of income brackets. Unfortunately,
 the age-brackets for this are younger than 25, 25-64, 45-64, 65+, so we
 need to be careful not to toss out all the census data too quickly.
 
-### GOAL: Infer Logistic Regression
+### Wilson Interval
 
-We want to construct a logistic
-    regression
-
-    prob_clinton(ethnicity,gender,education,income) = invlogit(b0 + b1*ethnicity + b2*gender + b3*education + b4*income)
-
-…and similarly for Trump, but we need to compute the coefficients `b0`,
-…, `b4`. The constant coefficient is just the
-`logit(clinton_votes/(clinton_votes + trump_votes)) =
-logit(65853514.0/(62984828.0 + 65853514.0)) = 0.04453892`.
-
-``` r
-beta0 <- log(65853514.0/62984828.0)
-```
-
-Although left unstated, exit polls are usually plus-or-minus 4%, and
-assuming it is with 95% confidence, (so approximating the numerator and
-denominator as normally distributed random variables with expected
-values given, and standard deviation being 2%) the [propagation of
-uncertainty](https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae)
-implies the variance of `beta0` is
-
-``` r
-var_beta <- function(A,B) {
-  return( ((3.0/A)**2)+((3.0/B)**2) );
-}
-var_beta0 <- var_beta(65853514.0, 62984828.0) # nearly machine epsilon
-```
-
-The variance for other betas will be closer to half a percent. (It is
-bounded from above for `A=B=50`, `var_beta(50,50)~0.06**2`.) Even if one
-were to insist on the margin of error being twice that of a normal poll
-(i.e., it should be 6% instead of our 4%), the variance’s upper bound is
-moved to approximately `0.08485**2`. ([“This makes the margins for error
-somewhere between 50-90% higher than they would be for comparable
-telephone
-surveys.”](https://fivethirtyeight.com/features/ten-reasons-why-you-should-ignore-exit/))
-
-We can estimate the coefficients for any group by taking
-`beta_clinton(group) = log(percent_clinton(group)/percent_trump(group))
-- beta0`. This is the basic strategy of one-factor models, after
-all.
-
-``` r
-national_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'nation'),]
-
-race_and_gender <- national_exit_polls[which(national_exit_polls$questions=="Race and gender"),]
-age <- national_exit_polls[which(national_exit_polls$questions_id==3),]
-income <- national_exit_polls[which(national_exit_polls$questions_id==13),]
-married <- national_exit_polls[which(national_exit_polls$questions_id==20),]
-religion <- national_exit_polls[which(national_exit_polls$questions_id==23),]
-education <- national_exit_polls[which(national_exit_polls$questions == "Education"),]
-```
-
-We can estimate the error using the Wilson confidence interval.
+Before moving on, we will require usage of Wilson confidence intervals
+to estimate the noisiness of exit poll data.
 
 ``` r
 wilson_center <- function(p, n, z) {
+  assert_that(all(is.numeric(p)))
+  assert_that(all(0 <= p && p <= 1))
+  assert_that(all(is.numeric(n)))
+  assert_that(all(n > 0))
+  assert_that(all(is.numeric(z)))
+  assert_that(all(z > 0))
   (p + 0.5*z*z/n)/(1.0 + z*z*1.0/n);
 }
+
 wilson_width <- function(p, n, z) {
+  assert_that(all(is.numeric(p)))
+  assert_that(all(0 <= p && p <= 1))
+  assert_that(all(is.numeric(n)))
+  assert_that(all(n > 0))
+  assert_that(all(is.numeric(z)))
+  assert_that(all(z > 0))
   (z/(1.0 + z*z*1.0/n))*sqrt(p*(1.0-p)/n  + (z*0.5/n)**2);
 }
-log_coefs <- function(r) {
-  c <- wilson_center(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
-  t <- wilson_center(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)
-  r$clinton_numerator <- c/t
-  r$trump_numerator <- t/c
-  
-  r$clinton_coef <- log(r$clinton_numerator) - beta0
-  r$trump_coef <- log(r$trump_numerator) - beta0
-  r$log_var <- (wilson_width(r$Clinton_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/(0.01*r$Clinton_perc))**2 + (wilson_width(r$Trump_perc*0.01, r$options_perc*0.01*r$num_respondents,1)/(0.01*r$Trump_perc))**2;
-  r$log_sd <- sqrt(r$log_var);
-  return(r);
-}
 ```
-
-#### Religion
-
-``` r
-religion <- log_coefs(religion)
-
-kable(religion[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-90
-
-</td>
-
-<td style="text-align:left;">
-
-Protestant
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.5384758
-
-</td>
-
-<td style="text-align:right;">
-
-0.4493979
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-91
-
-</td>
-
-<td style="text-align:left;">
-
-Catholic
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1279051
-
-</td>
-
-<td style="text-align:right;">
-
-0.0388273
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-92
-
-</td>
-
-<td style="text-align:left;">
-
-Mormon
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.7340701
-
-</td>
-
-<td style="text-align:right;">
-
-0.6449923
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-93
-
-</td>
-
-<td style="text-align:left;">
-
-Other Christian
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2722827
-
-</td>
-
-<td style="text-align:right;">
-
-0.1832048
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-94
-
-</td>
-
-<td style="text-align:left;">
-
-Jewish
-
-</td>
-
-<td style="text-align:right;">
-
-1.0806558
-
-</td>
-
-<td style="text-align:right;">
-
-\-1.1697336
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-95
-
-</td>
-
-<td style="text-align:left;">
-
-Muslim
-
-</td>
-
-<td style="text-align:right;">
-
-NA
-
-</td>
-
-<td style="text-align:right;">
-
-NA
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-96
-
-</td>
-
-<td style="text-align:left;">
-
-Other religion
-
-</td>
-
-<td style="text-align:right;">
-
-0.5497610
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.6388389
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-97
-
-</td>
-
-<td style="text-align:left;">
-
-No religion
-
-</td>
-
-<td style="text-align:right;">
-
-0.9409377
-
-</td>
-
-<td style="text-align:right;">
-
-\-1.0300155
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-#### Married
-
-``` r
-married <- log_coefs(married)
-
-kable(married[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-82
-
-</td>
-
-<td style="text-align:left;">
-
-Married
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2115809
-
-</td>
-
-<td style="text-align:right;">
-
-0.1225031
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-83
-
-</td>
-
-<td style="text-align:left;">
-
-Unmarried
-
-</td>
-
-<td style="text-align:right;">
-
-0.3518324
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.4409103
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-#### Gender and Ethnicity
-
-Then we have the numerators for the coefficients
-
-``` r
-race_and_gender <- log_coefs(race_and_gender)
-
-beta_white_male = race_and_gender[which(race_and_gender$options=='White men'),c('clinton_coef')]
-beta_white_female = race_and_gender[which(race_and_gender$options=='White women'),c('clinton_coef')]
-beta_black_male = race_and_gender[which(race_and_gender$options=='Black men'),c('clinton_coef')]
-beta_black_female = race_and_gender[which(race_and_gender$options=='Black women'),c('clinton_coef')]
-beta_latino_male = race_and_gender[which(race_and_gender$options=='Latino men'),c('clinton_coef')]
-beta_latino_female = race_and_gender[which(race_and_gender$options=='Latino women'),c('clinton_coef')]
-beta_others_gender = race_and_gender[which(race_and_gender$options=='Others'),c('clinton_coef')]
-
-kable(race_and_gender[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-22
-
-</td>
-
-<td style="text-align:left;">
-
-White men
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.7375895
-
-</td>
-
-<td style="text-align:right;">
-
-0.6485117
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-23
-
-</td>
-
-<td style="text-align:left;">
-
-White women
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2345604
-
-</td>
-
-<td style="text-align:right;">
-
-0.1454825
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-24
-
-</td>
-
-<td style="text-align:left;">
-
-Black men
-
-</td>
-
-<td style="text-align:right;">
-
-1.7946000
-
-</td>
-
-<td style="text-align:right;">
-
-\-1.8836779
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-25
-
-</td>
-
-<td style="text-align:left;">
-
-Black women
-
-</td>
-
-<td style="text-align:right;">
-
-3.1055258
-
-</td>
-
-<td style="text-align:right;">
-
-\-3.1946036
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-26
-
-</td>
-
-<td style="text-align:left;">
-
-Latino men
-
-</td>
-
-<td style="text-align:right;">
-
-0.6322344
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.7213122
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-27
-
-</td>
-
-<td style="text-align:left;">
-
-Latino women
-
-</td>
-
-<td style="text-align:right;">
-
-0.9698270
-
-</td>
-
-<td style="text-align:right;">
-
-\-1.0589049
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-28
-
-</td>
-
-<td style="text-align:left;">
-
-Others
-
-</td>
-
-<td style="text-align:right;">
-
-0.6318098
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.7208877
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-#### Education
-
-For education we have:
-
-``` r
-education <- log_coefs(education)
-
-kable(education[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-42
-
-</td>
-
-<td style="text-align:left;">
-
-High school or less
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1476991
-
-</td>
-
-<td style="text-align:right;">
-
-0.0586212
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-43
-
-</td>
-
-<td style="text-align:left;">
-
-Some college
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2151412
-
-</td>
-
-<td style="text-align:right;">
-
-0.1260634
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-44
-
-</td>
-
-<td style="text-align:left;">
-
-College graduate
-
-</td>
-
-<td style="text-align:right;">
-
-0.0630770
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1521548
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-45
-
-</td>
-
-<td style="text-align:left;">
-
-Postgraduate
-
-</td>
-
-<td style="text-align:right;">
-
-0.4048755
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.4939534
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-Observe that education is linear progressing. We can assign the
-following weights to education level: -1 to “High school or less”, 0 to
-“Some college”, 1 to “College graduate”, and 2 to “Postgraduate”. Then
-we find a linear regression the coefficient is better approximated by
-`x1` in the following
-table:
-
-``` r
-df <- data.frame(y=education$clinton_coef, z=education$trump_coef,x=1:4,x0=0:3,x1=-1:2)
-
-clm <- lm(y~x1,df)
-tlm <- lm(z~x1,df)
-
-beta_education <- clm$coefficients[2] # == -tlm$coefficients[2]
-
-kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:right;">
-
-Clinton\_coefficients
-
-</th>
-
-<th style="text-align:right;">
-
-Trump\_coefficient
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-(Intercept)
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0705190
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0185588
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-x1
-
-</td>
-
-<td style="text-align:right;">
-
-0.1935942
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1935942
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-#### Income
-
-``` r
-income <- log_coefs(income)
-
-kable(income[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-57
-
-</td>
-
-<td style="text-align:left;">
-
-Under $30,000
-
-</td>
-
-<td style="text-align:right;">
-
-0.2368001
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.3258780
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-58
-
-</td>
-
-<td style="text-align:left;">
-
-$30K-$49,999
-
-</td>
-
-<td style="text-align:right;">
-
-0.1930775
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2821553
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-59
-
-</td>
-
-<td style="text-align:left;">
-
-$50K-$99,999
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1077088
-
-</td>
-
-<td style="text-align:right;">
-
-0.0186310
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-60
-
-</td>
-
-<td style="text-align:left;">
-
-$100K-$199,999
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0655886
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0234893
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-61
-
-</td>
-
-<td style="text-align:left;">
-
-$200K-$249,999
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0029104
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0861675
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-62
-
-</td>
-
-<td style="text-align:left;">
-
-$250,000 or
-more
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0445389
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0445389
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-``` r
-df <- data.frame(y = income$clinton_coef, z=income$trump_coef, x=1:6, x2=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300),x3=c(15,0.5*(30+45),0.5*(50+100),0.5*(100+200),0.5*(200+250),300)**2)
-
-clm <- lm(y~x**2,df)
-```
-
-#### Age
-
-For age we have a partition of ages into 5 or 6 classes. We take the
-midpoint of these intervals to approximate the value, and take a linear
-regression of the logistic coefficients.
-
-``` r
-age <- log_coefs(age)
-
-kable(age[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-7
-
-</td>
-
-<td style="text-align:left;">
-
-18-24
-
-</td>
-
-<td style="text-align:right;">
-
-0.4542171
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.5432949
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-8
-
-</td>
-
-<td style="text-align:left;">
-
-25-29
-
-</td>
-
-<td style="text-align:right;">
-
-0.3066827
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.3957605
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-9
-
-</td>
-
-<td style="text-align:left;">
-
-30-39
-
-</td>
-
-<td style="text-align:right;">
-
-0.2236528
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.3127307
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-10
-
-</td>
-
-<td style="text-align:left;">
-
-40-49
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1077036
-
-</td>
-
-<td style="text-align:right;">
-
-0.0186257
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-11
-
-</td>
-
-<td style="text-align:left;">
-
-50-64
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.2115693
-
-</td>
-
-<td style="text-align:right;">
-
-0.1224914
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-12
-
-</td>
-
-<td style="text-align:left;">
-
-65 and older
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.1890821
-
-</td>
-
-<td style="text-align:right;">
-
-0.1000043
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-We try to approximate this using a linear regression, taking `age-46` as
-the input signal appears to be best (note the intercept is approximately
-`-beta0`):
-
-``` r
-df <- data.frame(y=age$clinton_coef, z=age$trump_coef,x=c(21,27,34.5,44.5,57,75),x0=-3:2,x1=c(21,27,34.5,44.5,57,75)-46)
-df2 <- data.frame(y=age$clinton_coef[1:5], z=age$trump_coef[1:5], x=c(21,27,34.5,44.5,57),x0=-3:1,x1=c(21,27,34.5,44.5,57)-46)
-clm <- lm(y~x1,df2)
-tlm <- lm(z~x1,df2)
-
-beta_age <- clm$coefficients[2] # == -tlm$coefficients[2] to machine epsilon
-beta_retiree <- age[which(age$options=="65 and older"),c('clinton_coef')]
-
-
-kable(data.frame(Clinton_coefficients=clm$coefficients, Trump_coefficient=tlm$coefficients))
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:right;">
-
-Clinton\_coefficients
-
-</th>
-
-<th style="text-align:right;">
-
-Trump\_coefficient
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-(Intercept)
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0445754
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0445024
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-x1
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.0193078
-
-</td>
-
-<td style="text-align:right;">
-
-0.0193078
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-#### Different States
-
-We can consider coefficients for different states, lets see Florida:
-
-``` r
-fl_exit_polls <- exit_poll_df[which(exit_poll_df$state == 'Florida'),]
-
-fl_race_and_gender <- fl_exit_polls[which(fl_exit_polls$questions=="Race and gender"),]
-
-fl_race_and_gender <- log_coefs(fl_race_and_gender)
-
-kable(fl_race_and_gender[,c("options","clinton_coef","trump_coef")])
-```
-
-<table>
-
-<thead>
-
-<tr>
-
-<th style="text-align:left;">
-
-</th>
-
-<th style="text-align:left;">
-
-options
-
-</th>
-
-<th style="text-align:right;">
-
-clinton\_coef
-
-</th>
-
-<th style="text-align:right;">
-
-trump\_coef
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<tr>
-
-<td style="text-align:left;">
-
-909
-
-</td>
-
-<td style="text-align:left;">
-
-White men
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.9161313
-
-</td>
-
-<td style="text-align:right;">
-
-0.8270534
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-910
-
-</td>
-
-<td style="text-align:left;">
-
-White women
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.5549437
-
-</td>
-
-<td style="text-align:right;">
-
-0.4658659
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-911
-
-</td>
-
-<td style="text-align:left;">
-
-Black men
-
-</td>
-
-<td style="text-align:right;">
-
-2.0292612
-
-</td>
-
-<td style="text-align:right;">
-
-\-2.1183390
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-912
-
-</td>
-
-<td style="text-align:left;">
-
-Black women
-
-</td>
-
-<td style="text-align:right;">
-
-2.6056780
-
-</td>
-
-<td style="text-align:right;">
-
-\-2.6947559
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-913
-
-</td>
-
-<td style="text-align:left;">
-
-Latino men
-
-</td>
-
-<td style="text-align:right;">
-
-0.4645553
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.5536331
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-914
-
-</td>
-
-<td style="text-align:left;">
-
-Latino women
-
-</td>
-
-<td style="text-align:right;">
-
-0.5705465
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.6596243
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;">
-
-915
-
-</td>
-
-<td style="text-align:left;">
-
-Others
-
-</td>
-
-<td style="text-align:right;">
-
-0.7934278
-
-</td>
-
-<td style="text-align:right;">
-
-\-0.8825056
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
 
 ## Census Data
 
-We get basic data from the census
-[ACS5](https://api.census.gov/data/2017/acs/acs5/variables.html)
-specifically the breakdown by age and demographics. I borrow their
-terminology in naming the variables.
+We load the census data for each state appearing in the exit poll.
 
 ``` r
-api_key <- read.table("../data/keys/census.txt", header = FALSE)[[1]]
-census_api_key(api_key)
-```
-
-    ## To install your API key for use in future sessions, run this function with `install = TRUE`.
-
-There are a variety of different “types” of variables we could use from
-the US Census, they are called
-[subjects](https://www.census.gov/programs-surveys/acs/guidance/subjects.html).
-
-Note, the estimates are given with 90% margin of error, meaning we are
-90% confident the “true value” lies within the “margin of error” of the
-estimate. We can convert the margin of error into a standard deviation
-by `sd = moe/qnorm(1 - 0.5*(1 - confidence_level))` where
-`confidence_level=0.9` (which can be changed by the user). Ostensibly,
-each variable should be represented by a normal random variable with
-expected value given by the estimate and the sigma given by the `sd`
-formula. (This is all “roughly true”, there are some nuances surrounding
-this.)
-
-We also need to request data which will correspond with possible options
-in the exit polls.
-
-``` r
-spam <- get_acs(geography = "county", 
-               variables = c(male.18_19 = "B01001_007",
-                            male.20 = "B01001_008"),
-        state="FL",
-              output = "wide",
-        year=2016)
-```
-
-    ## Getting data from the 2012-2016 5-year ACS
-
-    ## Using FIPS code '12' for state 'FL'
-
-``` r
-census_fetch <- function(state_abbrev) {
-  gender <- get_acs(geography = "county", 
-               variables = c(male.18_19 = "B01001_007",
-                            male.20 = "B01001_008",
-                            male.21 = "B01001_009",
-                            male.22_24 = "B01001_010",
-                            male.25_29 = "B01001_011",
-                            male.30_34 = "B01001_012",
-                            male.35_39 = "B01001_013",
-                            male.40_44 = "B01001_014",
-                            male.45_49 = "B01001_015",
-                            male.50_54 = "B01001_016",
-                            male.55_59 = "B01001_017",
-                            male.60_61 = "B01001_018",
-                            male.62_64 = "B01001_019",
-                            male.65_66 = "B01001_020",
-                            male.67_69 = "B01001_021",
-                            male.70_74 = "B01001_022",
-                            male.75_79 = "B01001_023",
-                            male.80_84 = "B01001_024",
-                            male.85_plus = "B01001_025",
-                            female.18_19 = "B01001_031",
-                            female.20 = "B01001_032",
-                            female.21 = "B01001_033",
-                            female.22_24 = "B01001_034",
-                            female.25_29 = "B01001_035",
-                            female.30_34 = "B01001_036",
-                            female.35_39 = "B01001_037",
-                            female.40_44 = "B01001_038",
-                            female.45_49 = "B01001_039",
-                            female.50_54 = "B01001_040",
-                            female.55_59 = "B01001_041",
-                            female.60_61 = "B01001_042",
-                            female.62_64 = "B01001_043",
-                            female.65_66 = "B01001_044",
-                            female.67_69 = "B01001_045",
-                            female.70_74 = "B01001_046",
-                            female.75_79 = "B01001_047",
-                            female.80_84 = "B01001_048",
-                            female.85_plus = "B01001_049"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  ethnicity <- get_acs(geography = "county", 
-               variables = c(male.white.18_19 = "B01001A_007",
-                            male.white.20_24 = "B01001A_008",
-                            male.white.25_29 = "B01001A_009",
-                            male.white.30_34 = "B01001A_010",
-                            male.white.35_44 = "B01001A_011",
-                            male.white.45_54 = "B01001A_012",
-                            male.white.55_64 = "B01001A_013",
-                            male.white.65_74 = "B01001A_014",
-                            male.white.75_84 = "B01001A_015",
-                            male.white.85_plus = "B01001A_016",
-                            female.white.18_19 = "B01001A_022",
-                            female.white.20_24 = "B01001A_023",
-                            female.white.25_29 = "B01001A_024",
-                            female.white.30_34 = "B01001A_025",
-                            female.white.35_44 = "B01001A_026",
-                            female.white.45_54 = "B01001A_027",
-                            female.white.55_64 = "B01001A_028",
-                            female.white.65_74 = "B01001A_029",
-                            female.white.75_84 = "B01001A_030",
-                            female.white.85_plus = "B01001A_031",
-                            male.black.18_19 = "B01001B_007",
-                            male.black.20_24 = "B01001B_008",
-                            male.black.25_29 = "B01001B_009",
-                            male.black.30_34 = "B01001B_010",
-                            male.black.35_44 = "B01001B_011",
-                            male.black.45_54 = "B01001B_012",
-                            male.black.55_64 = "B01001B_013",
-                            male.black.65_74 = "B01001B_014",
-                            male.black.75_84 = "B01001B_015",
-                            male.black.85_plus = "B01001B_016",
-                            female.black.18_19 = "B01001B_022",
-                            female.black.20_24 = "B01001B_023",
-                            female.black.25_29 = "B01001B_024",
-                            female.black.30_34 = "B01001B_025",
-                            female.black.35_44 = "B01001B_026",
-                            female.black.45_54 = "B01001B_027",
-                            female.black.55_64 = "B01001B_028",
-                            female.black.65_74 = "B01001B_029",
-                            female.black.75_84 = "B01001B_030",
-                            female.black.85_plus = "B01001B_031",
-                            male.american_indian.18_19 = "B01001C_007",
-                            male.american_indian.20_24 = "B01001C_008",
-                            male.american_indian.25_29 = "B01001C_009",
-                            male.american_indian.30_34 = "B01001C_010",
-                            male.american_indian.35_44 = "B01001C_011",
-                            male.american_indian.45_54 = "B01001C_012",
-                            male.american_indian.55_64 = "B01001C_013",
-                            male.american_indian.65_74 = "B01001C_014",
-                            male.american_indian.75_84 = "B01001C_015",
-                            male.american_indian.85_plus = "B01001C_016",
-                            female.american_indian.18_19 = "B01001C_022",
-                            female.american_indian.20_24 = "B01001C_023",
-                            female.american_indian.25_29 = "B01001C_024",
-                            female.american_indian.30_34 = "B01001C_025",
-                            female.american_indian.35_44 = "B01001C_026",
-                            female.american_indian.45_54 = "B01001C_027",
-                            female.american_indian.55_64 = "B01001C_028",
-                            female.american_indian.65_74 = "B01001C_029",
-                            female.american_indian.75_84 = "B01001C_030",
-                            female.american_indian.85_plus = "B01001C_031",
-                            male.asian.18_19 = "B01001D_007",
-                            male.asian.20_24 = "B01001D_008",
-                            male.asian.25_29 = "B01001D_009",
-                            male.asian.30_34 = "B01001D_010",
-                            male.asian.35_44 = "B01001D_011",
-                            male.asian.45_54 = "B01001D_012",
-                            male.asian.55_64 = "B01001D_013",
-                            male.asian.65_74 = "B01001D_014",
-                            male.asian.75_84 = "B01001D_015",
-                            male.asian.85_plus = "B01001D_016",
-                            female.asian.18_19 = "B01001D_022",
-                            female.asian.20_24 = "B01001D_023",
-                            female.asian.25_29 = "B01001D_024",
-                            female.asian.30_34 = "B01001D_025",
-                            female.asian.35_44 = "B01001D_026",
-                            female.asian.45_54 = "B01001D_027",
-                            female.asian.55_64 = "B01001D_028",
-                            female.asian.65_74 = "B01001D_029",
-                            female.asian.75_84 = "B01001D_030",
-                            female.asian.85_plus = "B01001D_031",
-                            male.pacific_islander.18_19 = "B01001E_007",
-                            male.pacific_islander.20_24 = "B01001E_008",
-                            male.pacific_islander.25_29 = "B01001E_009",
-                            male.pacific_islander.30_34 = "B01001E_010",
-                            male.pacific_islander.35_44 = "B01001E_011",
-                            male.pacific_islander.45_54 = "B01001E_012",
-                            male.pacific_islander.55_64 = "B01001E_013",
-                            male.pacific_islander.65_74 = "B01001E_014",
-                            male.pacific_islander.75_84 = "B01001E_015",
-                            male.pacific_islander.85_plus = "B01001E_016",
-                            female.pacific_islander.18_19 = "B01001E_022",
-                            female.pacific_islander.20_24 = "B01001E_023",
-                            female.pacific_islander.25_29 = "B01001E_024",
-                            female.pacific_islander.30_34 = "B01001E_025",
-                            female.pacific_islander.35_44 = "B01001E_026",
-                            female.pacific_islander.45_54 = "B01001E_027",
-                            female.pacific_islander.55_64 = "B01001E_028",
-                            female.pacific_islander.65_74 = "B01001E_029",
-                            female.pacific_islander.75_84 = "B01001E_030",
-                            female.pacific_islander.85_plus = "B01001E_031",
-                            male.white_only.18_19 = "B01001H_007",
-                            male.white_only.20_24 = "B01001H_008",
-                            male.white_only.25_29 = "B01001H_009",
-                            male.white_only.30_34 = "B01001H_010",
-                            male.white_only.35_44 = "B01001H_011",
-                            male.white_only.45_54 = "B01001H_012",
-                            male.white_only.55_64 = "B01001H_013",
-                            male.white_only.65_74 = "B01001H_014",
-                            male.white_only.75_84 = "B01001H_015",
-                            male.white_only.85_plus = "B01001H_016",
-                            female.white_only.18_19 = "B01001H_022",
-                            female.white_only.20_24 = "B01001H_023",
-                            female.white_only.25_29 = "B01001H_024",
-                            female.white_only.30_34 = "B01001H_025",
-                            female.white_only.35_44 = "B01001H_026",
-                            female.white_only.45_54 = "B01001H_027",
-                            female.white_only.55_64 = "B01001H_028",
-                            female.white_only.65_74 = "B01001H_029",
-                            female.white_only.75_84 = "B01001H_030",
-                            female.white_only.85_plus = "B01001H_031",
-                            male.hispanic.18_19 = "B01001I_007",
-                            male.hispanic.20_24 = "B01001I_008",
-                            male.hispanic.25_29 = "B01001I_009",
-                            male.hispanic.30_34 = "B01001I_010",
-                            male.hispanic.35_44 = "B01001I_011",
-                            male.hispanic.45_54 = "B01001I_012",
-                            male.hispanic.55_64 = "B01001I_013",
-                            male.hispanic.65_74 = "B01001I_014",
-                            male.hispanic.75_84 = "B01001I_015",
-                            male.hispanic.85_plus = "B01001I_016",
-                            female.hispanic.18_19 = "B01001I_022",
-                            female.hispanic.20_24 = "B01001I_023",
-                            female.hispanic.25_29 = "B01001I_024",
-                            female.hispanic.30_34 = "B01001I_025",
-                            female.hispanic.35_44 = "B01001I_026",
-                            female.hispanic.45_54 = "B01001I_027",
-                            female.hispanic.55_64 = "B01001I_028",
-                            female.hispanic.65_74 = "B01001I_029",
-                            female.hispanic.75_84 = "B01001I_030",
-                            female.hispanic.85_plus = "B01001I_031"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  econ <- get_acs(geography = "county", 
-              variables = c(income.median = "B19013_001",
-                            below_poverty_line = "B06012_002E",
-                            between_100_to_149_percent_poverty_line = "B06012_003",
-                            above_150_percent_poverty_line = "B06012_004",
-                            # income.age-bracket.income-bracket
-                            income.under_25.under_10k = "B19037_003",
-                            income.under_25.10k_15k = "B19037_004",
-                            income.under_25.15k_20k = "B19037_005",
-                            income.under_25.20k_25k = "B19037_006",
-                            income.under_25.25k_30k = "B19037_007",
-                            income.under_25.30k_35k = "B19037_008",
-                            income.under_25.35k_40k = "B19037_009",
-                            income.under_25.40k_45k = "B19037_010",
-                            income.under_25.45k_50k = "B19037_011",
-                            income.under_25.50k_60k = "B19037_012",
-                            income.under_25.60k_75k = "B19037_013",
-                            income.under_25.75k_100k = "B19037_014",
-                            income.under_25.100k_125k = "B19037_015",
-                            income.under_25.125k_150k = "B19037_016",
-                            income.under_25.150k_200k = "B19037_017",
-                            income.under_25.200k_plus = "B19037_018",
-                            income.25_44.under_10k = "B19037_020",
-                            income.25_44.10k_15k = "B19037_021",
-                            income.25_44.15k_20k = "B19037_022",
-                            income.25_44.20k_25k = "B19037_023",
-                            income.25_44.25k_30k = "B19037_024",
-                            income.25_44.30k_35k = "B19037_025",
-                            income.25_44.35k_40k = "B19037_026",
-                            income.25_44.40k_45k = "B19037_027",
-                            income.25_44.45k_50k = "B19037_028",
-                            income.25_44.50k_60k = "B19037_029",
-                            income.25_44.60k_75k = "B19037_030",
-                            income.25_44.75k_100k = "B19037_031",
-                            income.25_44.100k_125k = "B19037_032",
-                            income.25_44.125k_150k = "B19037_033",
-                            income.25_44.150k_200k = "B19037_034",
-                            income.25_44.200k_plus = "B19037_035",
-                            income.45_64.under_10k = "B19037_037",
-                            income.45_64.10k_15k = "B19037_038",
-                            income.45_64.15k_20k = "B19037_039",
-                            income.45_64.20k_25k = "B19037_040",
-                            income.45_64.25k_30k = "B19037_041",
-                            income.45_64.30k_35k = "B19037_042",
-                            income.45_64.35k_40k = "B19037_043",
-                            income.45_64.40k_45k = "B19037_044",
-                            income.45_64.45k_50k = "B19037_045",
-                            income.45_64.50k_60k = "B19037_046",
-                            income.45_64.60k_75k = "B19037_047",
-                            income.45_64.75k_100k = "B19037_048",
-                            income.45_64.100k_125k = "B19037_049",
-                            income.45_64.125k_150k = "B19037_050",
-                            income.45_64.150k_200k = "B19037_051",
-                            income.45_64.200k_plus = "B19037_052",
-                            income.65_plus.under_10k = "B19037_054",
-                            income.65_plus.10k_15k = "B19037_055",
-                            income.65_plus.15k_20k = "B19037_056",
-                            income.65_plus.20k_25k = "B19037_057",
-                            income.65_plus.25k_30k = "B19037_058",
-                            income.65_plus.30k_35k = "B19037_059",
-                            income.65_plus.35k_40k = "B19037_060",
-                            income.65_plus.40k_45k = "B19037_061",
-                            income.65_plus.45k_50k = "B19037_062",
-                            income.65_plus.50k_60k = "B19037_063",
-                            income.65_plus.60k_75k = "B19037_064",
-                            income.65_plus.75k_100k = "B19037_065",
-                            income.65_plus.100k_125k = "B19037_066",
-                            income.65_plus.125k_150k = "B19037_067",
-                            income.65_plus.150k_200k = "B19037_068",
-                            income.65_plus.200k_plus = "B19037_069"
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  education <- get_acs(geography = "county", 
-              variables = c(male.18_24.less_than_9th_grade = "B15001_004",
-                            male.18_24.less_than_high_school = "B15001_005",
-                            male.18_24.high_school_grad = "B15001_006",
-                            male.18_24.some_college = "B15001_007",
-                            male.18_24.associate_degree = "B15001_008",
-                            male.18_24.bachelor_degree = "B15001_009",
-                            male.18_24.graduate_degree = "B15001_010",
-                            male.25_34.less_than_9th_grade = "B15001_012",
-                            male.25_34.less_than_high_school = "B15001_013",
-                            male.25_34.high_school_grad = "B15001_014",
-                            male.25_34.some_college = "B15001_015",
-                            male.25_34.associate_degree = "B15001_016",
-                            male.25_34.bachelor_degree = "B15001_017",
-                            male.25_34.graduate_degree = "B15001_018",
-                            male.35_44.less_than_9th_grade = "B15001_020",
-                            male.35_44.less_than_high_school = "B15001_021",
-                            male.35_44.high_school_grad = "B15001_022",
-                            male.35_44.some_college = "B15001_023",
-                            male.35_44.associate_degree = "B15001_024",
-                            male.35_44.bachelor_degree = "B15001_025",
-                            male.35_44.graduate_degree = "B15001_026",
-                            male.45_64.less_than_9th_grade = "B15001_028",
-                            male.45_64.less_than_high_school = "B15001_029",
-                            male.45_64.high_school_grad = "B15001_030",
-                            male.45_64.some_college = "B15001_031",
-                            male.45_64.associate_degree = "B15001_032",
-                            male.45_64.bachelor_degree = "B15001_033",
-                            male.45_64.graduate_degree = "B15001_034",
-                            male.65_plus.less_than_9th_grade = "B15001_036",
-                            male.65_plus.less_than_high_school = "B15001_037",
-                            male.65_plus.high_school_grad = "B15001_038",
-                            male.65_plus.some_college = "B15001_039",
-                            male.65_plus.associate_degree = "B15001_040",
-                            male.65_plus.bachelor_degree = "B15001_041",
-                            male.65_plus.graduate_degree = "B15001_042",
-                            # 25-64 
-                            female.18_24.less_than_9th_grade = "B15001_045",
-                            female.18_24.less_than_high_school = "B15001_046",
-                            female.18_24.high_school_grad = "B15001_047",
-                            female.18_24.some_college = "B15001_048",
-                            female.18_24.associate_degree = "B15001_049",
-                            female.18_24.bachelor_degree = "B15001_050",
-                            female.18_24.graduate_degree = "B15001_051",
-                            female.25_34.less_than_9th_grade = "B15001_053",
-                            female.25_34.less_than_high_school = "B15001_054",
-                            female.25_34.high_school_grad = "B15001_055",
-                            female.25_34.some_college = "B15001_056",
-                            female.25_34.associate_degree = "B15001_057",
-                            female.25_34.bachelor_degree = "B15001_058",
-                            female.25_34.graduate_degree = "B15001_059",
-                            female.35_44.less_than_9th_grade = "B15001_061",
-                            female.35_44.less_than_high_school = "B15001_062",
-                            female.35_44.high_school_grad = "B15001_063",
-                            female.35_44.some_college = "B15001_064",
-                            female.35_44.associate_degree = "B15001_065",
-                            female.35_44.bachelor_degree = "B15001_066",
-                            female.35_44.graduate_degree = "B15001_067",
-                            female.45_64.less_than_9th_grade = "B15001_069",
-                            female.45_64.less_than_high_school = "B15001_070",
-                            female.45_64.high_school_grad = "B15001_071",
-                            female.45_64.some_college = "B15001_072",
-                            female.45_64.associate_degree = "B15001_073",
-                            female.45_64.bachelor_degree = "B15001_074",
-                            female.45_64.graduate_degree = "B15001_075",
-                            female.65_plus.less_than_9th_grade = "B15001_077",
-                            female.65_plus.less_than_high_school = "B15001_078",
-                            female.65_plus.high_school_grad = "B15001_079",
-                            female.65_plus.some_college = "B15001_080",
-                            female.65_plus.associate_degree = "B15001_081",
-                            female.65_plus.bachelor_degree = "B15001_082",
-                            female.65_plus.graduate_degree = "B15001_083"
-                            # geographic mobility, B07001_001E et seq.
-                            # geographic mobility AND income (as multiple of poverty level) B07012 et seq
-                            # B08302 time leaving home to go to work
-                            # B08134 how long it takes to get to work by travel time
-  
-                            # how to get to work B08006
-                            # grandparents B10051
-                            # household type [nonfamily, single male, single female, householder living alone, householder not alone]
-                            # B12002 marital status
-                            # B12006 marital status by labor force participation
-                            # B12007 median age at first marriage (by sex, age, race)
-                            # B12504 median duration of current marriage by (sex,age) by marital status
-                            # B13002 women 15 to 50 who had a birth in past 12 months by marital status and age
-                            # B15001 SEX BY AGE BY EDUCATIONAL ATTAINMENT FOR THE POPULATION 18 YEARS AND OVER  
-                            # B16001 language spoken at home
-                            # B17001 poverty status in past 12 months by sex by age
-                            # B18 disability status
-                            # B19 household income
-                            # B20 sex by earnings in past 12 months
-                            # B21 sex by veteran status
-                            # B22 receipts by food stamps
-                            # B23 sex by age by employment status
-                            # B24 sex by occupation and median earnings in past 12 months
-                            # B25 Housing units
-                            # B26 group quarters population
-                            # B27 health insurance coverage status
-                            # B28 types of computers in household
-                            # C02003 detailed race
-                            # C15 sex by educational attainment
-                            # C16 languages spoken at home
-                            # C17 ratio of income to poverty level in past 12 months
-                            # C18 age by number of disabilities
-                            # C21 sex by age by veteran status for civilian population
-                            ), 
-              year = 2016,
-              output = "wide",
-              state = state_abbrev)
-  inner_join(gender,ethnicity,by=c('GEOID','NAME')) %>%
-    inner_join(education,by=c('GEOID','NAME')) %>%
-    inner_join(econ,by=c('GEOID','NAME'))
-}
-
-save_census_as_csv <- function(state_abbrev) {
-  write.csv(census_fetch(state_abbrev), file=paste0(state_abbrev,'.csv'), row.names=FALSE)
-}
-
-save_all_exit_polled_states <- function() {
-  for (state in levels(unique(national_exit_polls$state))) {
+state_census_data <- function() {
+  df <- data.frame()
+  for (state in unique(exit_poll_df$state)) {
     if (state != "nation") {
-      save_census_as_csv(state);
+      state_data <- read.csv(file=paste0('../data/census/acs5/2016/', state, '.csv'), header=TRUE, sep=',')
+      state_data$state = state;
+      df <- rbind(df, state_data)
     }
   }
+  df
 }
 ```
 
-Train on the exit polls to create the coefficients for the logistic
-regression, then use that to predict the turnout by county.
-
-# Maximum turnout
-
-Assuming there was maximum voter turnout, what would the election have
-looked like in our polled states? We can use post-stratification to
-estimate the proportion of each county won by Clinton, then multiply by
-the voting age population to estimate the votes per county. Adding up
-all the counties’s votes will give us the estimated votes for the state,
-and if it is 50%+1 or greater of the voting age population Clinton would
-have won the state.
-
-We begin with computing the voting age population for a given county
-(row of the CSV file):
+We load the census data and renormalize the states, to match the exit
+poll’s `state` factors.
 
 ``` r
-voting_age_pop <- function(row) {
-  sum(row[,c("female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE","male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE")])
-}
+census_data <- categorize(state_census_data())
+census_data$state <- factor(census_data$state, levels(states_factors))
 ```
 
-## Post Stratified Terms
+# Estimating Voter Turnout
 
-We start with the race and gender terms, age (for non-retirees), and
-education.
+## State Effects
 
-``` r
-safe_sum <- function(row) {
-  if (nrow(row) == 0 | ncol(row) == 0) {
-    return(0);
-  }
-  return(sum(row,na.rm=TRUE))
-}
-count_high_school_educated <- function(row) {
-  safe_sum(row[,grep('.(less_than_9th_gradeE|less_than_high_schoolE|high_school_gradE)$',names(row))])
-}
-count_some_college <- function(row) {
-  safe_sum(row[,grep(".(some_collegeE|associate_degreeE)$",names(row))])
-}
-count_college_grads <- function(row) {
-  safe_sum(row[,grep(".bachelor_degreeE$",names(row))])
-}
-count_postgrads <- function(row) {
-  safe_sum(row[,grep(".graduate_degreeE$",names(row))])
-}
-count_retirees <- function(row) {
-  safe_sum(row[,c("male.65_66E","male.67_69E","male.70_74E","male.75_79E","male.80_84E","male.85_plusE","female.65_66E","female.67_69E","female.70_74E","female.75_79E","female.80_84E","female.85_plusE")])
-}
-weigh_county <- function(row) {
-  (safe_sum(row[,grep(pattern='^male.white.*E$',names(row))])*invlogit(beta0+beta_white_male) +
-    safe_sum(row[,grep(pattern='^female.white.*E$',names(row))])*invlogit(beta0+beta_white_female) +
-    safe_sum(row[,grep(pattern='^male.black.*E$',names(row))])*invlogit(beta0+beta_black_male) +
-    safe_sum(row[,grep(pattern='^female.black.*E$',names(row))])*invlogit(beta0+beta_black_female) +
-    safe_sum(row[,grep(pattern='^male.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_male) +
-    safe_sum(row[,grep(pattern='^female.hispanic.*E$',names(row))])*invlogit(beta0+beta_latino_female) +
-    safe_sum(row[,grep(pattern='male.a*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
-    safe_sum(row[,grep(pattern='male.p*E$',names(row))])*invlogit(beta0+beta_others_gender) + 
-    count_high_school_educated(row)*invlogit(beta0-1*beta_education) +
-    count_some_college(row)*invlogit(beta0+0*beta_education) + 
-    count_college_grads(row)*invlogit(beta0+1*beta_education) + 
-    count_postgrads(row)*invlogit(beta0+2*beta_education) + 
-     safe_sum(row[,c("male.18_19E","female.18_19E")])*invlogit(beta_age*(18.5-46)) +
-     safe_sum(row[,c("male.20E","female.20E")])*invlogit(beta_age*(20-46)) +
-     safe_sum(row[,c("male.21E","female.21E")])*invlogit(beta_age*(21-46)) +
-     safe_sum(row[,c("male.22_24E","female.22_24E")])*invlogit(beta_age*(23-46)) +
-     safe_sum(row[,c("male.25_29E","female.25_29E")])*invlogit(beta_age*(0.5*(25+29)-46)) +
-     safe_sum(row[,c("male.30_34E","female.30_34E")])*invlogit(beta_age*(0.5*(30+34)-46)) +
-     safe_sum(row[,c("male.35_39E","female.35_39E")])*invlogit(beta_age*(0.5*(35+39) - 46)) + 
-     safe_sum(row[,c("male.40_44E","female.40_44E")])*invlogit(beta_age*(0.5*(40+44) - 46)) + 
-     safe_sum(row[,c("male.45_49E","female.45_49E")])*invlogit(beta_age*(0.5*(45+49) - 46)) + 
-     safe_sum(row[,c("male.50_54E","female.50_54E")])*invlogit(beta_age*(0.5*(50+54) - 46)) + 
-     safe_sum(row[,c("male.55_59E","female.55_59E")])*invlogit(beta_age*(0.5*(55+59) - 46)) + 
-     safe_sum(row[,c("male.60_61E","female.60_61E")])*invlogit(beta_age*(60.5 - 46)) + 
-     safe_sum(row[,c("male.62_64E","female.62_64E")])*invlogit(beta_age*(63 - 46)) + 
-    count_retirees(row)*invlogit(beta0+beta_retiree))/(
-  safe_sum(row[,grep(pattern="male.white.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.black.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.hispanic.*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.a*E$",names(row))]) +
-    safe_sum(row[,grep(pattern="male.p*E$",names(row))]) + 
-    count_high_school_educated(row) +
-    count_some_college(row) + 
-    count_college_grads(row) + 
-    count_postgrads(row) +
-    safe_sum(row[,c("male.18_19E","male.20E","male.21E","male.22_24E","male.25_29E","male.30_34E","male.35_39E","male.40_44E","male.45_49E","male.50_54E","male.55_59E","male.60_61E","male.62_64E","female.18_19E","female.20E","female.21E","female.22_24E","female.25_29E","female.30_34E","female.35_39E","female.40_44E","female.45_49E","female.50_54E","female.55_59E","female.60_61E","female.62_64E"
-)]) +
-    count_retirees(row)
-  )
-}
-```
-
-The expected number of votes per county would be the county’s weight
-multiplied by its voting age population:
+We will compute the coefficient `(1 | state)`. This is
+`log(Pr(turnout|state)/Pr(!turnout|state)) -
+log(Pr(turnout)/Pr(!turnout))`.
 
 ``` r
-county_expected_votes <- function(row) {
-  weigh_county(row)*voting_age_pop(row)
+turnout_state_log_coefs <- function(election_data, census_data) {
+  census_data %>% 
+    group_by(state) %>%
+    summarize(vap = sum(voting_age)) %>%
+    inner_join(election_data %>% group_by(state) %>% summarize(tv = sum(totalvotes)), by="state") %>%
+    transmute(state,
+              proportion = tv/vap) %>%
+    transmute(state,
+              beta_state = log(proportion/(1 - proportion))) %>%
+    unique
 }
 ```
 
 ``` r
-state_expected_votes <- function(state) {
-  state %>% rowwise %>% county_expected_votes %>% sum
-}
-```
-
-We can then estimate if Clinton will win the state by comparing the
-expected votes (summed over counties) to 50%+1 of the population:
-
-``` r
-would_clinton_have_won <- function(state) {
-  expected_votes <- (state %>% rowwise %>% county_expected_votes %>% sum);
-  vap <- voting_age_pop(state);
-  print(paste0(expected_votes,' > ',vap*0.5))
-  return(expected_votes > floor(vap*0.5))
-}
-```
-
-``` r
-states <- levels(unique(national_exit_polls$state))
-states <- states[which(states!='nation')]
-df <- data.frame(
-  state=states
-#  expected_votes = map(states,function(x) {
-#read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
-#  }),
-#  threshold = map(states,function(x) {
-#    1+floor((read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',x,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
-#  })
-)
-state_expected_votes_from_name <- function(name) {
-  (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% rowwise %>% county_expected_votes %>% sum)
-}
-threshold_for_state <- function(name) {
-  1+floor( (read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',name,'.csv'),header=TRUE,sep=',') %>% voting_age_pop)*0.5)
-}
-df <- df %>% mutate(expected_votes=map(state,state_expected_votes_from_name),
-                    threshold=map(state,threshold_for_state)
-                    )
-
-max_turnout_test <- function() {
-  for (state in levels(unique(national_exit_polls$state))) {
-    if (state != "nation") {
-      state_data <- read.csv(file=paste0('D:/src/pa/data/census/acs5/2016/',state,'.csv'),header=TRUE,sep=',')
-      print(paste0(state,' => ',would_clinton_have_won(state_data)))
-    }
-  }
-}
-kable(df)
+kable(turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_data))
 ```
 
 <table>
@@ -2401,15 +280,9 @@ state
 
 </th>
 
-<th style="text-align:left;">
+<th style="text-align:right;">
 
-expected\_votes
-
-</th>
-
-<th style="text-align:left;">
-
-threshold
+beta\_state
 
 </th>
 
@@ -2427,15 +300,9 @@ Arizona
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-2475103.07316235
-
-</td>
-
-<td style="text-align:left;">
-
-2554480
+0.0581703
 
 </td>
 
@@ -2449,15 +316,9 @@ California
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-14843310.9908173
-
-</td>
-
-<td style="text-align:left;">
-
-14756962
+\-0.0780185
 
 </td>
 
@@ -2471,15 +332,9 @@ Colorado
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1967640.59771496
-
-</td>
-
-<td style="text-align:left;">
-
-2056558
+0.7351775
 
 </td>
 
@@ -2493,15 +348,9 @@ Florida
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-7842625.08975677
-
-</td>
-
-<td style="text-align:left;">
-
-7934088
+0.3790481
 
 </td>
 
@@ -2515,15 +364,9 @@ Georgia
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-3885785.57194592
-
-</td>
-
-<td style="text-align:left;">
-
-3802073
+0.1648291
 
 </td>
 
@@ -2537,15 +380,9 @@ Illinois
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-4838092.66715181
-
-</td>
-
-<td style="text-align:left;">
-
-4930528
+0.2562046
 
 </td>
 
@@ -2559,15 +396,9 @@ Indiana
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-2353876.66063265
-
-</td>
-
-<td style="text-align:left;">
-
-2503794
+0.1851792
 
 </td>
 
@@ -2581,15 +412,9 @@ Iowa
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1096646.2574918
-
-</td>
-
-<td style="text-align:left;">
-
-1189538
+0.6555144
 
 </td>
 
@@ -2603,15 +428,9 @@ Kentucky
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1580471.93551052
-
-</td>
-
-<td style="text-align:left;">
-
-1698900
+0.2667415
 
 </td>
 
@@ -2625,15 +444,9 @@ Maine
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-485979.062167357
-
-</td>
-
-<td style="text-align:left;">
-
-535212
+0.8235900
 
 </td>
 
@@ -2647,15 +460,9 @@ Michigan
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-3665512.8660522
-
-</td>
-
-<td style="text-align:left;">
-
-3840919
+0.5097904
 
 </td>
 
@@ -2669,15 +476,9 @@ Minnesota
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1945975.40230296
-
-</td>
-
-<td style="text-align:left;">
-
-2084386
+0.8779563
 
 </td>
 
@@ -2691,15 +492,9 @@ Missouri
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-2205013.06704727
-
-</td>
-
-<td style="text-align:left;">
-
-2332264
+0.4132111
 
 </td>
 
@@ -2713,15 +508,9 @@ Nevada
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1064836.05466317
-
-</td>
-
-<td style="text-align:left;">
-
-1087271
+0.0701401
 
 </td>
 
@@ -2735,15 +524,9 @@ New Hampshire
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-485630.96656623
-
-</td>
-
-<td style="text-align:left;">
-
-530263
+0.8559753
 
 </td>
 
@@ -2757,15 +540,9 @@ New Jersey
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-3415922.20962055
-
-</td>
-
-<td style="text-align:left;">
-
-3452822
+0.2452099
 
 </td>
 
@@ -2779,15 +556,9 @@ New Mexico
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-786405.725584163
-
-</td>
-
-<td style="text-align:left;">
-
-790460
+0.0198866
 
 </td>
 
@@ -2801,15 +572,9 @@ New York
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-7712203.90447862
-
-</td>
-
-<td style="text-align:left;">
-
-7735525
+\-0.0072810
 
 </td>
 
@@ -2823,15 +588,9 @@ North Carolina
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-3778591.41449635
-
-</td>
-
-<td style="text-align:left;">
-
-3826502
+0.4877199
 
 </td>
 
@@ -2845,15 +604,9 @@ Ohio
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-4227504.84922629
-
-</td>
-
-<td style="text-align:left;">
-
-4473541
+0.4655628
 
 </td>
 
@@ -2867,15 +620,9 @@ Oregon
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1457130.04248031
-
-</td>
-
-<td style="text-align:left;">
-
-1560437
+0.5809006
 
 </td>
 
@@ -2889,15 +636,9 @@ Pennsylvania
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-4770210.65312913
-
-</td>
-
-<td style="text-align:left;">
-
-5039855
+0.4334794
 
 </td>
 
@@ -2911,15 +652,9 @@ South Carolina
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-1867173.46009275
-
-</td>
-
-<td style="text-align:left;">
-
-1874414
+0.2451518
 
 </td>
 
@@ -2933,15 +668,9 @@ Texas
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-9985952.96612459
-
-</td>
-
-<td style="text-align:left;">
-
-9911980
+\-0.1908018
 
 </td>
 
@@ -2955,15 +684,9 @@ Utah
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-960356.070588747
-
-</td>
-
-<td style="text-align:left;">
-
-1021616
+0.2158158
 
 </td>
 
@@ -2977,15 +700,9 @@ Virginia
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-3186845.09203355
-
-</td>
-
-<td style="text-align:left;">
-
-3222373
+0.4822370
 
 </td>
 
@@ -2999,15 +716,9 @@ Washington
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-2583054.16494792
-
-</td>
-
-<td style="text-align:left;">
-
-2734276
+0.3509546
 
 </td>
 
@@ -3021,15 +732,9 @@ Wisconsin
 
 </td>
 
-<td style="text-align:left;">
+<td style="text-align:right;">
 
-2073709.49346675
-
-</td>
-
-<td style="text-align:left;">
-
-2226651
+0.7001138
 
 </td>
 
@@ -3039,8 +744,3435 @@ Wisconsin
 
 </table>
 
-# Voter turnout
+## Education
 
-We are told there were 138,846,571 ballots cast in 2016 but 230,931,921
-eligible voters in 2016 (and 250,055,734 people of voting age).
-(<http://www.electproject.org/2016g>)
+The coefficients of interest are:
+
+``` 
+                     (1 | education) + (1 | married:education) +
+                     (1 | education:gender) + (1 | state:education) +
+                     (1 | ethnicity:education) + (1 | age:education) +
+                     (1 | state:education:age) + (1 | education:age:gender)
+                     + (non education coefficients)
+```
+
+Similarly, education coefficients are determined thus using crude
+estimates for logistic regression coefficients. We estimate the number
+of voters with a level `ed` of education by taking the `options_perc
+- 2z*wilson_interval_width` proportion of the total votes cast (this is
+the assumption that the exit polls reflect the composition of voters).
+This lower bound of the Wilson interval is stored in the `lower_bound`
+which we use as the numerator of the logistic coefficient computation
+(the logarithm of the ratio of `ed` voters to `ed` non-voters).
+
+### Overall Factor
+
+We compute the `(1|education)` coefficient
+thus:
+
+``` r
+turnout_education_log_coefs <- function(exit_polls, election_data, census_data, z = 2) {
+  assert_that(all(is.state(exit_polls$state) || exit_polls$state == "nation"))
+  assert_that(all(is.numeric(exit_polls$num_respondents)))
+  assert_that(all(is.numeric(exit_polls$options_perc)))
+  assert_that(all(is.numeric(census_data$education_high_school)))
+  assert_that(all(is.numeric(census_data$education_some_college)))
+  assert_that(all(is.numeric(census_data$education_college_grad)))
+  assert_that(all(is.numeric(census_data$education_postgrad)))
+  assert_that(all(is.state(census_data$state)))
+  assert_that(all(has.electoral_delegates(election_data$state)))
+  assert_that(all(is.numeric(election_data$totalvotes)))
+  exit_polls %>%
+    filter(questions=="Education", state=="nation") %>%
+    group_by(options) %>%
+    mutate(p = sum(0.01*options_perc*num_respondents)/sum(num_respondents),
+           count = sum(num_respondents),
+           width = wilson_width(p, count, z),
+           total_votes = sum(election_data$totalvotes),
+           lower_bound = (p - 2*z*width)*total_votes,
+           high_school = sum(census_data$education_high_school),
+           some_college = sum(census_data$education_some_college) + 0.5*sum(census_data$education_assoc_degree),
+           college_grad = sum(census_data$education_college_grad) + 0.5*sum(census_data$education_assoc_degree),
+           postgrad = sum(census_data$education_postgrad),
+           proportion = (ifelse(options == "High school or less",
+                                   min(0.99, lower_bound/high_school),
+                                   ifelse(options == "Some college",
+                                          min(0.99, lower_bound/some_college),
+                                          ifelse(options == "College graduate",
+                                                 min(0.99, lower_bound/college_grad),
+                                                 ifelse(options == "Postgraduate",
+                                                        min(0.99, lower_bound/postgrad),
+                                                        NaN)))))) %>%
+    transmute(beta_education = log(proportion/(1.0-proportion)),
+              tau_education = 2*(4*width/(0.01*proportion))**-2) %>%
+    unique
+}
+```
+
+``` r
+kable(turnout_education_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_education
+
+</th>
+
+<th style="text-align:right;">
+
+tau\_education
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.9967572
+
+</td>
+
+<td style="text-align:right;">
+
+0.0377878
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+<td style="text-align:right;">
+
+1.9105408
+
+</td>
+
+<td style="text-align:right;">
+
+0.2676457
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+<td style="text-align:right;">
+
+3.4126658
+
+</td>
+
+<td style="text-align:right;">
+
+0.3305849
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+<td style="text-align:right;">
+
+4.5951199
+
+</td>
+
+<td style="text-align:right;">
+
+0.5096226
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+The difficulty is there are more people in the exit polls claiming to be
+educated than the census data corroborates. Although postgrads are
+within the margin of error (roughly 21.9m people claim to be postgrads
+in the exit poll, whereas the census claims there should be 20.1m
+postgrads), the number of college graduates is off by 5m. I suspect
+people may consider receiving an associate’s degree as being a “college
+graduate”, which complicates the analysis. For simplicity, I suppose 50%
+of associate degrees call themselves college graduates, the other 50%
+say they have “some college” level of education.
+
+### Interacting with State
+
+We compute the `(1|education:state)` coefficient
+thus:
+
+``` r
+turnout_education_state_log_coefs <- function(exit_polls, election_data, census_data, z = 2) {
+  assert_that(all(is.state(exit_polls$state) || exit_polls$state == "nation"))
+  assert_that(all(is.numeric(exit_polls$num_respondents)))
+  assert_that(all(is.numeric(exit_polls$options_perc)))
+  assert_that(all(is.numeric(census_data$education_high_school)))
+  assert_that(all(is.numeric(census_data$education_some_college)))
+  assert_that(all(is.numeric(census_data$education_college_grad)))
+  assert_that(all(is.numeric(census_data$education_postgrad)))
+  assert_that(all(is.state(census_data$state)))
+  assert_that(all(has.electoral_delegates(election_data$state)))
+  assert_that(all(is.numeric(election_data$totalvotes)))
+  education_effects <- turnout_education_log_coefs(exit_polls, election_data, census_data, z)
+  state_effects <- turnout_state_log_coefs(election_data, census_data)
+  exit_polls %>%
+    filter(questions=="Education", state!="nation") %>%
+    mutate(options = factor(options)) %>%
+    group_by(state) %>% # this group_by is responsible for the ":state" factor in `(1|education:state)`
+    mutate(width = wilson_width(0.01*options_perc, num_respondents, z),
+           center = wilson_center(0.01*options_perc, num_respondents, z),
+           total_votes = sum(election_data[which(election_data$state %in% state & !is.na(election_data$totalvotes)),]$totalvotes),
+           estimate_voters_by_education = (center + 2*z*width)*total_votes,
+           high_school = sum(census_data[which(census_data$state %in% state),]$education_high_school),
+           some_college = sum(census_data[which(census_data$state %in% state),]$education_some_college) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
+           college_grad = sum(census_data[which(census_data$state %in% state),]$education_college_grad) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
+           postgrad = sum(census_data[which(census_data$state %in% state),]$education_postgrad)
+    ) %>%
+    mutate(proportion = (ifelse(options == "High school or less",
+                                min(0.99, estimate_voters_by_education/high_school),
+                                ifelse(options == "Some college",
+                                       min(0.99, estimate_voters_by_education/some_college),
+                                       ifelse(options == "College graduate",
+                                              min(0.99, estimate_voters_by_education/college_grad),
+                                              ifelse(options == "Postgraduate",
+                                                     min(0.99, estimate_voters_by_education/postgrad),
+                                                     NaN)))))) %>%
+    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state,
+              tau_education = 2*(4*width/(0.01*proportion))**-2,
+              options) %>%
+    arrange(state,options)
+}
+```
+
+``` r
+kable(turnout_education_state_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_education
+
+</th>
+
+<th style="text-align:right;">
+
+tau\_education
+
+</th>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.1415552
+
+</td>
+
+<td style="text-align:right;">
+
+0.0079489
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+0.0275928
+
+</td>
+
+<td style="text-align:right;">
+
+0.0028902
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0581703
+
+</td>
+
+<td style="text-align:right;">
+
+0.0415381
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2712988
+
+</td>
+
+<td style="text-align:right;">
+
+0.0046544
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.4878580
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072423
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+0.0105853
+
+</td>
+
+<td style="text-align:right;">
+
+0.0039820
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.2859139
+
+</td>
+
+<td style="text-align:right;">
+
+0.0464237
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1827746
+
+</td>
+
+<td style="text-align:right;">
+
+0.0061705
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.1720948
+
+</td>
+
+<td style="text-align:right;">
+
+0.0098322
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+0.5866196
+
+</td>
+
+<td style="text-align:right;">
+
+0.0091467
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7351775
+
+</td>
+
+<td style="text-align:right;">
+
+0.0255889
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.4262590
+
+</td>
+
+<td style="text-align:right;">
+
+0.0126414
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.4054107
+
+</td>
+
+<td style="text-align:right;">
+
+0.0192356
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2823325
+
+</td>
+
+<td style="text-align:right;">
+
+0.0070722
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3790481
+
+</td>
+
+<td style="text-align:right;">
+
+0.0910996
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1667263
+
+</td>
+
+<td style="text-align:right;">
+
+0.0167640
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0551759
+
+</td>
+
+<td style="text-align:right;">
+
+0.0152014
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0809546
+
+</td>
+
+<td style="text-align:right;">
+
+0.0046114
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1648291
+
+</td>
+
+<td style="text-align:right;">
+
+0.0600823
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8726722
+
+</td>
+
+<td style="text-align:right;">
+
+0.0122656
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7365448
+
+</td>
+
+<td style="text-align:right;">
+
+0.0069153
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+0.3899782
+
+</td>
+
+<td style="text-align:right;">
+
+0.0033163
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2562046
+
+</td>
+
+<td style="text-align:right;">
+
+0.0190333
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.3692142
+
+</td>
+
+<td style="text-align:right;">
+
+0.0061774
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.8873302
+
+</td>
+
+<td style="text-align:right;">
+
+0.0117537
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2509909
+
+</td>
+
+<td style="text-align:right;">
+
+0.0023429
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1851792
+
+</td>
+
+<td style="text-align:right;">
+
+0.0436520
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0045932
+
+</td>
+
+<td style="text-align:right;">
+
+0.0070317
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.7313277
+
+</td>
+
+<td style="text-align:right;">
+
+0.0150704
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4248224
+
+</td>
+
+<td style="text-align:right;">
+
+0.0051318
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.6555144
+
+</td>
+
+<td style="text-align:right;">
+
+0.0755960
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5977181
+
+</td>
+
+<td style="text-align:right;">
+
+0.0101835
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.7917464
+
+</td>
+
+<td style="text-align:right;">
+
+0.0142346
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2301632
+
+</td>
+
+<td style="text-align:right;">
+
+0.0014072
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2667415
+
+</td>
+
+<td style="text-align:right;">
+
+0.0264043
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.7749679
+
+</td>
+
+<td style="text-align:right;">
+
+0.0053705
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0802997
+
+</td>
+
+<td style="text-align:right;">
+
+0.0183473
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2473596
+
+</td>
+
+<td style="text-align:right;">
+
+0.0074085
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8235900
+
+</td>
+
+<td style="text-align:right;">
+
+0.0407690
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8142094
+
+</td>
+
+<td style="text-align:right;">
+
+0.0154023
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.2339711
+
+</td>
+
+<td style="text-align:right;">
+
+0.0193335
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2695681
+
+</td>
+
+<td style="text-align:right;">
+
+0.0056064
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5097904
+
+</td>
+
+<td style="text-align:right;">
+
+0.0675539
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.4637958
+
+</td>
+
+<td style="text-align:right;">
+
+0.0089357
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.2494033
+
+</td>
+
+<td style="text-align:right;">
+
+0.0057913
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3394692
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072593
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8779563
+
+</td>
+
+<td style="text-align:right;">
+
+0.0313508
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.6897048
+
+</td>
+
+<td style="text-align:right;">
+
+0.0064813
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7132638
+
+</td>
+
+<td style="text-align:right;">
+
+0.0167136
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0850333
+
+</td>
+
+<td style="text-align:right;">
+
+0.0043558
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4132111
+
+</td>
+
+<td style="text-align:right;">
+
+0.0421526
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9507140
+
+</td>
+
+<td style="text-align:right;">
+
+0.0094967
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.9946169
+
+</td>
+
+<td style="text-align:right;">
+
+0.0158929
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2269524
+
+</td>
+
+<td style="text-align:right;">
+
+0.0030122
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0701401
+
+</td>
+
+<td style="text-align:right;">
+
+0.0667372
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3467749
+
+</td>
+
+<td style="text-align:right;">
+
+0.0064952
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.1971225
+
+</td>
+
+<td style="text-align:right;">
+
+0.0107975
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4788045
+
+</td>
+
+<td style="text-align:right;">
+
+0.0094677
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.8559753
+
+</td>
+
+<td style="text-align:right;">
+
+0.0484646
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5165930
+
+</td>
+
+<td style="text-align:right;">
+
+0.0129428
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-4.0819715
+
+</td>
+
+<td style="text-align:right;">
+
+0.0036186
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3686516
+
+</td>
+
+<td style="text-align:right;">
+
+0.0031496
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.7145390
+
+</td>
+
+<td style="text-align:right;">
+
+0.0155420
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1348069
+
+</td>
+
+<td style="text-align:right;">
+
+0.0061023
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5073519
+
+</td>
+
+<td style="text-align:right;">
+
+0.0160333
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+0.0436729
+
+</td>
+
+<td style="text-align:right;">
+
+0.0035557
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0198866
+
+</td>
+
+<td style="text-align:right;">
+
+0.0372185
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0428231
+
+</td>
+
+<td style="text-align:right;">
+
+0.0062576
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.2802108
+
+</td>
+
+<td style="text-align:right;">
+
+0.0058617
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+0.1293945
+
+</td>
+
+<td style="text-align:right;">
+
+0.0029533
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5420632
+
+</td>
+
+<td style="text-align:right;">
+
+0.0209656
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.5369690
+
+</td>
+
+<td style="text-align:right;">
+
+0.0077766
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.3244549
+
+</td>
+
+<td style="text-align:right;">
+
+0.0249066
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2032084
+
+</td>
+
+<td style="text-align:right;">
+
+0.0098564
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4877199
+
+</td>
+
+<td style="text-align:right;">
+
+0.0932935
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1559519
+
+</td>
+
+<td style="text-align:right;">
+
+0.0193872
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.0958338
+
+</td>
+
+<td style="text-align:right;">
+
+0.0248165
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3598185
+
+</td>
+
+<td style="text-align:right;">
+
+0.0054180
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4655628
+
+</td>
+
+<td style="text-align:right;">
+
+0.0774263
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.1030040
+
+</td>
+
+<td style="text-align:right;">
+
+0.0150625
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7443023
+
+</td>
+
+<td style="text-align:right;">
+
+0.0103692
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+0.3269813
+
+</td>
+
+<td style="text-align:right;">
+
+0.0057078
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.5809006
+
+</td>
+
+<td style="text-align:right;">
+
+0.0216264
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.0574347
+
+</td>
+
+<td style="text-align:right;">
+
+0.0058027
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.7395006
+
+</td>
+
+<td style="text-align:right;">
+
+0.0251842
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.1630623
+
+</td>
+
+<td style="text-align:right;">
+
+0.0056845
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4334794
+
+</td>
+
+<td style="text-align:right;">
+
+0.0584403
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.1140067
+
+</td>
+
+<td style="text-align:right;">
+
+0.0261818
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.5041533
+
+</td>
+
+<td style="text-align:right;">
+
+0.0074558
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.0576706
+
+</td>
+
+<td style="text-align:right;">
+
+0.0022024
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2451518
+
+</td>
+
+<td style="text-align:right;">
+
+0.0204090
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.6721323
+
+</td>
+
+<td style="text-align:right;">
+
+0.0046641
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.1159160
+
+</td>
+
+<td style="text-align:right;">
+
+0.0109253
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.0161257
+
+</td>
+
+<td style="text-align:right;">
+
+0.0035059
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.1908018
+
+</td>
+
+<td style="text-align:right;">
+
+0.0613847
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.9615298
+
+</td>
+
+<td style="text-align:right;">
+
+0.0078639
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.6836140
+
+</td>
+
+<td style="text-align:right;">
+
+0.0040313
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+0.0546513
+
+</td>
+
+<td style="text-align:right;">
+
+0.0037791
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2158158
+
+</td>
+
+<td style="text-align:right;">
+
+0.0249887
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.6198522
+
+</td>
+
+<td style="text-align:right;">
+
+0.0023246
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.8098734
+
+</td>
+
+<td style="text-align:right;">
+
+0.0116911
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.2205189
+
+</td>
+
+<td style="text-align:right;">
+
+0.0080196
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.2802748
+
+</td>
+
+<td style="text-align:right;">
+
+0.0382285
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.2595532
+
+</td>
+
+<td style="text-align:right;">
+
+0.0122362
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.1204453
+
+</td>
+
+<td style="text-align:right;">
+
+0.0061480
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+0.4799200
+
+</td>
+
+<td style="text-align:right;">
+
+0.0047745
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.3509546
+
+</td>
+
+<td style="text-align:right;">
+
+0.0204090
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+\-1.8505398
+
+</td>
+
+<td style="text-align:right;">
+
+0.0056368
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-3.5838905
+
+</td>
+
+<td style="text-align:right;">
+
+0.0179711
+
+</td>
+
+<td style="text-align:left;">
+
+College graduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.4001897
+
+</td>
+
+<td style="text-align:right;">
+
+0.0065838
+
+</td>
+
+<td style="text-align:left;">
+
+High school or less
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.7001138
+
+</td>
+
+<td style="text-align:right;">
+
+0.0731991
+
+</td>
+
+<td style="text-align:left;">
+
+Postgraduate
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+\-2.3706769
+
+</td>
+
+<td style="text-align:right;">
+
+0.0131274
+
+</td>
+
+<td style="text-align:left;">
+
+Some college
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+Of course, we need to subtract out the `(1|education)` and `(1|state)`
+coefficients to avoid double counting effects. This ensures we capture
+the *state specific* quirks due to education level.

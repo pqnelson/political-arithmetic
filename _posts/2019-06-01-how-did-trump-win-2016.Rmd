@@ -6,7 +6,7 @@ output:
   md_document:
     variant: gfm
     toc: true
-    toc_depth: 7
+    toc_depth: 6
 ---
 
 ```{r setup, include=FALSE}
@@ -201,6 +201,30 @@ census_data$state <- factor(census_data$state, levels(states_factors))
 
 # Estimating Voter Turnout
 
+## State Effects
+
+We will compute the coefficient `(1 | state)`. This is `log(Pr(turnout|state)/Pr(!turnout|state)) - log(Pr(turnout)/Pr(!turnout))`.
+
+```{r}
+turnout_state_log_coefs <- function(election_data, census_data) {
+  census_data %>% 
+    group_by(state) %>%
+    summarize(vap = sum(voting_age)) %>%
+    inner_join(election_data %>% group_by(state) %>% summarize(tv = sum(totalvotes)), by="state") %>%
+    transmute(state,
+              proportion = tv/vap) %>%
+    transmute(state,
+              beta_state = log(proportion/(1 - proportion))) %>%
+    unique
+}
+```
+
+```{r}
+kable(turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_data))
+```
+
+
+
 ## Education
 
 The coefficients of interest are:
@@ -280,28 +304,31 @@ turnout_education_state_log_coefs <- function(exit_polls, election_data, census_
   assert_that(all(is.state(census_data$state)))
   assert_that(all(has.electoral_delegates(election_data$state)))
   assert_that(all(is.numeric(election_data$totalvotes)))
+  education_effects <- turnout_education_log_coefs(exit_polls, election_data, census_data, z)
+  state_effects <- turnout_state_log_coefs(election_data, census_data)
   exit_polls %>%
     filter(questions=="Education", state!="nation") %>%
     mutate(options = factor(options)) %>%
     group_by(state) %>% # this group_by is responsible for the ":state" factor in `(1|education:state)`
     mutate(width = wilson_width(0.01*options_perc, num_respondents, z),
+           center = wilson_center(0.01*options_perc, num_respondents, z),
            total_votes = sum(election_data[which(election_data$state %in% state & !is.na(election_data$totalvotes)),]$totalvotes),
-           lower_bound = (0.01*options_perc + 2*z*width)*total_votes,
+           estimate_voters_by_education = (center + 2*z*width)*total_votes,
            high_school = sum(census_data[which(census_data$state %in% state),]$education_high_school),
            some_college = sum(census_data[which(census_data$state %in% state),]$education_some_college) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
            college_grad = sum(census_data[which(census_data$state %in% state),]$education_college_grad) + 0.5*sum(census_data[which(census_data$state %in% state),]$education_assoc_degree),
            postgrad = sum(census_data[which(census_data$state %in% state),]$education_postgrad)
     ) %>%
     mutate(proportion = (ifelse(options == "High school or less",
-                                min(0.99, lower_bound/high_school),
+                                min(0.99, estimate_voters_by_education/high_school),
                                 ifelse(options == "Some college",
-                                       min(0.99, lower_bound/some_college),
+                                       min(0.99, estimate_voters_by_education/some_college),
                                        ifelse(options == "College graduate",
-                                              min(0.99, lower_bound/college_grad),
+                                              min(0.99, estimate_voters_by_education/college_grad),
                                               ifelse(options == "Postgraduate",
-                                                     min(0.99, lower_bound/postgrad),
+                                                     min(0.99, estimate_voters_by_education/postgrad),
                                                      NaN)))))) %>%
-    transmute(beta_education = log(proportion/(1.0-proportion)),
+    transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state,
               tau_education = 2*(4*width/(0.01*proportion))**-2,
               options) %>%
     arrange(state,options)
@@ -311,3 +338,5 @@ turnout_education_state_log_coefs <- function(exit_polls, election_data, census_
 ```{r}
 kable(turnout_education_state_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
 ```
+
+Of course, we need to subtract out the `(1|education)` and `(1|state)` coefficients to avoid double counting effects. This ensures we capture the _state specific_ quirks due to education level.
