@@ -108,10 +108,9 @@ We cannot approximate every coefficient in the logistic regression from Gelman a
 
 ```
 logit(voted) ~  1 + female +
-                (1 | state) + 
-                (1 | age) + (1 | state:age) +
-                (1 | state:gender) + (1 | age:gender) +
-                (1 | married) + (1 | married:age) + (1 | married:state) + (1 | married:gender) + 
+                (1 | state) + (1 | state:gender) +
+                (1 | age) + (1 | state:age) + 
+                (1 | married) + (1 | married:state) + (1 | married:gender) + 
                 (1 | state:ethnicity) + (1 | ethnicity:gender) + (1 | ethnicity:age) +
                 (1 | education) + (1 | state:education)
 ```
@@ -245,6 +244,81 @@ turnout_state_log_coefs <- function(election_data, census_data) {
 kable(turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_data))
 ```
 
+### State and Gender
+
+```{r}
+turnout_state_gender_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  state_effect <- turnout_state_log_coefs(election_data, census_data)
+  exit_poll %>%
+    filter(questions=="Gender", state != "nation") %>%
+    group_by(state,options) %>%
+    transmute(pop = sum(census_data[which(census_data$state %in% state),c(tolower(options))]),
+              center = wilson_center(0.01*options_perc, num_respondents, z),
+              width = wilson_width(0.01*options_perc, num_respondents, z),
+              voters = (center - 2*width)*sum(election_data[which(election_data$state %in% state),]$totalvotes),
+              proportion = voters/pop) %>%
+    transmute(beta_state_age = log(proportion/(1 - proportion)) - (state_effect[which(state_effect$state %in% state),]$beta_state - beta_0) - beta_0,
+              tau_state_age = 2*(2*width/center)**-2
+              )
+}
+```
+
+```{r}
+kable(turnout_state_gender_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
+```
+
+## Age
+
+We have two coefficients for age `(1 | age)` and `(1 | state:age)`. We try to keep our code DRY, since a lot of the logic is reused.
+
+```{r}
+turnout_age_log_coefs <- function(exit_poll, election_data, census_data, state_iter="nation", z = 2) {
+  lookup <- list("18-24" = c("age_18_19", "age_20", "age_21", "age_22_24"),
+                 "25-29" = c("age_25_29"),
+                 "30-39" = c("age_30_34", "age_35_39"),
+                 "40-49" = c("age_40_44", "age_45_49"),
+                 "50-64" = c("age_50_54", "age_55_59", "age_60_61", "age_62_64"),
+                 "65 and older" = c("age_retirees"))
+  id <- sort(unique(filter(exit_poll, state == state_iter, questions=="Age")$questions_id))[2]
+  
+  state_filter <- state_iter;
+  if (state_iter == "nation") {
+    state_filter <- unique(exit_poll$state);
+  }
+  
+  exit_poll %>%
+    filter(state == state_iter, questions_id == id) %>%
+    group_by(options) %>%
+    transmute(k = lookup[options],
+              center = wilson_center(0.01*options_perc, num_respondents, z),
+              width =  wilson_width(0.01*options_perc, num_respondents, z),
+              turnout = (center - 2*width)*sum(filter(election_data, state %in% state_filter)$totalvotes),
+              pop = sum(filter(census_data, state %in% state_filter)[, unlist(k)]),
+              proportion = turnout/pop
+    ) %>%
+    transmute(beta_age = log(proportion/(1 - proportion)) - beta_0,
+              tau_age = 2*(2*width/center)**-2,
+              state = state_iter) %>%
+    as.data.frame
+}
+```
+
+Now we iterate over all the states, accumulating all the results.
+
+```{r}
+turnout_state_age_log_coefs <- function(exit_poll, election_data, census_data, z = 2) {
+  state_effects <- turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_data)
+  df <- data.frame();
+  for (state_iter in unique(exit_poll$state)) {
+    if (state_iter != "nation") {
+      state_results <- turnout_age_log_coefs(exit_poll, election_data, census_data, state_iter, z);
+      state_results$beta_age <- state_results$beta_age - (state_effects[which(state_effects$state == state_iter),]$beta_state - beta_0);
+      df <- rbind(df, state_results);
+    }
+  }
+  df
+}
+```
 
 
 ## Ethnicity

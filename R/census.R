@@ -3,6 +3,22 @@ categorize <- function(census_df) {
     name = NAME,
     FIPS = GEOID,
     state = state,
+    male = male.18_19E + male.20E + male.21E + male.22_24E + male.25_29E + male.30_34E + male.35_39E + male.40_44E + male.45_49E + male.50_54E + male.55_59E + male.60_61E + male.62_64E + male.65_66E+male.67_69E+male.70_74E+male.75_79E+male.80_84E+male.85_plusE,
+    female = female.18_19E + female.20E + female.21E + female.22_24E + female.25_29E + female.30_34E + female.35_39E + female.40_44E + female.45_49E + female.50_54E + female.55_59E + female.60_61E + female.62_64E + female.65_66E+female.67_69E+female.70_74E+female.75_79E+female.80_84E+female.85_plusE,
+    age_20 = male.20E+female.20E,
+    age_21 = male.21E+female.21E,
+    age_22_24 = male.22_24E+female.22_24E,
+    age_25_29 = male.25_29E+female.25_29E,
+    age_30_34 = male.30_34E+female.30_34E,
+    age_35_39 = male.35_39E+female.35_39E,
+    age_40_44 = male.40_44E+female.40_44E,
+    age_45_49 = male.45_49E+female.45_49E,
+    age_50_54 = male.50_54E+female.50_54E,
+    age_55_59 = male.55_59E+female.55_59E,
+    age_60_61 = male.60_61E+female.60_61E,
+    age_62_64 = male.62_64E+female.62_64E,
+    age_retirees = male.65_66E+male.67_69E+male.70_74E+male.75_79E+male.80_84E+male.85_plusE+female.65_66E+female.67_69E+female.70_74E+female.75_79E+female.80_84E+female.85_plusE,
+    
     # age
     age_18_19 = male.18_19E+female.18_19E,
     age_20 = male.20E+female.20E,
@@ -30,6 +46,7 @@ categorize <- function(census_df) {
     asian_male = male.asian.18_19E+male.asian.20_24E+male.asian.25_29E+male.asian.30_34E+male.asian.35_44E+male.asian.45_54E+male.asian.55_64E+male.asian.65_74E+male.asian.75_84E+male.asian.85_plusE,
     asian_female=female.asian.18_19E+female.asian.20_24E+female.asian.25_29E+female.asian.30_34E+female.asian.35_44E+female.asian.45_54E+female.asian.55_64E+female.asian.65_74E+female.asian.75_84E+female.asian.85_plusE,
     others = others_but_asians + asian_male + asian_female,
+    
     # ethnicity by age and gender
     white_male_18_29 = male.white_only.18_19E+male.white_only.20_24E+male.white_only.25_29E,
     white_male_30_44 = male.white_only.30_34E+male.white_only.35_44E,

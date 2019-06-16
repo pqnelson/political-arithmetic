@@ -14,6 +14,8 @@
       - [Census Data](#census-data)
   - [Estimating Voter Turnout](#estimating-voter-turnout)
       - [State Effects](#state-effects)
+          - [State and Gender](#state-and-gender)
+      - [Age](#age)
       - [Ethnicity](#ethnicity)
           - [Ethnicity and Gender](#ethnicity-and-gender)
           - [Ethnicity and Age](#ethnicity-and-age)
@@ -111,10 +113,9 @@ We cannot approximate every coefficient in the logistic regression from
 Gelman and friends. We have to restrict it to:
 
     logit(voted) ~  1 + female +
-                    (1 | state) + 
-                    (1 | age) + (1 | state:age) +
-                    (1 | state:gender) + (1 | age:gender) +
-                    (1 | married) + (1 | married:age) + (1 | married:state) + (1 | married:gender) + 
+                    (1 | state) + (1 | state:gender) +
+                    (1 | age) + (1 | state:age) + 
+                    (1 | married) + (1 | married:state) + (1 | married:gender) + 
                     (1 | state:ethnicity) + (1 | ethnicity:gender) + (1 | ethnicity:age) +
                     (1 | education) + (1 | state:education)
 
@@ -671,7 +672,8 @@ Pennsylvania
 
 <td style="text-align:left;">
 
-South Carolina
+South
+Carolina
 
 </td>
 
@@ -766,6 +768,1693 @@ Wisconsin
 </tbody>
 
 </table>
+
+### State and Gender
+
+``` r
+turnout_state_gender_log_coefs <- function(exit_poll, election_data, census_data, z=2) {
+  state_effect <- turnout_state_log_coefs(election_data, census_data)
+  exit_poll %>%
+    filter(questions=="Gender", state != "nation") %>%
+    group_by(state,options) %>%
+    transmute(pop = sum(census_data[which(census_data$state %in% state),c(tolower(options))]),
+              center = wilson_center(0.01*options_perc, num_respondents, z),
+              width = wilson_width(0.01*options_perc, num_respondents, z),
+              voters = (center - 2*width)*sum(election_data[which(election_data$state %in% state),]$totalvotes),
+              proportion = voters/pop) %>%
+    transmute(beta_state_age = log(proportion/(1 - proportion)) - (state_effect[which(state_effect$state %in% state),]$beta_state - beta_0) - beta_0,
+              tau_state_age = 2*(2*width/center)**-2
+              )
+}
+```
+
+``` r
+kable(turnout_state_gender_log_coefs(exit_poll_df, filter(election_2016, party=="democrat"), census_data))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:left;">
+
+options
+
+</th>
+
+<th style="text-align:right;">
+
+beta\_state\_age
+
+</th>
+
+<th style="text-align:right;">
+
+tau\_state\_age
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1594664
+
+</td>
+
+<td style="text-align:right;">
+
+208.14932
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1882624
+
+</td>
+
+<td style="text-align:right;">
+
+225.44622
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.2046666
+
+</td>
+
+<td style="text-align:right;">
+
+297.02187
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2278798
+
+</td>
+
+<td style="text-align:right;">
+
+321.72173
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0001559
+
+</td>
+
+<td style="text-align:right;">
+
+160.83069
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1020543
+
+</td>
+
+<td style="text-align:right;">
+
+174.18602
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1489326
+
+</td>
+
+<td style="text-align:right;">
+
+443.56208
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2842365
+
+</td>
+
+<td style="text-align:right;">
+
+563.90488
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0653316
+
+</td>
+
+<td style="text-align:right;">
+
+283.48451
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.3398043
+
+</td>
+
+<td style="text-align:right;">
+
+423.22995
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1328766
+
+</td>
+
+<td style="text-align:right;">
+
+115.00000
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.0170518
+
+</td>
+
+<td style="text-align:right;">
+
+115.00000
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1764676
+
+</td>
+
+<td style="text-align:right;">
+
+218.71795
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1575887
+
+</td>
+
+<td style="text-align:right;">
+
+236.89520
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0392679
+
+</td>
+
+<td style="text-align:right;">
+
+329.94180
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2884209
+
+</td>
+
+<td style="text-align:right;">
+
+419.42350
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1069016
+
+</td>
+
+<td style="text-align:right;">
+
+132.48755
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.0890012
+
+</td>
+
+<td style="text-align:right;">
+
+143.48194
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0687753
+
+</td>
+
+<td style="text-align:right;">
+
+246.03772
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1324223
+
+</td>
+
+<td style="text-align:right;">
+
+288.66580
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1409450
+
+</td>
+
+<td style="text-align:right;">
+
+324.96080
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2084765
+
+</td>
+
+<td style="text-align:right;">
+
+381.29080
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0877652
+
+</td>
+
+<td style="text-align:right;">
+
+181.84746
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2000877
+
+</td>
+
+<td style="text-align:right;">
+
+231.10435
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0707141
+
+</td>
+
+<td style="text-align:right;">
+
+215.65642
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2227925
+
+</td>
+
+<td style="text-align:right;">
+
+274.09637
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1331367
+
+</td>
+
+<td style="text-align:right;">
+
+321.03772
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2966651
+
+</td>
+
+<td style="text-align:right;">
+
+376.68663
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0601177
+
+</td>
+
+<td style="text-align:right;">
+
+323.57618
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1987781
+
+</td>
+
+<td style="text-align:right;">
+
+379.66580
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1340733
+
+</td>
+
+<td style="text-align:right;">
+
+188.92234
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1631525
+
+</td>
+
+<td style="text-align:right;">
+
+221.63455
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1043564
+
+</td>
+
+<td style="text-align:right;">
+
+223.74840
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2760533
+
+</td>
+
+<td style="text-align:right;">
+
+284.38626
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0061579
+
+</td>
+
+<td style="text-align:right;">
+
+144.47642
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.3186148
+
+</td>
+
+<td style="text-align:right;">
+
+233.71800
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1070792
+
+</td>
+
+<td style="text-align:right;">
+
+458.04818
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.3158277
+
+</td>
+
+<td style="text-align:right;">
+
+631.03427
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1236893
+
+</td>
+
+<td style="text-align:right;">
+
+377.05265
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2674336
+
+</td>
+
+<td style="text-align:right;">
+
+479.33041
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0449271
+
+</td>
+
+<td style="text-align:right;">
+
+135.97040
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.0604343
+
+</td>
+
+<td style="text-align:right;">
+
+147.25489
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1150011
+
+</td>
+
+<td style="text-align:right;">
+
+325.84038
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2566976
+
+</td>
+
+<td style="text-align:right;">
+
+414.20807
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0298484
+
+</td>
+
+<td style="text-align:right;">
+
+95.79819
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1662232
+
+</td>
+
+<td style="text-align:right;">
+
+131.82776
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1502585
+
+</td>
+
+<td style="text-align:right;">
+
+313.86868
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.3135671
+
+</td>
+
+<td style="text-align:right;">
+
+398.98467
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0342078
+
+</td>
+
+<td style="text-align:right;">
+
+139.30696
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1978831
+
+</td>
+
+<td style="text-align:right;">
+
+163.40538
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.0943759
+
+</td>
+
+<td style="text-align:right;">
+
+326.61632
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2680466
+
+</td>
+
+<td style="text-align:right;">
+
+415.19477
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0929075
+
+</td>
+
+<td style="text-align:right;">
+
+109.53430
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.2436805
+
+</td>
+
+<td style="text-align:right;">
+
+150.75710
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:left;">
+
+Male
+
+</td>
+
+<td style="text-align:right;">
+
+0.1428081
+
+</td>
+
+<td style="text-align:right;">
+
+366.43853
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:left;">
+
+Female
+
+</td>
+
+<td style="text-align:right;">
+
+0.1782785
+
+</td>
+
+<td style="text-align:right;">
+
+396.92071
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+## Age
+
+We have two coefficients for age `(1 | age)` and `(1 | state:age)`. We
+try to keep our code DRY, since a lot of the logic is
+reused.
+
+``` r
+turnout_age_log_coefs <- function(exit_poll, election_data, census_data, state_iter="nation", z = 2) {
+  lookup <- list("18-24" = c("age_18_19", "age_20", "age_21", "age_22_24"),
+                 "25-29" = c("age_25_29"),
+                 "30-39" = c("age_30_34", "age_35_39"),
+                 "40-49" = c("age_40_44", "age_45_49"),
+                 "50-64" = c("age_50_54", "age_55_59", "age_60_61", "age_62_64"),
+                 "65 and older" = c("age_retirees"))
+  id <- sort(unique(filter(exit_poll, state == state_iter, questions=="Age")$questions_id))[2]
+  
+  state_filter <- state_iter;
+  if (state_iter == "nation") {
+    state_filter <- unique(exit_poll$state);
+  }
+  
+  exit_poll %>%
+    filter(state == state_iter, questions_id == id) %>%
+    group_by(options) %>%
+    transmute(k = lookup[options],
+              center = wilson_center(0.01*options_perc, num_respondents, z),
+              width =  wilson_width(0.01*options_perc, num_respondents, z),
+              turnout = (center - 2*width)*sum(filter(election_data, state %in% state_filter)$totalvotes),
+              pop = sum(filter(census_data, state %in% state_filter)[, unlist(k)]),
+              proportion = turnout/pop
+    ) %>%
+    transmute(beta_age = log(proportion/(1 - proportion)) - beta_0,
+              tau_age = 2*(2*width/center)**-2,
+              state = state_iter) %>%
+    as.data.frame
+}
+```
+
+Now we iterate over all the states, accumulating all the
+results.
+
+``` r
+turnout_state_age_log_coefs <- function(exit_poll, election_data, census_data, z = 2) {
+  state_effects <- turnout_state_log_coefs(filter(election_2016,party=="democrat"), census_data)
+  df <- data.frame();
+  for (state_iter in unique(exit_poll$state)) {
+    if (state_iter != "nation") {
+      state_results <- turnout_age_log_coefs(exit_poll, election_data, census_data, state_iter, z);
+      state_results$beta_age <- state_results$beta_age - (state_effects[which(state_effects$state == state_iter),]$beta_state - beta_0);
+      df <- rbind(df, state_results);
+    }
+  }
+  df
+}
+```
 
 ## Ethnicity
 
