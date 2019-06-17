@@ -22,6 +22,7 @@
       - [Education](#education)
           - [Overall Factor](#overall-factor)
           - [Interacting with State](#interacting-with-state)
+      - [Prediction for States](#prediction-for-states)
 
 # How did Trump Win the White House?
 
@@ -782,8 +783,8 @@ turnout_state_gender_log_coefs <- function(exit_poll, election_data, census_data
               width = wilson_width(0.01*options_perc, num_respondents, z),
               voters = (center - 2*width)*sum(election_data[which(election_data$state %in% state),]$totalvotes),
               proportion = voters/pop) %>%
-    transmute(beta_state_age = log(proportion/(1 - proportion)) - (state_effect[which(state_effect$state %in% state),]$beta_state - beta_0) - beta_0,
-              tau_state_age = 2*(2*width/center)**-2
+    transmute(beta_state_gender = log(proportion/(1 - proportion)) - (state_effect[which(state_effect$state %in% state),]$beta_state - beta_0) - beta_0,
+              tau_state_gender = 2*(2*width/center)**-2
               )
 }
 ```
@@ -812,13 +813,13 @@ options
 
 <th style="text-align:right;">
 
-beta\_state\_age
+beta\_state\_gender
 
 </th>
 
 <th style="text-align:right;">
 
-tau\_state\_age
+tau\_state\_gender
 
 </th>
 
@@ -6305,7 +6306,7 @@ turnout_education_state_log_coefs <- function(exit_polls, election_data, census_
                                                      min(0.99, estimate_voters_by_education/postgrad),
                                                      NaN)))))) %>%
     transmute(beta_education = log(proportion/(1.0-proportion)) - education_effects[which(education_effects$options==options),]$beta_education - state_effects[which(state_effects$state==state),]$beta_state - 3*beta_0,
-              tau_education = 2*(4*width/(0.01*proportion))**-2,
+              tau_education = 2*(4*width/proportion)**-2,
               options) %>%
     arrange(state,options)
 }
@@ -6367,7 +6368,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0073794
+73.79351
 
 </td>
 
@@ -6395,7 +6396,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0028902
+28.90228
 
 </td>
 
@@ -6423,7 +6424,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0415381
+415.38112
 
 </td>
 
@@ -6451,7 +6452,7 @@ Arizona
 
 <td style="text-align:right;">
 
-0.0033518
+33.51770
 
 </td>
 
@@ -6479,7 +6480,7 @@ California
 
 <td style="text-align:right;">
 
-0.0068289
+68.28909
 
 </td>
 
@@ -6507,7 +6508,7 @@ California
 
 <td style="text-align:right;">
 
-0.0039820
+39.81955
 
 </td>
 
@@ -6535,7 +6536,7 @@ California
 
 <td style="text-align:right;">
 
-0.0464237
+464.23651
 
 </td>
 
@@ -6563,7 +6564,7 @@ California
 
 <td style="text-align:right;">
 
-0.0044948
+44.94775
 
 </td>
 
@@ -6591,7 +6592,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.0092639
+92.63909
 
 </td>
 
@@ -6619,7 +6620,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.0091467
+91.46710
 
 </td>
 
@@ -6647,7 +6648,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.0255889
+255.88914
 
 </td>
 
@@ -6675,7 +6676,7 @@ Colorado
 
 <td style="text-align:right;">
 
-0.0090575
+90.57485
 
 </td>
 
@@ -6703,7 +6704,7 @@ Florida
 
 <td style="text-align:right;">
 
-0.0177220
+177.22046
 
 </td>
 
@@ -6731,7 +6732,7 @@ Florida
 
 <td style="text-align:right;">
 
-0.0070722
+70.72173
 
 </td>
 
@@ -6759,7 +6760,7 @@ Florida
 
 <td style="text-align:right;">
 
-0.0910996
+910.99586
 
 </td>
 
@@ -6787,7 +6788,7 @@ Florida
 
 <td style="text-align:right;">
 
-0.0122292
+122.29168
 
 </td>
 
@@ -6815,7 +6816,7 @@ Georgia
 
 <td style="text-align:right;">
 
-0.0141065
+141.06544
 
 </td>
 
@@ -6843,7 +6844,7 @@ Georgia
 
 <td style="text-align:right;">
 
-0.0046114
+46.11412
 
 </td>
 
@@ -6871,7 +6872,7 @@ Georgia
 
 <td style="text-align:right;">
 
-0.0600823
+600.82272
 
 </td>
 
@@ -6899,7 +6900,7 @@ Georgia
 
 <td style="text-align:right;">
 
-0.0084437
+84.43682
 
 </td>
 
@@ -6927,7 +6928,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.0064820
+64.82001
 
 </td>
 
@@ -6955,7 +6956,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.0033163
+33.16307
 
 </td>
 
@@ -6983,7 +6984,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.0190333
+190.33290
 
 </td>
 
@@ -7011,7 +7012,7 @@ Illinois
 
 <td style="text-align:right;">
 
-0.0044400
+44.39965
 
 </td>
 
@@ -7039,7 +7040,7 @@ Indiana
 
 <td style="text-align:right;">
 
-0.0106585
+106.58484
 
 </td>
 
@@ -7067,7 +7068,7 @@ Indiana
 
 <td style="text-align:right;">
 
-0.0023429
+23.42920
 
 </td>
 
@@ -7095,7 +7096,7 @@ Indiana
 
 <td style="text-align:right;">
 
-0.0436520
+436.52043
 
 </td>
 
@@ -7123,7 +7124,7 @@ Indiana
 
 <td style="text-align:right;">
 
-0.0048944
+48.94366
 
 </td>
 
@@ -7151,7 +7152,7 @@ Iowa
 
 <td style="text-align:right;">
 
-0.0136561
+136.56071
 
 </td>
 
@@ -7179,7 +7180,7 @@ Iowa
 
 <td style="text-align:right;">
 
-0.0051318
+51.31763
 
 </td>
 
@@ -7207,7 +7208,7 @@ Iowa
 
 <td style="text-align:right;">
 
-0.0755960
+755.96027
 
 </td>
 
@@ -7235,7 +7236,7 @@ Iowa
 
 <td style="text-align:right;">
 
-0.0074242
+74.24175
 
 </td>
 
@@ -7263,7 +7264,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-0.0128537
+128.53670
 
 </td>
 
@@ -7291,7 +7292,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-0.0014072
+14.07229
 
 </td>
 
@@ -7319,7 +7320,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-0.0264043
+264.04331
 
 </td>
 
@@ -7347,7 +7348,7 @@ Kentucky
 
 <td style="text-align:right;">
 
-0.0037328
+37.32834
 
 </td>
 
@@ -7375,7 +7376,7 @@ Maine
 
 <td style="text-align:right;">
 
-0.0169280
+169.27996
 
 </td>
 
@@ -7403,7 +7404,7 @@ Maine
 
 <td style="text-align:right;">
 
-0.0074085
+74.08473
 
 </td>
 
@@ -7431,7 +7432,7 @@ Maine
 
 <td style="text-align:right;">
 
-0.0407690
+407.68951
 
 </td>
 
@@ -7459,7 +7460,7 @@ Maine
 
 <td style="text-align:right;">
 
-0.0112326
+112.32552
 
 </td>
 
@@ -7487,7 +7488,7 @@ Michigan
 
 <td style="text-align:right;">
 
-0.0178260
+178.25967
 
 </td>
 
@@ -7515,7 +7516,7 @@ Michigan
 
 <td style="text-align:right;">
 
-0.0056064
+56.06386
 
 </td>
 
@@ -7543,7 +7544,7 @@ Michigan
 
 <td style="text-align:right;">
 
-0.0675539
+675.53923
 
 </td>
 
@@ -7571,7 +7572,7 @@ Michigan
 
 <td style="text-align:right;">
 
-0.0064710
+64.71034
 
 </td>
 
@@ -7599,7 +7600,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-0.0053434
+53.43369
 
 </td>
 
@@ -7627,7 +7628,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-0.0072593
+72.59301
 
 </td>
 
@@ -7655,7 +7656,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-0.0313508
+313.50816
 
 </td>
 
@@ -7683,7 +7684,7 @@ Minnesota
 
 <td style="text-align:right;">
 
-0.0046619
+46.61877
 
 </td>
 
@@ -7711,7 +7712,7 @@ Missouri
 
 <td style="text-align:right;">
 
-0.0155240
+155.23995
 
 </td>
 
@@ -7739,7 +7740,7 @@ Missouri
 
 <td style="text-align:right;">
 
-0.0043558
+43.55849
 
 </td>
 
@@ -7767,7 +7768,7 @@ Missouri
 
 <td style="text-align:right;">
 
-0.0421526
+421.52586
 
 </td>
 
@@ -7795,7 +7796,7 @@ Missouri
 
 <td style="text-align:right;">
 
-0.0068563
+68.56317
 
 </td>
 
@@ -7823,7 +7824,7 @@ Nevada
 
 <td style="text-align:right;">
 
-0.0146238
+146.23828
 
 </td>
 
@@ -7851,7 +7852,7 @@ Nevada
 
 <td style="text-align:right;">
 
-0.0030122
+30.12168
 
 </td>
 
@@ -7879,7 +7880,7 @@ Nevada
 
 <td style="text-align:right;">
 
-0.0667372
+667.37175
 
 </td>
 
@@ -7907,7 +7908,7 @@ Nevada
 
 <td style="text-align:right;">
 
-0.0045330
+45.32985
 
 </td>
 
@@ -7935,7 +7936,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-0.0101057
+101.05743
 
 </td>
 
@@ -7963,7 +7964,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-0.0094677
+94.67674
 
 </td>
 
@@ -7991,7 +7992,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-0.0484646
+484.64631
 
 </td>
 
@@ -8019,7 +8020,7 @@ New Hampshire
 
 <td style="text-align:right;">
 
-0.0095563
+95.56253
 
 </td>
 
@@ -8047,7 +8048,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-0.0034521
+34.52067
 
 </td>
 
@@ -8075,7 +8076,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-0.0031496
+31.49562
 
 </td>
 
@@ -8103,7 +8104,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-0.0155420
+155.42047
 
 </td>
 
@@ -8131,7 +8132,7 @@ New Jersey
 
 <td style="text-align:right;">
 
-0.0044069
+44.06863
 
 </td>
 
@@ -8159,7 +8160,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0147073
+147.07328
 
 </td>
 
@@ -8187,7 +8188,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0035557
+35.55735
 
 </td>
 
@@ -8215,7 +8216,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0372185
+372.18513
 
 </td>
 
@@ -8243,7 +8244,7 @@ New Mexico
 
 <td style="text-align:right;">
 
-0.0045465
+45.46497
 
 </td>
 
@@ -8271,7 +8272,7 @@ New York
 
 <td style="text-align:right;">
 
-0.0054695
+54.69521
 
 </td>
 
@@ -8299,7 +8300,7 @@ New York
 
 <td style="text-align:right;">
 
-0.0029533
+29.53254
 
 </td>
 
@@ -8327,7 +8328,7 @@ New York
 
 <td style="text-align:right;">
 
-0.0209656
+209.65601
 
 </td>
 
@@ -8355,7 +8356,7 @@ New York
 
 <td style="text-align:right;">
 
-0.0057134
+57.13378
 
 </td>
 
@@ -8383,7 +8384,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-0.0229596
+229.59620
 
 </td>
 
@@ -8411,7 +8412,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-0.0098564
+98.56352
 
 </td>
 
@@ -8439,7 +8440,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-0.0932935
+932.93465
 
 </td>
 
@@ -8467,7 +8468,7 @@ North Carolina
 
 <td style="text-align:right;">
 
-0.0136363
+136.36314
 
 </td>
 
@@ -8495,7 +8496,7 @@ Ohio
 
 <td style="text-align:right;">
 
-0.0228238
+228.23826
 
 </td>
 
@@ -8523,7 +8524,7 @@ Ohio
 
 <td style="text-align:right;">
 
-0.0054180
+54.18029
 
 </td>
 
@@ -8551,7 +8552,7 @@ Ohio
 
 <td style="text-align:right;">
 
-0.0774263
+774.26328
 
 </td>
 
@@ -8579,7 +8580,7 @@ Ohio
 
 <td style="text-align:right;">
 
-0.0107330
+107.32951
 
 </td>
 
@@ -8607,7 +8608,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.0096737
+96.73746
 
 </td>
 
@@ -8635,7 +8636,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.0057078
+57.07833
 
 </td>
 
@@ -8663,7 +8664,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.0216264
+216.26413
 
 </td>
 
@@ -8691,7 +8692,7 @@ Oregon
 
 <td style="text-align:right;">
 
-0.0042430
+42.42984
 
 </td>
 
@@ -8719,7 +8720,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-0.0234078
+234.07759
 
 </td>
 
@@ -8747,7 +8748,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-0.0056845
+56.84513
 
 </td>
 
@@ -8775,7 +8776,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-0.0584403
+584.40301
 
 </td>
 
@@ -8803,7 +8804,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-0.0191070
+191.07022
 
 </td>
 
@@ -8831,7 +8832,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.0068408
+68.40837
 
 </td>
 
@@ -8859,7 +8860,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.0022024
+22.02395
 
 </td>
 
@@ -8887,7 +8888,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.0204090
+204.09011
 
 </td>
 
@@ -8915,7 +8916,7 @@ South Carolina
 
 <td style="text-align:right;">
 
-0.0033206
+33.20587
 
 </td>
 
@@ -8943,7 +8944,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.0102070
+102.06980
 
 </td>
 
@@ -8971,7 +8972,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.0035059
+35.05939
 
 </td>
 
@@ -8999,7 +9000,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.0613847
+613.84671
 
 </td>
 
@@ -9027,7 +9028,7 @@ Texas
 
 <td style="text-align:right;">
 
-0.0054509
+54.50890
 
 </td>
 
@@ -9055,7 +9056,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.0036880
+36.88041
 
 </td>
 
@@ -9083,7 +9084,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.0037791
+37.79113
 
 </td>
 
@@ -9111,7 +9112,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.0249887
+249.88717
 
 </td>
 
@@ -9139,7 +9140,7 @@ Utah
 
 <td style="text-align:right;">
 
-0.0016194
+16.19401
 
 </td>
 
@@ -9167,7 +9168,7 @@ Virginia
 
 <td style="text-align:right;">
 
-0.0110066
+110.06647
 
 </td>
 
@@ -9195,7 +9196,7 @@ Virginia
 
 <td style="text-align:right;">
 
-0.0080196
+80.19606
 
 </td>
 
@@ -9223,7 +9224,7 @@ Virginia
 
 <td style="text-align:right;">
 
-0.0382285
+382.28469
 
 </td>
 
@@ -9251,7 +9252,7 @@ Virginia
 
 <td style="text-align:right;">
 
-0.0088109
+88.10906
 
 </td>
 
@@ -9279,7 +9280,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.0057058
+57.05760
 
 </td>
 
@@ -9307,7 +9308,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.0047745
+47.74499
 
 </td>
 
@@ -9335,7 +9336,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.0204090
+204.08965
 
 </td>
 
@@ -9363,7 +9364,7 @@ Washington
 
 <td style="text-align:right;">
 
-0.0040410
+40.40965
 
 </td>
 
@@ -9391,7 +9392,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-0.0164271
+164.27100
 
 </td>
 
@@ -9419,7 +9420,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-0.0065838
+65.83759
 
 </td>
 
@@ -9447,7 +9448,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-0.0731991
+731.99098
 
 </td>
 
@@ -9475,7 +9476,7 @@ Wisconsin
 
 <td style="text-align:right;">
 
-0.0094695
+94.69527
 
 </td>
 
@@ -9494,3 +9495,1071 @@ Some college
 Of course, we need to subtract out the `(1|education)` and `(1|state)`
 coefficients to avoid double counting effects. This ensures we capture
 the *state specific* quirks due to education level.
+
+## Prediction for States
+
+Now we have assembled all the coefficients necessary, we will try to
+predict the fraction of the voting age population turns out to vote in
+each state.
+
+TODO: add a `sigma` parameter to allow some multiple of standard
+deviation to appear in the logistic regression coefficients, so we can
+see how turnout changes “within reason”.
+
+``` r
+# $age$tau_age
+predict_turnout_for_state <- function(state, coefs, census_data, election_2016, sigma_turnout=0) {
+  numerator <- 0.0;
+  denominator <- 0.0;
+  categories <- list("male", "female", "age_18_24", "age_25_29", "age_30_39", "age_40_49", "age_50_64", 
+                     "age_retirees", "education_high_school_male", "education_high_school_female",
+                     "education_some_college_male", "education_some_college_female",
+                     "education_assoc_degree_male", "education_assoc_degree_female",
+                     "education_college_grad_male", "education_college_grad_female", 
+                     "education_postgrad_male", "education_postgrad_female", "white_male_18_29",
+                     "white_male_30_44", "white_male_45_64", "white_male_retirees", "white_female_18_29",
+                     "white_female_30_44", "white_female_45_64", "white_female_retirees", "black_male_18_29",
+                     "black_male_30_44", "black_male_45_64", "black_male_retirees", "black_female_18_29",
+                     "black_female_30_44", "black_female_45_64", "black_female_retirees",
+                     "hispanic_male_18_29", "hispanic_male_30_44", "hispanic_male_45_64",
+                     "hispanic_male_retirees", "hispanic_female_18_29", "hispanic_female_30_44",
+                     "hispanic_female_45_64", "hispanic_female_retirees", "others_male_18_29",
+                     "others_female_18_29", "others_male_30_44", "others_female_30_44", "others_male_45_64",
+                     "others_female_45_64", "others_male_retirees", "others_female_retirees")
+  relevant_coefs <- list("male" = c(beta_0,
+                                    coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + 
+                                      sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]])**-0.5),
+                         "female" = c(beta_0,
+                                      coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                      coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + 
+                                        sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]])**-0.5),
+                         "age_18_24" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="18-24"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+                         "age_25_29" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="25-29"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("tau_age")]])),
+                         "age_30_39" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="30-39"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+                         "age_40_49" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="40-49"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+                         "age_50_64" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="50-64"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+                         "age_retirees" = c(beta_0,
+                                            coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                            coefs$age[[which(coefs$age=="65 and older"),c("beta_age")]],
+                                            coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("tau_age")]]**-0.5)
+                                            ),
+                         "education_high_school_male" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + 
+                                                          sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)), 
+                         "education_high_school_female" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)),
+                         "education_some_college_male" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)), 
+                         "education_some_college_female" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)),
+                         "education_assoc_degree_male" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                           0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]]) + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
+                                                          0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
+                         "education_assoc_degree_female"  = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                          0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]])  + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
+                                                          0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
+                         
+                         "education_college_grad_male" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
+                         "education_college_grad_female" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
+                         "education_postgrad_male" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
+                         "education_postgrad_female" = c(beta_0,
+                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
+                                                          coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]]  + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
+                         "white_male_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "white_male_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "white_male_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "white_male_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "white_female_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "white_female_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "white_female_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "white_female_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "black_male_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "black_male_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "black_male_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "black_male_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "black_female_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "black_female_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "black_female_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "black_female_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "hispanic_male_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "hispanic_male_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "hispanic_male_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "hispanic_male_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "hispanic_female_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "hispanic_female_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "hispanic_female_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "hispanic_female_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "others_male_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "others_male_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "others_male_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "others_male_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "others_female_18_29" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ),
+                         "others_female_30_44" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "others_female_45_64" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ), 
+                         "others_female_retirees" = c(beta_0,
+                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+                                                ))
+  for (cat in categories) {
+    numerator <- numerator + sum(census_data[which(census_data$state == state), c(cat)])*invlogit(sum(relevant_coefs[[cat]]))
+    denominator <- denominator + sum(census_data[which(census_data$state == state), c(cat)])
+  }
+  data.frame(state=state, 
+             predicted_turnout = numerator/denominator, 
+             actual_turnout = sum(election_2016[which(election_2016$state==state),]$totalvotes)/sum(census_data[which(census_data$state==state),]$voting_age))
+}
+```
+
+``` r
+predict_turnout <- function(exit_poll, election_2016, census_data, sigma_turnout) {
+  election_data <- filter(election_2016, party=="democrat")
+  coefs <- list(
+    age = turnout_age_log_coefs(exit_poll, election_data, census_data),
+    ed = turnout_education_log_coefs(exit_poll, election_data, census_data),
+    race_age = turnout_ethnicity_age_log_coefs(exit_poll, election_data, census_data),
+    race_gender = turnout_ethnicity_gender_log_coefs(exit_poll, election_data, census_data),
+    state_race = turnout_ethnicity_state_log_coefs(exit_poll_df, election_data, census_data),
+    state_age = turnout_state_age_log_coefs(exit_poll, election_data, census_data),
+    state_gender = turnout_state_gender_log_coefs(exit_poll, election_data, census_data),
+    state = turnout_state_log_coefs(election_data, census_data),
+    state_ed = turnout_education_state_log_coefs(exit_poll, election_data, census_data)
+  )
+  results = data.frame();
+  for(state in unique(exit_poll$state)) {
+    if (state != "nation") {
+      results <- rbind(results, predict_turnout_for_state(state, coefs, census_data, election_data, sigma_turnout))
+    }
+  }
+  results
+}
+```
+
+We can observe the RMSE for this, since
+
+``` r
+rmse <- function(data) {
+  deltas <- (data$predicted_turnout - data$actual_turnout)**2
+  sqrt(mean(deltas))
+}
+```
+
+``` r
+rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=0))
+```
+
+    ## [1] 0.2038147
+
+``` r
+rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=1))
+```
+
+    ## [1] 0.05272848
+
+``` r
+rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=2))
+```
+
+    ## [1] 0.03785781
+
+``` r
+rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=3))
+```
+
+    ## [1] 0.03837675
+
+``` r
+kable(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=2))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+predicted\_turnout
+
+</th>
+
+<th style="text-align:right;">
+
+actual\_turnout
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Arizona
+
+</td>
+
+<td style="text-align:right;">
+
+0.5541460
+
+</td>
+
+<td style="text-align:right;">
+
+0.5145385
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+California
+
+</td>
+
+<td style="text-align:right;">
+
+0.5331639
+
+</td>
+
+<td style="text-align:right;">
+
+0.4805053
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Colorado
+
+</td>
+
+<td style="text-align:right;">
+
+0.6202840
+
+</td>
+
+<td style="text-align:right;">
+
+0.6759404
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.5838546
+
+</td>
+
+<td style="text-align:right;">
+
+0.5936435
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Georgia
+
+</td>
+
+<td style="text-align:right;">
+
+0.5607462
+
+</td>
+
+<td style="text-align:right;">
+
+0.5411142
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Illinois
+
+</td>
+
+<td style="text-align:right;">
+
+0.5627644
+
+</td>
+
+<td style="text-align:right;">
+
+0.5637031
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+0.5638125
+
+</td>
+
+<td style="text-align:right;">
+
+0.5461630
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+0.6180999
+
+</td>
+
+<td style="text-align:right;">
+
+0.6582521
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Kentucky
+
+</td>
+
+<td style="text-align:right;">
+
+0.5695295
+
+</td>
+
+<td style="text-align:right;">
+
+0.5662928
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Maine
+
+</td>
+
+<td style="text-align:right;">
+
+0.6308730
+
+</td>
+
+<td style="text-align:right;">
+
+0.6949979
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.5956189
+
+</td>
+
+<td style="text-align:right;">
+
+0.6247573
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Minnesota
+
+</td>
+
+<td style="text-align:right;">
+
+0.6313961
+
+</td>
+
+<td style="text-align:right;">
+
+0.7063985
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Missouri
+
+</td>
+
+<td style="text-align:right;">
+
+0.5875649
+
+</td>
+
+<td style="text-align:right;">
+
+0.6018576
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Nevada
+
+</td>
+
+<td style="text-align:right;">
+
+0.5516280
+
+</td>
+
+<td style="text-align:right;">
+
+0.5175278
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Hampshire
+
+</td>
+
+<td style="text-align:right;">
+
+0.6319065
+
+</td>
+
+<td style="text-align:right;">
+
+0.7018191
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Jersey
+
+</td>
+
+<td style="text-align:right;">
+
+0.5667018
+
+</td>
+
+<td style="text-align:right;">
+
+0.5609971
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New Mexico
+
+</td>
+
+<td style="text-align:right;">
+
+0.5418639
+
+</td>
+
+<td style="text-align:right;">
+
+0.5049715
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+New York
+
+</td>
+
+<td style="text-align:right;">
+
+0.5407655
+
+</td>
+
+<td style="text-align:right;">
+
+0.4981798
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.5980241
+
+</td>
+
+<td style="text-align:right;">
+
+0.6195692
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+0.5964281
+
+</td>
+
+<td style="text-align:right;">
+
+0.6143330
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Oregon
+
+</td>
+
+<td style="text-align:right;">
+
+0.6031471
+
+</td>
+
+<td style="text-align:right;">
+
+0.6412746
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.5945111
+
+</td>
+
+<td style="text-align:right;">
+
+0.6067042
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+South Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.5601741
+
+</td>
+
+<td style="text-align:right;">
+
+0.5609828
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Texas
+
+</td>
+
+<td style="text-align:right;">
+
+0.5233081
+
+</td>
+
+<td style="text-align:right;">
+
+0.4524437
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Utah
+
+</td>
+
+<td style="text-align:right;">
+
+0.5638476
+
+</td>
+
+<td style="text-align:right;">
+
+0.5537455
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Virginia
+
+</td>
+
+<td style="text-align:right;">
+
+0.5953478
+
+</td>
+
+<td style="text-align:right;">
+
+0.6182760
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Washington
+
+</td>
+
+<td style="text-align:right;">
+
+0.5799902
+
+</td>
+
+<td style="text-align:right;">
+
+0.5868491
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.6219358
+
+</td>
+
+<td style="text-align:right;">
+
+0.6682130
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
