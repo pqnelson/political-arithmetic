@@ -555,11 +555,14 @@ Of course, we need to subtract out the `(1|education)` and `(1|state)` coefficie
 
 Now we have assembled all the coefficients necessary, we will try to predict the fraction of the voting age population turns out to vote in each state.
 
+TODO: add a `sigma` parameter to allow some multiple of standard deviation to appear in the logistic regression coefficients, so we can see how turnout changes "within reason".
+
 ```{r}
 predict_turnout_for_state <- function(state, coefs, census_data, election_2016) {
   numerator <- 0.0;
   denominator <- 0.0;
-  categories <- list("education_high_school_male", "education_high_school_female",
+  categories <- list("male", "female", "age_18_24", "age_25_29", "age_30_39", "age_40_49", "age_50_64", 
+                     "age_retirees", "education_high_school_male", "education_high_school_female",
                      "education_some_college_male", "education_some_college_female",
                      "education_assoc_degree_male", "education_assoc_degree_female",
                      "education_college_grad_male", "education_college_grad_female", 
@@ -573,7 +576,38 @@ predict_turnout_for_state <- function(state, coefs, census_data, election_2016) 
                      "hispanic_female_45_64", "hispanic_female_retirees", "others_male_18_29",
                      "others_female_18_29", "others_male_30_44", "others_female_30_44", "others_male_45_64",
                      "others_female_45_64", "others_male_retirees", "others_female_retirees")
-  relevant_coefs <- list("education_high_school_male" = c(beta_0,
+  relevant_coefs <- list("male" = c(beta_0,
+                                    coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]]),
+                         "female" = c(beta_0,
+                                      coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                      coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]]),
+                         "age_18_24" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="18-24"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("beta_age")]]),
+                         "age_25_29" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="25-29"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("beta_age")]]),
+                         "age_30_39" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="30-39"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("beta_age")]]),
+                         "age_40_49" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="40-49"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("beta_age")]]),
+                         "age_50_64" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$age[[which(coefs$age=="50-64"),c("beta_age")]],
+                                         coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("beta_age")]]),
+                         "age_retirees" = c(beta_0,
+                                            coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                            coefs$age[[which(coefs$age=="65 and older"),c("beta_age")]],
+                                            coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("beta_age")]]
+                                            ),
+                         "education_high_school_male" = c(beta_0,
                                                           coefs$state[[which(coefs$state$state==state),c("beta_state")]],
                                                           coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]],
                                                           coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]],
@@ -596,8 +630,8 @@ predict_turnout_for_state <- function(state, coefs, census_data, election_2016) 
                          "education_assoc_degree_male" = c(beta_0,
                                                           coefs$state[[which(coefs$state$state==state),c("beta_state")]],
                                                           coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]],
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]],
-                                                          coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]]), 
+                                                           0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]]),
+                                                          0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]])),
                          "education_assoc_degree_female"  = c(beta_0,
                                                           coefs$state[[which(coefs$state$state==state),c("beta_state")]],
                                                           coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]],
