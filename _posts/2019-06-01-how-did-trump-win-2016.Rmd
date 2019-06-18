@@ -220,6 +220,9 @@ The constant for logistic regressions is the log odds of the desired result. For
 votes_for_highest_office <- 136700729.0
 eligible_voters <- 230931921.0
 beta_0 <- log(votes_for_highest_office/(eligible_voters - votes_for_highest_office))
+turnout_beta_0 <- function() {
+  log(votes_for_highest_office/(eligible_voters - votes_for_highest_office))
+}
 ```
 
 ## State Effects
@@ -558,8 +561,329 @@ Now we have assembled all the coefficients necessary, we will try to predict the
 TODO: add a `sigma` parameter to allow some multiple of standard deviation to appear in the logistic regression coefficients, so we can see how turnout changes "within reason".
 
 ```{r}
+mrp_weights <- function(state, coefs, beta_0, sigma_turnout=0) {
+  list("male" = c(beta_0,
+                  coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                  coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]])**-0.5),
+       "female" = c(beta_0,
+                    coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + 
+                      sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]])**-0.5),
+       "age_18_24" = c(beta_0,
+                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                       coefs$age[[which(coefs$age=="18-24"),c("beta_age")]],
+                       coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+       "age_25_29" = c(beta_0,
+                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                       coefs$age[[which(coefs$age=="25-29"),c("beta_age")]],
+                       coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("tau_age")]])),
+       "age_30_39" = c(beta_0,
+                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                       coefs$age[[which(coefs$age=="30-39"),c("beta_age")]],
+                       coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+       "age_40_49" = c(beta_0,
+                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                       coefs$age[[which(coefs$age=="40-49"),c("beta_age")]],
+                       coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+       "age_50_64" = c(beta_0,
+                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                       coefs$age[[which(coefs$age=="50-64"),c("beta_age")]],
+                       coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
+       "age_retirees" = c(beta_0,
+                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                          coefs$age[[which(coefs$age=="65 and older"),c("beta_age")]],
+                          coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("tau_age")]]**-0.5)
+       ),
+       "education_high_school_male" = c(beta_0,
+                                        coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                        coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + 
+                                          sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                        coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
+                                        coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)), 
+       "education_high_school_female" = c(beta_0,
+                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
+                                          coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)),
+       "education_some_college_male" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                         coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
+                                         coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)), 
+       "education_some_college_female" = c(beta_0,
+                                           coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                           coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                           coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
+                                           coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)),
+       "education_assoc_degree_male" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                         0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]]) + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
+                                         0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
+       "education_assoc_degree_female"  = c(beta_0,
+                                            coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                            coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                            0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]])  + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
+                                            0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
+       
+       "education_college_grad_male" = c(beta_0,
+                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                         coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                         coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
+                                         coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
+       "education_college_grad_female" = c(beta_0,
+                                           coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                           coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                           coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
+                                           coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
+       "education_postgrad_male" = c(beta_0,
+                                     coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                     coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                     coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
+                                     coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
+       "education_postgrad_female" = c(beta_0,
+                                       coefs$state[[which(coefs$state$state==state),c("beta_state")]],
+                                       coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                       coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
+                                       coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]]  + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
+       "white_male_18_29" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ),
+       "white_male_30_44" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ), 
+       "white_male_45_64" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ), 
+       "white_male_retirees" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ), 
+       "white_female_18_29" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ),
+       "white_female_30_44" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ),
+       "white_female_45_64" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ),
+       "white_female_retirees" = c(beta_0,
+                                   coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                   coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
+                                   coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
+                                   coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                   coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
+       ),
+       "black_male_18_29" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ),
+       "black_male_30_44" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ), 
+       "black_male_45_64" = c(beta_0,
+                              coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                              coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
+                              coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                              coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                              coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ), 
+       "black_male_retirees" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ), 
+       "black_female_18_29" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ),
+       "black_female_30_44" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ),
+       "black_female_45_64" = c(beta_0,
+                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
+                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ), 
+       "black_female_retirees" = c(beta_0,
+                                   coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                   coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
+                                   coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
+                                   coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                   coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
+       ),
+       "hispanic_male_18_29" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ), 
+       "hispanic_male_30_44" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ),
+       "hispanic_male_45_64" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ),
+       "hispanic_male_retirees" = c(beta_0,
+                                    coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                    coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
+                                    coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
+                                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                    coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ),
+       "hispanic_female_18_29" = c(beta_0,
+                                   coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                   coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
+                                   coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                   coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                   coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ), 
+       "hispanic_female_30_44" = c(beta_0,
+                                   coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                   coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
+                                   coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                   coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                   coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ),
+       "hispanic_female_45_64" = c(beta_0,
+                                   coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                   coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
+                                   coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                   coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                   coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ), 
+       "hispanic_female_retirees" = c(beta_0,
+                                      coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                      coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
+                                      coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
+                                      coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                      coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
+       ),
+       "others_male_18_29" = c(beta_0,
+                               coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                               coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                               coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                               coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ),
+       "others_male_30_44" = c(beta_0,
+                               coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                               coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                               coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                               coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ), 
+       "others_male_45_64" = c(beta_0,
+                               coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                               coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                               coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                               coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                               coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ),
+       "others_male_retirees" = c(beta_0,
+                                  coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                  coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                  coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                  coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
+                                  coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                  coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ), 
+       "others_female_18_29" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ),
+       "others_female_30_44" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ), 
+       "others_female_45_64" = c(beta_0,
+                                 coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                 coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                 coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                 coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                 coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ), 
+       "others_female_retirees" = c(beta_0,
+                                    coefs$state[[which(coefs$state$state==state), c("beta_state")]],
+                                    coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
+                                    coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
+                                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
+                                    coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
+                                    coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
+       ))
+}
+```
+
+```{r}
 # $age$tau_age
-predict_turnout_for_state <- function(state, coefs, census_data, election_2016, sigma_turnout=0) {
+predict_turnout_for_state <- function(state, coefs, census_data, election_2016, beta0, sigma_turnout=0) {
   numerator <- 0.0;
   denominator <- 0.0;
   categories <- list("male", "female", "age_18_24", "age_25_29", "age_30_39", "age_40_49", "age_50_64", 
@@ -577,323 +901,7 @@ predict_turnout_for_state <- function(state, coefs, census_data, election_2016, 
                      "hispanic_female_45_64", "hispanic_female_retirees", "others_male_18_29",
                      "others_female_18_29", "others_male_30_44", "others_female_30_44", "others_male_45_64",
                      "others_female_45_64", "others_male_retirees", "others_female_retirees")
-  relevant_coefs <- list("male" = c(beta_0,
-                                    coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                    coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + 
-                                      sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]])**-0.5),
-                         "female" = c(beta_0,
-                                      coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                      coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + 
-                                        sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]])**-0.5),
-                         "age_18_24" = c(beta_0,
-                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                         coefs$age[[which(coefs$age=="18-24"),c("beta_age")]],
-                                         coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="18-24" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
-                         "age_25_29" = c(beta_0,
-                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                         coefs$age[[which(coefs$age=="25-29"),c("beta_age")]],
-                                         coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="25-29" & coefs$state_age$state==state),c("tau_age")]])),
-                         "age_30_39" = c(beta_0,
-                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                         coefs$age[[which(coefs$age=="30-39"),c("beta_age")]],
-                                         coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="30-39" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
-                         "age_40_49" = c(beta_0,
-                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                         coefs$age[[which(coefs$age=="40-49"),c("beta_age")]],
-                                         coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="40-49" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
-                         "age_50_64" = c(beta_0,
-                                         coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                         coefs$age[[which(coefs$age=="50-64"),c("beta_age")]],
-                                         coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="50-64" & coefs$state_age$state==state),c("tau_age")]]**-0.5)),
-                         "age_retirees" = c(beta_0,
-                                            coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                            coefs$age[[which(coefs$age=="65 and older"),c("beta_age")]],
-                                            coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("beta_age")]] + sigma_turnout*(coefs$state_age[[which(coefs$state_age=="65 and older" & coefs$state_age$state==state),c("tau_age")]]**-0.5)
-                                            ),
-                         "education_high_school_male" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + 
-                                                          sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)), 
-                         "education_high_school_female" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="High school or less"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="High school or less"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="High school or less"),c("tau_education")]]**-0.5)),
-                         "education_some_college_male" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)), 
-                         "education_some_college_female" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]**-0.5)),
-                         "education_assoc_degree_male" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                           0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]]) + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
-                                                          0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
-                         "education_assoc_degree_female"  = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                          0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("beta_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]])  + sigma_turnout*(0.5*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Some college"),c("tau_education")]] + coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]))**-0.5,
-                                                          0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("beta_education")]]) + sigma_turnout*((0.5*(coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]+coefs$ed[[which(coefs$ed$options=="Some college"),c("tau_education")]]))**-0.5)),
-                         
-                         "education_college_grad_male" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
-                         "education_college_grad_female" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="College graduate"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="College graduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="College graduate"),c("tau_education")]]**-0.5)), 
-                         "education_postgrad_male" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
-                         "education_postgrad_female" = c(beta_0,
-                                                          coefs$state[[which(coefs$state$state==state),c("beta_state")]],
-                                                          coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                          coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("beta_education")]] + sigma_turnout*(coefs$state_ed[[which(coefs$state_ed$state==state & coefs$state_ed$options=="Postgraduate"),c("tau_education")]]**-0.5),
-                                                          coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("beta_education")]]  + sigma_turnout*(coefs$ed[[which(coefs$ed$options=="Postgraduate"),c("tau_education")]]**-0.5)), 
-                         "white_male_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "white_male_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "white_male_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "white_male_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "white_female_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "white_female_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "white_female_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "white_female_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Whites 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="White women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="White"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "black_male_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "black_male_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "black_male_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "black_male_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "black_female_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "black_female_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "black_female_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "black_female_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Blacks 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Black women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Black"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "hispanic_male_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "hispanic_male_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "hispanic_male_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "hispanic_male_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino men"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "hispanic_female_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 18-29"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "hispanic_female_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 30-44"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "hispanic_female_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 45-64"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "hispanic_female_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="Latinos 65 and older"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Latino women"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Latino"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "others_male_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "others_male_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "others_male_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "others_male_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Male"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "others_female_18_29" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ),
-                         "others_female_30_44" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "others_female_45_64" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ), 
-                         "others_female_retirees" = c(beta_0,
-                                                coefs$state[[which(coefs$state$state==state), c("beta_state")]],
-                                                coefs$race_age[[which(coefs$race_age=="All others"), c("beta_ethnicity_age")]],
-                                                coefs$race_gender[[which(coefs$race_gender=="Others"), c("beta_ethnicity_gender")]],
-                                                coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"), c("beta_state_gender")]] + sigma_turnout*(coefs$state_gender[[which(coefs$state_gender$state == state & coefs$state_gender$options == "Female"),c("tau_state_gender")]]**-0.5),
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Other race"), c("beta_ethnicity_by_state")]],
-                                                coefs$state_race[[which(coefs$state_race$state==state & coefs$state_race$options=="Asian"), c("beta_ethnicity_by_state")]]
-                                                ))
+  relevant_coefs <- mrp_weights(state, coefs, beta0, sigma_turnout);
   for (cat in categories) {
     numerator <- numerator + sum(census_data[which(census_data$state == state), c(cat)])*invlogit(sum(relevant_coefs[[cat]]))
     denominator <- denominator + sum(census_data[which(census_data$state == state), c(cat)])
@@ -921,7 +929,7 @@ predict_turnout <- function(exit_poll, election_2016, census_data, sigma_turnout
   results = data.frame();
   for(state in unique(exit_poll$state)) {
     if (state != "nation") {
-      results <- rbind(results, predict_turnout_for_state(state, coefs, census_data, election_data, sigma_turnout))
+      results <- rbind(results, predict_turnout_for_state(state, coefs, census_data, election_data, turnout_beta_0(), sigma_turnout))
     }
   }
   results
@@ -951,11 +959,25 @@ rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=1))
 rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=2))
 ```
 
+We can do a t-test to see if the predicted turnout differs significantly from the observed turnout; since we have a "small sample" (`n = 28 < 30`), we need to also test for normality.
 
 ```{r}
-rmse(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=3))
+turnout_data <- predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=2)
+shapiro.test(turnout_data$predicted_turnout - turnout_data$actual_turnout)
 ```
 
+We fail to reject the null hypothesis (the differences is "normal enough"). Now we can perform the paired t-tests to see if there is any significant difference between `predicted_turnout` and `actual_turnout`:
+
 ```{r}
-kable(predict_turnout(exit_poll_df, election_2016, census_data, sigma_turnout=2))
+t.test(turnout_data$predicted_turnout, turnout_data$actual_turnout, paired=TRUE)
 ```
+
+We fail to reject the null hypothesis, since the p-value is greater than `alpha = 0.01`. This seems to adequately describe the voter turnout.
+
+```{r}
+kable(turnout_data)
+```
+
+# Estimating votes for Trump
+
+We can use a similar scheme to compute the expected number of votes per state for Trump. Explicitly: compute the approximate coefficients for the logistic regression for people who turned out to vote, ended up voting for Trump. We use a similar scheme as before. The expected number of votes is computed similarly, with the numerator of the post-stratified quotient changed from `number_of_people_in_cat*probability_to_vote(category)` to multiply by an additional factor of `probability_voted_for_trump(category)` using the logistic regression we just constructed.
