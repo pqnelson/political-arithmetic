@@ -81,7 +81,7 @@ qplot(sample_bimodal(5, N=200), geom="histogram", fill=I("#008FD5"), ylab="Bimod
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-53-1.png)<!-- -->
+![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ``` r
 qplot(sample_bimodal(10, N=200), geom="histogram", fill=I("#008FD5")) +
@@ -92,7 +92,7 @@ qplot(sample_bimodal(10, N=200), geom="histogram", fill=I("#008FD5")) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-54-1.png)<!-- -->
+![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 ``` r
 qplot(sample_bimodal(30, N=200), geom="histogram", fill=I("#008FD5")) +
@@ -103,7 +103,7 @@ qplot(sample_bimodal(30, N=200), geom="histogram", fill=I("#008FD5")) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-55-1.png)<!-- -->
+![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ``` r
 qplot(sample_fleisman(5, 4, N=200), geom="histogram", fill=I("#FF2700")) +
@@ -114,7 +114,7 @@ qplot(sample_fleisman(5, 4, N=200), geom="histogram", fill=I("#FF2700")) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-56-1.png)<!-- -->
+![](2019-06-18-central-limit-theorem_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 # Testing
 
@@ -126,19 +126,21 @@ Perfect, now we are in a state to imitate the testing procedure:
 > fourth decimal place. Once the sampling distribution for the mean is
 > complete, the one sample Kolmogorov-Smirnov (KS) test was applied.
 
-We implement this thus:
+We will go up to 50 at intervals of 5, using a real test for normality.
+We intentionally avoid handling the multiple comparisons problem
+(expecting around 5% of the cases to be exceptional).
 
 ``` r
-results <- data.frame(uniform = rep(NA,6),
-                      normal = rep(NA,6),
-                      bimodal = rep(NA,6),
-                      fleisman1 = rep(NA,6),
-                      fleisman2 = rep(NA,6),
-                      fleisman3 = rep(NA,6),
-                      fleisman4 = rep(NA,6))
+results <- data.frame(uniform = rep(NA,10),
+                      normal = rep(NA,10),
+                      bimodal = rep(NA,10),
+                      fleisman1 = rep(NA,10),
+                      fleisman2 = rep(NA,10),
+                      fleisman3 = rep(NA,10),
+                      fleisman4 = rep(NA,10))
 # sidak significance = 1 - (1 - 0.05)**(1e-4);
 significance_level <- 0.05;
-for (i in 1:6) {
+for (i in 1:10) {
   print(i)
   results$uniform[i] <- length(Filter(function(p) {p < significance_level}, replicate(10000, shapiro.test(sample_unif(5*i))$p)))
   results$normal[i] <- length(Filter(function(p) {p < significance_level}, replicate(10000, shapiro.test(sample_normal(5*i))$p)))
@@ -156,6 +158,12 @@ for (i in 1:6) {
     ## [1] 4
     ## [1] 5
     ## [1] 6
+    ## [1] 7
+    ## [1] 8
+    ## [1] 9
+    ## [1] 10
+
+So how many “extreme” cases (seemingly non-normal samples) do we have?
 
 ``` r
 kable(results)
@@ -219,89 +227,43 @@ fleisman4
 
 <td style="text-align:right;">
 
-419
+421
 
 </td>
 
 <td style="text-align:right;">
 
-552
+548
 
 </td>
 
 <td style="text-align:right;">
 
-630
+662
 
 </td>
 
 <td style="text-align:right;">
 
-1248
+1278
 
 </td>
 
 <td style="text-align:right;">
 
-1074
+1086
 
 </td>
 
 <td style="text-align:right;">
 
-1123
+1111
 
 </td>
 
 <td style="text-align:right;">
 
-1084
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:right;">
-
-430
-
-</td>
-
-<td style="text-align:right;">
-
-525
-
-</td>
-
-<td style="text-align:right;">
-
-567
-
-</td>
-
-<td style="text-align:right;">
-
-903
-
-</td>
-
-<td style="text-align:right;">
-
-805
-
-</td>
-
-<td style="text-align:right;">
-
-818
-
-</td>
-
-<td style="text-align:right;">
-
-772
+1080
 
 </td>
 
@@ -311,43 +273,43 @@ fleisman4
 
 <td style="text-align:right;">
 
-455
+470
 
 </td>
 
 <td style="text-align:right;">
 
-499
+553
 
 </td>
 
 <td style="text-align:right;">
 
-547
+543
 
 </td>
 
 <td style="text-align:right;">
 
-805
+859
 
 </td>
 
 <td style="text-align:right;">
 
-677
+874
 
 </td>
 
 <td style="text-align:right;">
 
-714
+800
 
 </td>
 
 <td style="text-align:right;">
 
-734
+771
 
 </td>
 
@@ -357,43 +319,43 @@ fleisman4
 
 <td style="text-align:right;">
 
-498
+486
 
 </td>
 
 <td style="text-align:right;">
 
-439
+511
 
 </td>
 
 <td style="text-align:right;">
 
-537
+508
 
 </td>
 
 <td style="text-align:right;">
 
-663
+746
 
 </td>
 
 <td style="text-align:right;">
 
-635
+725
 
 </td>
 
 <td style="text-align:right;">
 
-653
+690
 
 </td>
 
 <td style="text-align:right;">
 
-675
+717
 
 </td>
 
@@ -409,37 +371,37 @@ fleisman4
 
 <td style="text-align:right;">
 
-527
+466
 
 </td>
 
 <td style="text-align:right;">
 
-526
+522
 
 </td>
 
 <td style="text-align:right;">
 
-647
+718
 
 </td>
 
 <td style="text-align:right;">
 
-619
+625
 
 </td>
 
 <td style="text-align:right;">
 
-594
+652
 
 </td>
 
 <td style="text-align:right;">
 
-655
+648
 
 </td>
 
@@ -449,43 +411,273 @@ fleisman4
 
 <td style="text-align:right;">
 
-466
+441
 
 </td>
 
 <td style="text-align:right;">
 
-461
+484
 
 </td>
 
 <td style="text-align:right;">
 
-496
+531
 
 </td>
 
 <td style="text-align:right;">
 
-594
+661
 
 </td>
 
 <td style="text-align:right;">
 
-550
+605
 
 </td>
 
 <td style="text-align:right;">
 
-587
+596
 
 </td>
 
 <td style="text-align:right;">
 
-628
+631
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+484
+
+</td>
+
+<td style="text-align:right;">
+
+473
+
+</td>
+
+<td style="text-align:right;">
+
+498
+
+</td>
+
+<td style="text-align:right;">
+
+627
+
+</td>
+
+<td style="text-align:right;">
+
+610
+
+</td>
+
+<td style="text-align:right;">
+
+576
+
+</td>
+
+<td style="text-align:right;">
+
+591
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+483
+
+</td>
+
+<td style="text-align:right;">
+
+475
+
+</td>
+
+<td style="text-align:right;">
+
+459
+
+</td>
+
+<td style="text-align:right;">
+
+625
+
+</td>
+
+<td style="text-align:right;">
+
+613
+
+</td>
+
+<td style="text-align:right;">
+
+559
+
+</td>
+
+<td style="text-align:right;">
+
+583
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+501
+
+</td>
+
+<td style="text-align:right;">
+
+524
+
+</td>
+
+<td style="text-align:right;">
+
+524
+
+</td>
+
+<td style="text-align:right;">
+
+599
+
+</td>
+
+<td style="text-align:right;">
+
+551
+
+</td>
+
+<td style="text-align:right;">
+
+584
+
+</td>
+
+<td style="text-align:right;">
+
+585
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+537
+
+</td>
+
+<td style="text-align:right;">
+
+481
+
+</td>
+
+<td style="text-align:right;">
+
+493
+
+</td>
+
+<td style="text-align:right;">
+
+569
+
+</td>
+
+<td style="text-align:right;">
+
+561
+
+</td>
+
+<td style="text-align:right;">
+
+588
+
+</td>
+
+<td style="text-align:right;">
+
+561
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+456
+
+</td>
+
+<td style="text-align:right;">
+
+484
+
+</td>
+
+<td style="text-align:right;">
+
+515
+
+</td>
+
+<td style="text-align:right;">
+
+606
+
+</td>
+
+<td style="text-align:right;">
+
+588
+
+</td>
+
+<td style="text-align:right;">
+
+571
+
+</td>
+
+<td style="text-align:right;">
+
+553
 
 </td>
 

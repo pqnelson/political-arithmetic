@@ -108,19 +108,19 @@ Perfect, now we are in a state to imitate the testing procedure:
 > Samples of 5 through 300 at intervals of 5 were drawn with no rounding from each of the four skewed distributions over 10,000 repetitions. After the transformation, the sampling means were rounded to the fourth decimal place. Once the sampling distribution for the mean is complete, the one sample Kolmogorov-Smirnov (KS) test was applied.
 
 
-We implement this thus:
+We will go up to 50 at intervals of 5, using a real test for normality. We intentionally avoid handling the multiple comparisons problem (expecting around 5% of the cases to be exceptional).
 
 ```{r}
-results <- data.frame(uniform = rep(NA,6),
-                      normal = rep(NA,6),
-                      bimodal = rep(NA,6),
-                      fleisman1 = rep(NA,6),
-                      fleisman2 = rep(NA,6),
-                      fleisman3 = rep(NA,6),
-                      fleisman4 = rep(NA,6))
+results <- data.frame(uniform = rep(NA,10),
+                      normal = rep(NA,10),
+                      bimodal = rep(NA,10),
+                      fleisman1 = rep(NA,10),
+                      fleisman2 = rep(NA,10),
+                      fleisman3 = rep(NA,10),
+                      fleisman4 = rep(NA,10))
 # sidak significance = 1 - (1 - 0.05)**(1e-4);
 significance_level <- 0.05;
-for (i in 1:6) {
+for (i in 1:10) {
   print(i)
   results$uniform[i] <- length(Filter(function(p) {p < significance_level}, replicate(10000, shapiro.test(sample_unif(5*i))$p)))
   results$normal[i] <- length(Filter(function(p) {p < significance_level}, replicate(10000, shapiro.test(sample_normal(5*i))$p)))
@@ -131,6 +131,7 @@ for (i in 1:6) {
   results$fleisman4[i] <- length(Filter(function(p) {p < significance_level}, replicate(10000, shapiro.test(sample_fleisman(5*i, 4))$p)))
 }
 ```
+So how many "extreme" cases (seemingly non-normal samples) do we have?
 
 ```{r}
 kable(results)
