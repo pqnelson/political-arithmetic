@@ -1180,4 +1180,4 @@ votes_rmse <- function(data) {
 predict_trump_votes(exit_poll_df, election_2016, census_data, 2, 500)
 ```
 
-This actually quantifies how surprising an event this was --- a 500-sigma event. But it also gives us some idea of how far off the exit polls were, which is unsurprising since it is a noisy and useless source. At the risk of sounding immodest, the amazing thing is we Macguyvered this thing together.
+This actually quantifies how surprising an event this was --- a 500-sigma event. But it also gives us some idea of how far off the exit polls were, which is unsurprising since it is a noisy and useless source. At the risk of sounding immodest, the amazing thing is we MacGyvered this thing together.
