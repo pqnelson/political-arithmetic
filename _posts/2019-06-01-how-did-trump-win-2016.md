@@ -24,6 +24,7 @@
           - [Interacting with State](#interacting-with-state)
       - [Prediction for States](#prediction-for-states)
   - [Estimating votes for Trump](#estimating-votes-for-trump)
+      - [Predicting Trump Votes](#predicting-trump-votes)
 
 # How did Trump Win the White House?
 
@@ -10618,3 +10619,241 @@ post-stratified quotient changed from
 `number_of_people_in_cat*probability_to_vote(category)` to multiply by
 an additional factor of `probability_voted_for_trump(category)` using
 the logistic regression we just constructed.
+
+Fortunately, we can automate away most of the odious calculations.
+
+``` r
+total_votes <- 138846571
+trump_votes <- 62984828
+trump_beta_0 <- log(trump_votes/(total_votes - trump_votes))
+
+log_coefs <- function(data, var, z = 2) {
+  beta = as.symbol(paste0("beta_", as.character(var)))
+  tau = as.symbol(paste0("tau_", as.character(var)))
+  data %>% 
+    group_by(options) %>%
+    transmute(
+      questions,state,
+      sigma = wilson_width(0.01*Trump_perc, num_respondents, z),
+      trump_numerator = 0.01*Trump_perc + 2*sigma,
+      odds_ratio = ifelse(0==Clinton_perc, 0, trump_numerator/(max(1e-7, (0.01*Clinton_perc)))),
+      # odds_ratio = trump_numerator/(1 - trump_numerator),
+      !!beta := ifelse(odds_ratio==0 || !is.finite(odds_ratio), 0, log(odds_ratio) - trump_beta_0),
+      !!tau := (trump_numerator/sigma)**2 + ((1 - trump_numerator)/(wilson_width(1 - 0.01*Trump_perc, num_respondents, z)))**2
+    )
+}
+```
+
+Now we can compute all the same coefficients as before, reusing quite a
+bit of code. Nifty. We just need to go through computing:
+
+``` r
+trump_state_gender <- function(exit_poll) {
+  log_coefs(filter(exit_poll, questions=="Gender", state != "nation"), "gender")
+}
+
+trump_education <- function(exit_poll) {
+  log_coefs(filter(exit_poll, questions=="Education", state == "nation"), "education")
+}
+
+trump_age_helper <- function(exit_poll) {
+  poll <- filter(exit_poll, questions=="Age")
+  id <- sort(unique(poll$questions_id))[2]
+  log_coefs(filter(exit_poll, questions_id == id), "age")
+}
+
+trump_age <- function(exit_poll) {
+  trump_age_helper(filter(exit_poll, state=="nation"))
+}
+
+trump_race_age <- function(exit_poll) {
+  log_coefs(filter(exit_poll, questions=="Age by race", state=="nation"), "ethnicity_age")
+}
+
+trump_race_gender <- function(exit_poll) {
+  log_coefs(filter(exit_poll, questions=="Race and gender", state=="nation"), "ethnicity_gender")
+}
+
+trump_state_race <- function(exit_poll) {
+  poll <- filter(exit_poll, questions=="Race", state!="nation")
+  poll[is.na(poll)] <- 0
+  results <- as.data.frame(unique(log_coefs(poll, "ethnicity_by_state")))
+  results[is.na(results)] <- 0
+  results$odds_ratio[which(!is.finite(results$odds_ratio))] <- 0
+  results
+}
+
+trump_state_education <- function(exit_poll) {
+  log_coefs(filter(exit_poll, questions=="Education", state != "nation"), "state_education")
+}
+
+trump_state_age <- function(exit_poll) {
+  results <- data.frame()
+  exit_poll[is.na(exit_poll)] <- 0
+  for (state_iter in unique(exit_poll$state)) {
+    if (state_iter != "nation") {
+      state_results <- as.data.frame(trump_age_helper(filter(exit_poll, state==state_iter)))
+      results <- rbind(results, state_results)
+    }
+  }
+  results
+}
+```
+
+We last need to compute the state effect (just the log of the ratio of
+Trump votes to non-Trump votes per state), but also we need to subtract
+out national effects and state effects from each coefficient computed
+above.
+
+``` r
+subtract_national_effects <- function(state_coefs, national_coefs) {
+  state_beta <- colnames(state_coefs)[grep("beta", colnames(state_coefs))]
+  nat_beta <- colnames(national_coefs)[grep("beta", colnames(national_coefs))]
+  for (option in unique(state_coefs$options)) {
+    state_coefs[which(state_coefs$options==option), state_beta] <- state_coefs[which(state_coefs$options==option), state_beta] - national_coefs[[which(national_coefs$options==option), nat_beta]] - trump_beta_0
+  }
+  state_coefs
+}
+```
+
+``` r
+subtract_state_effects <- function(state_coefs, state_beta0) {
+  beta <- colnames(state_coefs)[grep("beta", colnames(state_coefs))]
+  for (state in unique(state_beta0$state)) {
+    b0 <- state_beta0[[which(state_beta0$state==state), c("beta_state")]]
+    state_coefs[which(state_coefs$state == state), beta] <- state_coefs[which(state_coefs$state == state), beta] - b0
+  }
+  state_coefs
+}
+```
+
+``` r
+state_beta <- function(election_2016) {
+  election_2016 %>%
+    filter(party=="republican", is.finite(candidatevotes)) %>%
+    group_by(state) %>%
+    transmute(beta_state = log(sum(candidatevotes)/sum(totalvotes)) - trump_beta_0) %>%
+    unique %>%
+    as.data.frame
+}
+```
+
+## Predicting Trump Votes
+
+Now, we are in a position to finally answer the question: how did Trump
+win 2016? We compute the turnout:
+
+``` r
+# $age$tau_age
+predict_trump_votes_for_state <- function(state, turnout_coefs, trump_coefs, census_data, election_2016, beta0, sigma_turnout, sigma_vote) {
+  numerator <- 0.0;
+  denominator <- 0.0;
+  categories <- list("male", "female", "age_18_24", "age_25_29", "age_30_39", "age_40_49", "age_50_64", 
+                     "age_retirees", "education_high_school_male", "education_high_school_female",
+                     "education_some_college_male", "education_some_college_female",
+                     "education_assoc_degree_male", "education_assoc_degree_female",
+                     "education_college_grad_male", "education_college_grad_female", 
+                     "education_postgrad_male", "education_postgrad_female", "white_male_18_29",
+                     "white_male_30_44", "white_male_45_64", "white_male_retirees", "white_female_18_29",
+                     "white_female_30_44", "white_female_45_64", "white_female_retirees", "black_male_18_29",
+                     "black_male_30_44", "black_male_45_64", "black_male_retirees", "black_female_18_29",
+                     "black_female_30_44", "black_female_45_64", "black_female_retirees",
+                     "hispanic_male_18_29", "hispanic_male_30_44", "hispanic_male_45_64",
+                     "hispanic_male_retirees", "hispanic_female_18_29", "hispanic_female_30_44",
+                     "hispanic_female_45_64", "hispanic_female_retirees", "others_male_18_29",
+                     "others_female_18_29", "others_male_30_44", "others_female_30_44", "others_male_45_64",
+                     "others_female_45_64", "others_male_retirees", "others_female_retirees")
+  mrp_turnout <- mrp_weights(state, turnout_coefs, beta_0, sigma_turnout);
+  mrp_trump <- mrp_weights(state, trump_coefs, trump_beta_0, sigma_vote);
+  for (cat in categories) {
+    numerator <- numerator + sum(census_data[which(census_data$state == state), c(cat)])*invlogit(sum(mrp_turnout[[cat]]))*invlogit(sum(mrp_trump[[cat]]))
+    denominator <- denominator + sum(census_data[which(census_data$state == state), c(cat)])
+  }
+  data.frame(state=state, 
+             predicted_votes = numerator/denominator, 
+             actual_votes = sum(election_2016[which(election_2016$state==state & election_2016$party=="republican"),]$candidatevotes)/sum(election_2016[which(election_2016$state==state & election_2016$party=="republican"),]$totalvotes))
+}
+```
+
+``` r
+predict_trump_votes <- function(exit_poll, election_2016, census_data, sigma_turnout = 0, sigma_vote = 0) {
+  election_data <- filter(election_2016, party=="republican")
+  state_beta0 <- state_beta(election_data)
+  trump_coefs <- list(
+    age = trump_age(exit_poll),
+    ed = trump_education(exit_poll),
+    race_age = trump_race_age(exit_poll),
+    race_gender = trump_race_gender(exit_poll),
+    state = state_beta0,
+    state_race = subtract_state_effects(trump_state_race(exit_poll), state_beta0),
+    state_age = subtract_state_effects(subtract_national_effects(trump_state_age(exit_poll), trump_age(exit_poll)), state_beta0),
+    state_gender = subtract_state_effects(trump_state_gender(exit_poll), state_beta0),
+    state_ed = subtract_state_effects(subtract_national_effects(trump_state_education(exit_poll), trump_education(exit_poll)), state_beta0)
+  )
+  turnout_coefs <- list(
+    age = turnout_age_log_coefs(exit_poll, election_data, census_data),
+    ed = turnout_education_log_coefs(exit_poll, election_data, census_data),
+    race_age = turnout_ethnicity_age_log_coefs(exit_poll, election_data, census_data),
+    race_gender = turnout_ethnicity_gender_log_coefs(exit_poll, election_data, census_data),
+    state_race = turnout_ethnicity_state_log_coefs(exit_poll_df, election_data, census_data),
+    state_age = turnout_state_age_log_coefs(exit_poll, election_data, census_data),
+    state_gender = turnout_state_gender_log_coefs(exit_poll, election_data, census_data),
+    state = turnout_state_log_coefs(election_data, census_data),
+    state_ed = turnout_education_state_log_coefs(exit_poll, election_data, census_data)
+  )
+  results = data.frame();
+  for(state in unique(exit_poll$state)) {
+    if (state != "nation") {
+      results <- rbind(results, predict_trump_votes_for_state(state, turnout_coefs, trump_coefs, census_data, election_data, turnout_beta_0(), sigma_turnout, sigma_vote))
+    }
+  }
+  results
+}
+```
+
+We have the RMSE:
+
+``` r
+votes_rmse <- function(data) {
+  deltas <- (data$predicted_votes - data$actual_votes)**2
+  sqrt(mean(deltas))
+}
+
+predict_trump_votes(exit_poll_df, election_2016, census_data, 2, 500)
+```
+
+    ##             state predicted_votes actual_votes
+    ## 1         Arizona       0.4435226    0.4764234
+    ## 2      California       0.4172556    0.3161711
+    ## 3        Colorado       0.4805971    0.4325140
+    ## 4         Florida       0.4647590    0.4902194
+    ## 5         Georgia       0.4516357    0.5077159
+    ## 6        Illinois       0.4412401    0.3860637
+    ## 7         Indiana       0.4584066    0.5694003
+    ## 8            Iowa       0.4905753    0.5114733
+    ## 9        Kentucky       0.4658317    0.6251964
+    ## 10          Maine       0.4930058    0.4511016
+    ## 11       Michigan       0.4706608    0.4749756
+    ## 12      Minnesota       0.4922720    0.4492479
+    ## 13       Missouri       0.4740337    0.5679710
+    ## 14         Nevada       0.4418486    0.4550070
+    ## 15  New Hampshire       0.4935703    0.4645867
+    ## 16     New Jersey       0.4466476    0.4135039
+    ## 17     New Mexico       0.4303389    0.4004251
+    ## 18       New York       0.4268075    0.3651818
+    ## 19 North Carolina       0.4753240    0.4982809
+    ## 20           Ohio       0.4760668    0.5168765
+    ## 21         Oregon       0.4666134    0.3909404
+    ## 22   Pennsylvania       0.4727110    0.4857789
+    ## 23 South Carolina       0.4507137    0.5493933
+    ## 24          Texas       0.4291216    0.5223469
+    ## 25           Utah       0.4492502    0.4553804
+    ## 26       Virginia       0.4683357           NA
+    ## 27     Washington       0.4444020    0.3806998
+    ## 28      Wisconsin       0.4895676    0.4719612
+
+This actually quantifies how surprising an event this was — a 500-sigma
+event. But it also gives us some idea of how far off the exit polls
+were, which is unsurprising since it is a noisy and useless source. At
+the risk of sounding immodest, the amazing thing is we Macguyvered this
+thing together.
