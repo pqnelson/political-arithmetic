@@ -1,0 +1,156 @@
+---
+title: "How is my candidate doing?"
+author: "Alex Nelson"
+date: "6/22/2019"
+output:
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 6
+---
+
+```{r setup, include=FALSE}
+library(kableExtra)
+
+library(tidyverse)
+
+library(assertthat)
+
+library(rmarkdown)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The first thing we do is load the 538 collected poll data.
+
+```{r}
+poll_df <- read_csv("../data/primary/2020/president_primary_polls.csv")
+poll_df$start_date <- as.Date(poll_df$start_date, "%m/%d/%y")
+poll_df$end_date <- as.Date(poll_df$end_date, "%m/%d/%y")
+poll_2020_df <- filter(poll_df, cycle==2020, party=="DEM")
+```
+
+Now we can arrange by the `end_date` for the poll, which places the earlier polls first and the more recent polls at the end of the data frame. This sets us up nicely to use a running average for the poll for each candidate.
+
+# Vanilla moving average
+
+We implement the "naive" moving average.
+
+```{r, moving average}
+alpha <- function(prev_date, next_date, avg_interval, normalizer = 30, ...) {
+  1 - exp(-abs(as.numeric(next_date - prev_date))/(normalizer * avg_interval))
+}
+```
+
+We will have a utility function for computing the average interval between poll releases.
+
+```{r}
+average_interval <- function(poll_data) {
+  abs(mean(as.numeric(diff(poll_data$end_date))))
+}
+```
+
+The moving average is a little sad, it's just what we'd expect.
+
+```{r}
+moving_average <- function(poll_data, weighting_interval, alpha_fn = alpha) {
+  assert_that(length(unique(poll_data$cycle)) == 1)
+  poll_data < arrange(poll_data, end_date)
+  avg_interval <- average_interval(poll_data)
+  avg <- poll_data$pct[1]
+  prev_dt <- poll_data$end_date[1]
+  for (i in 2:nrow(poll_data)) {
+    a <- alpha_fn(prev_dt, poll_data$end_date[i], avg_interval, weighting_interval, poll_data$fte_grade[i])
+    avg <- a*poll_data$pct[i] + (1 - a)*avg
+    prev_dt <- poll_data$end_date[i]
+  }
+  avg
+}
+
+compute_moving_avgs <- function(poll_data, weighting_interval = 30) {
+  assert_that(length(unique(poll_data$cycle)) == 1)
+  
+  poll_data %>%
+    group_by(candidate_name) %>%
+    filter(n() > 2, !is.na(fte_grade), !is.na(sponsors), state=="Iowa") %>%
+    nest() %>%
+    transmute(candidate_name,
+              moving_avg = map(data, moving_average, weighting_interval)
+              ) %>%
+    unnest() %>%
+    arrange(-moving_avg)
+}
+```
+
+We can now present a table of running averages by month:
+
+```{r}
+kable(compute_moving_avgs(poll_2020_df))
+```
+And if we choose instead a week:
+
+
+```{r}
+kable(compute_moving_avgs(poll_2020_df, 7))
+```
+
+
+```{r}
+kable(compute_moving_avgs(poll_2020_df, 1))
+```
+
+```{r}
+kable(compute_moving_avgs(poll_2020_df, 45))
+```
+
+# Weighing the score of the pollsters
+
+There are a lot of garbage polls, so we need to apply a weighting scheme to them.
+
+```{r}
+grade_pollster <- function(fte_grade) {
+  lookup <- list("A+" = 13/13,
+                 "A"  = 12/13,
+                 "A-" = 11/13,
+                 "B+" = 10/13,
+                 "B"  =  9/39,
+                 "B-" =  8/39,
+                 "C+" =  6/39,
+                 "C"  =  5/39,
+                 "C-" =  4/39,
+                 "D+" =  3/39,
+                 "D"  =  2/39,
+                 "D-" =  1/39)
+  ifelse(is.null(lookup[[fte_grade]]), 0, lookup[[fte_grade]])
+}
+```
+
+Now we apply this to our new alpha function.
+
+```{r}
+weighted_alpha <- function(prev_date, next_date, avg_interval, normalizer, fte_grade, ...) {
+  grade_pollster(fte_grade)*alpha(prev_date, next_date, avg_interval, normalizer)
+}
+
+compute_weighted_moving_avgs <- function(poll_data, weighting_interval = 30) {
+  assert_that(length(unique(poll_data$cycle)) == 1)
+  
+  poll_data %>%
+    group_by(candidate_name) %>%
+    filter(n() > 2, !is.na(fte_grade), !is.na(sponsors), state=="Iowa") %>%
+    nest() %>%
+    transmute(candidate_name,
+              moving_avg = map(data, moving_average, weighting_interval, weighted_alpha)
+              ) %>%
+    unnest() %>%
+    arrange(-moving_avg)
+}
+
+kable(compute_weighted_moving_avgs(poll_2020_df, 7))
+```
+
+It seems the larger the window for remembering events, the smaller the lead Biden has, until we weigh the pollster ratings.
+
+```{r}
+kable(compute_weighted_moving_avgs(poll_2020_df))
+```
+

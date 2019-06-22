@@ -1,0 +1,1 @@
+Poll data from [538](https://github.com/fivethirtyeight/data/tree/master/polls), last pulled 6/22/2019.
