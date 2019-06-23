@@ -1,0 +1,372 @@
+date,state,candidate,vote_perc,won_state,is_nominee,event_type
+1988-02-08,Iowa,Michael Dukakis,21,FALSE,TRUE,caucus
+1988-02-16,New Hampshire,Michael Dukakis,37,TRUE,TRUE,primary
+1988-02-23,Minnesota,Michael Dukakis,33,TRUE,TRUE,primary
+1988-02-23,South Dakota,Michael Dukakis,30,FALSE,TRUE,primary
+1988-02-28,Maine,Michael Dukakis,42,TRUE,TRUE,primary
+1988-03-01,Vermont,Michael Dukakis,56,TRUE,TRUE,primary
+1988-03-05,Wyoming,Michael Dukakis,26,FALSE,TRUE,caucus
+1988-03-08,Alabama,Michael Dukakis,8,FALSE,TRUE,primary
+1988-03-08,Arkansas,Michael Dukakis,19,FALSE,TRUE,primary
+1988-03-08,Florida,Michael Dukakis,41,TRUE,TRUE,primary
+1988-03-08,Georgia,Michael Dukakis,16,FALSE,TRUE,primary
+1988-03-08,Hawaii,Michael Dukakis,55,TRUE,TRUE,caucus
+1988-03-08,Idaho,Michael Dukakis,38,TRUE,TRUE,caucus
+1988-03-08,Kentucky,Michael Dukakis,19,FALSE,TRUE,primary
+1988-03-08,Louisiana,Michael Dukakis,15,FALSE,TRUE,primary
+1988-03-08,Maryland,Michael Dukakis,46,TRUE,TRUE,primary
+1988-03-08,Massachusetts,Michael Dukakis,63,TRUE,TRUE,primary
+1988-03-08,Mississippi,Michael Dukakis,8,FALSE,TRUE,primary
+1988-03-08,Missouri,Michael Dukakis,12,FALSE,TRUE,primary
+1988-03-08,Nevada,Michael Dukakis,26,FALSE,TRUE,caucus
+1988-03-08,North Carolina,Michael Dukakis,20,FALSE,TRUE,primary
+1988-03-08,Oklahoma,Michael Dukakis,17,FALSE,TRUE,primary
+1988-03-08,Rhode Island,Michael Dukakis,70,TRUE,TRUE,primary
+1988-03-08,Tennessee,Michael Dukakis,3,FALSE,TRUE,primary
+1988-03-08,Texas,Michael Dukakis,33,TRUE,TRUE,primary
+1988-03-08,Virginia,Michael Dukakis,23,FALSE,TRUE,primary
+1988-03-08,Washington,Michael Dukakis,44,TRUE,TRUE,primary
+1988-03-08,American Samoa,Michael Dukakis,39,TRUE,TRUE,caucus
+1988-03-10,Alaska,Michael Dukakis,31,FALSE,TRUE,caucus
+1988-03-12,Colorado,Michael Dukakis,43,TRUE,TRUE,caucus
+1988-03-12,South Carolina,Michael Dukakis,6,FALSE,TRUE,primary
+1988-03-15,Illinois,Michael Dukakis,17,FALSE,TRUE,primary
+1988-03-19,Kansas,Michael Dukakis,36,TRUE,TRUE,caucus
+1988-03-20,Puerto Rico,Michael Dukakis,23,FALSE,TRUE,primary
+1988-03-24,Connecticut,Michael Dukakis,58,TRUE,TRUE,primary
+1988-03-26,Michigan,Michael Dukakis,29,FALSE,TRUE,caucus
+1988-04-05,Wisconsin,Michael Dukakis,47,TRUE,TRUE,primary
+1988-04-16,Arizona,Michael Dukakis,54,TRUE,TRUE,caucus
+1988-04-18,Delaware,Michael Dukakis,27,FALSE,TRUE,caucus
+1988-04-19,New York,Michael Dukakis,NA,NA,TRUE,primary
+1988-04-25,Utah,Michael Dukakis,72,TRUE,TRUE,caucus
+1988-04-26,Pennsylvania,Michael Dukakis,66,TRUE,TRUE,primary
+1988-05-03,Indiana,Michael Dukakis,70,TRUE,TRUE,primary
+1988-05-03,Ohio,Michael Dukakis,63,TRUE,TRUE,primary
+1988-05-03,"Washington, D.C.",Michael Dukakis,18,FALSE,TRUE,primary
+1988-05-10,Nebraska,Michael Dukakis,63,TRUE,TRUE,primary
+1988-05-10,West Virginia,Michael Dukakis,75,TRUE,TRUE,primary
+1988-05-17,Oregon,Michael Dukakis,57,TRUE,TRUE,primary
+1988-06-07,California,Michael Dukakis,61,TRUE,TRUE,primary
+1988-06-07,Montana,Michael Dukakis,69,TRUE,TRUE,primary
+1988-06-07,New Jersey,Michael Dukakis,63,TRUE,TRUE,primary
+1988-06-07,New Mexico,Michael Dukakis,61,TRUE,TRUE,primary
+1988-06-14,North Dakota,Michael Dukakis,85,TRUE,TRUE,primary
+1988-02-08,Iowa,Jesse Jackson,11,FALSE,FALSE,caucus
+1988-02-16,New Hampshire,Jesse Jackson,8,FALSE,FALSE,primary
+1988-02-23,Minnesota,Jesse Jackson,18,FALSE,FALSE,primary
+1988-02-23,South Dakota,Jesse Jackson,5,FALSE,FALSE,primary
+1988-02-28,Maine,Jesse Jackson,27,FALSE,FALSE,primary
+1988-03-01,Vermont,Jesse Jackson,26,FALSE,FALSE,primary
+1988-03-05,Wyoming,Jesse Jackson,13,FALSE,FALSE,caucus
+1988-03-08,Alabama,Jesse Jackson,44,TRUE,FALSE,primary
+1988-03-08,Arkansas,Jesse Jackson,17,FALSE,FALSE,primary
+1988-03-08,Florida,Jesse Jackson,20,FALSE,FALSE,primary
+1988-03-08,Georgia,Jesse Jackson,40,TRUE,FALSE,primary
+1988-03-08,Hawaii,Jesse Jackson,35,FALSE,FALSE,caucus
+1988-03-08,Idaho,Jesse Jackson,19,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Jesse Jackson,16,FALSE,FALSE,primary
+1988-03-08,Louisiana,Jesse Jackson,35,TRUE,FALSE,primary
+1988-03-08,Maryland,Jesse Jackson,32,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Jesse Jackson,17,FALSE,FALSE,primary
+1988-03-08,Mississippi,Jesse Jackson,45,TRUE,FALSE,primary
+1988-03-08,Missouri,Jesse Jackson,20,FALSE,FALSE,primary
+1988-03-08,Nevada,Jesse Jackson,21,FALSE,FALSE,caucus
+1988-03-08,North Carolina,Jesse Jackson,33,FALSE,FALSE,primary
+1988-03-08,Oklahoma,Jesse Jackson,13,FALSE,FALSE,primary
+1988-03-08,Rhode Island,Jesse Jackson,15,FALSE,FALSE,primary
+1988-03-08,Tennessee,Jesse Jackson,21,FALSE,FALSE,primary
+1988-03-08,Texas,Jesse Jackson,25,FALSE,FALSE,primary
+1988-03-08,Virginia,Jesse Jackson,45,TRUE,FALSE,primary
+1988-03-08,Washington,Jesse Jackson,35,FALSE,FALSE,primary
+1988-03-08,American Samoa,Jesse Jackson,7,FALSE,FALSE,caucus
+1988-03-10,Alaska,Jesse Jackson,35,TRUE,FALSE,caucus
+1988-03-12,Colorado,Jesse Jackson,35,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Jesse Jackson,55,TRUE,FALSE,primary
+1988-03-15,Illinois,Jesse Jackson,33,FALSE,FALSE,primary
+1988-03-19,Kansas,Jesse Jackson,31,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Jesse Jackson,35,TRUE,FALSE,primary
+1988-03-24,Connecticut,Jesse Jackson,28,FALSE,FALSE,primary
+1988-03-26,Michigan,Jesse Jackson,54,TRUE,FALSE,caucus
+1988-04-05,Wisconsin,Jesse Jackson,30,FALSE,FALSE,primary
+1988-04-16,Arizona,Jesse Jackson,38,FALSE,FALSE,caucus
+1988-04-18,Delaware,Jesse Jackson,46,TRUE,FALSE,caucus
+1988-04-19,New York,Jesse Jackson,NA,NA,FALSE,primary
+1988-04-25,Utah,Jesse Jackson,15,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Jesse Jackson,27,FALSE,FALSE,primary
+1988-05-03,Indiana,Jesse Jackson,22,FALSE,FALSE,primary
+1988-05-03,Ohio,Jesse Jackson,27,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Jesse Jackson,80,TRUE,FALSE,primary
+1988-05-10,Nebraska,Jesse Jackson,26,FALSE,FALSE,primary
+1988-05-10,West Virginia,Jesse Jackson,13,FALSE,FALSE,primary
+1988-05-17,Oregon,Jesse Jackson,38,FALSE,FALSE,primary
+1988-06-07,California,Jesse Jackson,35,FALSE,FALSE,primary
+1988-06-07,Montana,Jesse Jackson,22,FALSE,FALSE,primary
+1988-06-07,New Jersey,Jesse Jackson,33,FALSE,FALSE,primary
+1988-06-07,New Mexico,Jesse Jackson,28,FALSE,FALSE,primary
+1988-06-14,North Dakota,Jesse Jackson,15,FALSE,FALSE,primary
+1988-02-08,Iowa,Al Gore,0,FALSE,FALSE,caucus
+1988-02-16,New Hampshire,Al Gore,7,FALSE,FALSE,primary
+1988-02-23,Minnesota,Al Gore,1,FALSE,FALSE,primary
+1988-02-23,South Dakota,Al Gore,9,FALSE,FALSE,primary
+1988-02-28,Maine,Al Gore,2,FALSE,FALSE,primary
+1988-03-01,Vermont,Al Gore,0,FALSE,FALSE,primary
+1988-03-05,Wyoming,Al Gore,27,TRUE,FALSE,caucus
+1988-03-08,Alabama,Al Gore,37,FALSE,FALSE,primary
+1988-03-08,Arkansas,Al Gore,37,TRUE,FALSE,primary
+1988-03-08,Florida,Al Gore,13,FALSE,FALSE,primary
+1988-03-08,Georgia,Al Gore,33,FALSE,FALSE,primary
+1988-03-08,Hawaii,Al Gore,1,FALSE,FALSE,caucus
+1988-03-08,Idaho,Al Gore,8,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Al Gore,46,TRUE,FALSE,primary
+1988-03-08,Louisiana,Al Gore,28,FALSE,FALSE,primary
+1988-03-08,Maryland,Al Gore,9,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Al Gore,4,FALSE,FALSE,primary
+1988-03-08,Mississippi,Al Gore,34,FALSE,FALSE,primary
+1988-03-08,Missouri,Al Gore,3,FALSE,FALSE,primary
+1988-03-08,Nevada,Al Gore,35,TRUE,FALSE,caucus
+1988-03-08,North Carolina,Al Gore,35,TRUE,FALSE,primary
+1988-03-08,Oklahoma,Al Gore,41,TRUE,FALSE,primary
+1988-03-08,Rhode Island,Al Gore,4,FALSE,FALSE,primary
+1988-03-08,Tennessee,Al Gore,72,TRUE,FALSE,primary
+1988-03-08,Texas,Al Gore,20,FALSE,FALSE,primary
+1988-03-08,Virginia,Al Gore,22,FALSE,FALSE,primary
+1988-03-08,Washington,Al Gore,2,FALSE,FALSE,primary
+1988-03-08,American Samoa,Al Gore,0,FALSE,FALSE,caucus
+1988-03-10,Alaska,Al Gore,2,FALSE,FALSE,caucus
+1988-03-12,Colorado,Al Gore,3,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Al Gore,17,FALSE,FALSE,primary
+1988-03-15,Illinois,Al Gore,5,FALSE,FALSE,primary
+1988-03-19,Kansas,Al Gore,16,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Al Gore,4,FALSE,FALSE,primary
+1988-03-24,Connecticut,Al Gore,8,FALSE,FALSE,primary
+1988-03-26,Michigan,Al Gore,2,FALSE,FALSE,caucus
+1988-04-05,Wisconsin,Al Gore,17,FALSE,FALSE,primary
+1988-04-16,Arizona,Al Gore,5,FALSE,FALSE,caucus
+1988-04-18,Delaware,Al Gore,2,FALSE,FALSE,caucus
+1988-04-19,New York,Al Gore,NA,NA,FALSE,primary
+1988-04-25,Utah,Al Gore,0,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Al Gore,3,FALSE,FALSE,primary
+1988-05-03,Indiana,Al Gore,3,FALSE,FALSE,primary
+1988-05-03,Ohio,Al Gore,2,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Al Gore,1,FALSE,FALSE,primary
+1988-05-10,Nebraska,Al Gore,1,FALSE,FALSE,primary
+1988-05-10,West Virginia,Al Gore,3,FALSE,FALSE,primary
+1988-05-17,Oregon,Al Gore,1,FALSE,FALSE,primary
+1988-06-07,California,Al Gore,2,FALSE,FALSE,primary
+1988-06-07,Montana,Al Gore,2,FALSE,FALSE,primary
+1988-06-07,New Jersey,Al Gore,3,FALSE,FALSE,primary
+1988-06-07,New Mexico,Al Gore,3,FALSE,FALSE,primary
+1988-06-14,North Dakota,Al Gore,0,FALSE,FALSE,primary
+1988-02-08,Iowa,Dick Gephardt,28,TRUE,FALSE,caucus
+1988-02-16,New Hampshire,Dick Gephardt,20,FALSE,FALSE,primary
+1988-02-23,Minnesota,Dick Gephardt,7,FALSE,FALSE,primary
+1988-02-23,South Dakota,Dick Gephardt,45,TRUE,FALSE,primary
+1988-02-28,Maine,Dick Gephardt,3,FALSE,FALSE,primary
+1988-03-01,Vermont,Dick Gephardt,8,FALSE,FALSE,primary
+1988-03-05,Wyoming,Dick Gephardt,21,FALSE,FALSE,caucus
+1988-03-08,Alabama,Dick Gephardt,7,FALSE,FALSE,primary
+1988-03-08,Arkansas,Dick Gephardt,12,FALSE,FALSE,primary
+1988-03-08,Florida,Dick Gephardt,14,FALSE,FALSE,primary
+1988-03-08,Georgia,Dick Gephardt,7,FALSE,FALSE,primary
+1988-03-08,Hawaii,Dick Gephardt,2,FALSE,FALSE,caucus
+1988-03-08,Idaho,Dick Gephardt,4,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Dick Gephardt,9,FALSE,FALSE,primary
+1988-03-08,Louisiana,Dick Gephardt,11,FALSE,FALSE,primary
+1988-03-08,Maryland,Dick Gephardt,9,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Dick Gephardt,9,FALSE,FALSE,primary
+1988-03-08,Mississippi,Dick Gephardt,5,FALSE,FALSE,primary
+1988-03-08,Missouri,Dick Gephardt,58,TRUE,FALSE,primary
+1988-03-08,Nevada,Dick Gephardt,2,FALSE,FALSE,caucus
+1988-03-08,North Carolina,Dick Gephardt,6,FALSE,FALSE,primary
+1988-03-08,Oklahoma,Dick Gephardt,21,FALSE,FALSE,primary
+1988-03-08,Rhode Island,Dick Gephardt,4,FALSE,FALSE,primary
+1988-03-08,Tennessee,Dick Gephardt,2,FALSE,FALSE,primary
+1988-03-08,Texas,Dick Gephardt,14,FALSE,FALSE,primary
+1988-03-08,Virginia,Dick Gephardt,4,FALSE,FALSE,primary
+1988-03-08,Washington,Dick Gephardt,1,FALSE,FALSE,primary
+1988-03-08,American Samoa,Dick Gephardt,22,FALSE,FALSE,caucus
+1988-03-10,Alaska,Dick Gephardt,1,FALSE,FALSE,caucus
+1988-03-12,Colorado,Dick Gephardt,0,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Dick Gephardt,2,FALSE,FALSE,primary
+1988-03-15,Illinois,Dick Gephardt,2,FALSE,FALSE,primary
+1988-03-19,Kansas,Dick Gephardt,2,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Dick Gephardt,18,FALSE,FALSE,primary
+1988-03-24,Connecticut,Dick Gephardt,0,FALSE,FALSE,primary
+1988-03-26,Michigan,Dick Gephardt,13,FALSE,FALSE,caucus
+1988-04-05,Wisconsin,Dick Gephardt,0,FALSE,FALSE,primary
+1988-04-16,Arizona,Dick Gephardt,0,FALSE,FALSE,caucus
+1988-04-18,Delaware,Dick Gephardt,0,FALSE,FALSE,caucus
+1988-04-19,New York,Dick Gephardt,0,TRUE,FALSE,primary
+1988-04-25,Utah,Dick Gephardt,0,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Dick Gephardt,0,FALSE,FALSE,primary
+1988-05-03,Indiana,Dick Gephardt,3,FALSE,FALSE,primary
+1988-05-03,Ohio,Dick Gephardt,0,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Dick Gephardt,0,FALSE,FALSE,primary
+1988-05-10,Nebraska,Dick Gephardt,3,FALSE,FALSE,primary
+1988-05-10,West Virginia,Dick Gephardt,2,FALSE,FALSE,primary
+1988-05-17,Oregon,Dick Gephardt,2,FALSE,FALSE,primary
+1988-06-07,California,Dick Gephardt,0,FALSE,FALSE,primary
+1988-06-07,Montana,Dick Gephardt,3,FALSE,FALSE,primary
+1988-06-07,New Jersey,Dick Gephardt,0,FALSE,FALSE,primary
+1988-06-07,New Mexico,Dick Gephardt,0,FALSE,FALSE,primary
+1988-06-14,North Dakota,Dick Gephardt,0,FALSE,FALSE,primary
+1988-02-08,Iowa,Paul Simon,24,FALSE,FALSE,caucus
+1988-02-16,New Hampshire,Paul Simon,17,FALSE,FALSE,primary
+1988-02-23,Minnesota,Paul Simon,22,FALSE,FALSE,primary
+1988-02-23,South Dakota,Paul Simon,6,FALSE,FALSE,primary
+1988-02-28,Maine,Paul Simon,4,FALSE,FALSE,primary
+1988-03-01,Vermont,Paul Simon,5,FALSE,FALSE,primary
+1988-03-05,Wyoming,Paul Simon,3,FALSE,FALSE,caucus
+1988-03-08,Alabama,Paul Simon,1,FALSE,FALSE,primary
+1988-03-08,Arkansas,Paul Simon,2,FALSE,FALSE,primary
+1988-03-08,Florida,Paul Simon,2,FALSE,FALSE,primary
+1988-03-08,Georgia,Paul Simon,1,FALSE,FALSE,primary
+1988-03-08,Hawaii,Paul Simon,1,FALSE,FALSE,caucus
+1988-03-08,Idaho,Paul Simon,1,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Paul Simon,0,FALSE,FALSE,primary
+1988-03-08,Louisiana,Paul Simon,0,FALSE,FALSE,primary
+1988-03-08,Maryland,Paul Simon,3,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Paul Simon,3,FALSE,FALSE,primary
+1988-03-08,Mississippi,Paul Simon,0,FALSE,FALSE,primary
+1988-03-08,Missouri,Paul Simon,4,FALSE,FALSE,primary
+1988-03-08,Nevada,Paul Simon,1,FALSE,FALSE,caucus
+1988-03-08,North Carolina,Paul Simon,1,FALSE,FALSE,primary
+1988-03-08,Oklahoma,Paul Simon,2,FALSE,FALSE,primary
+1988-03-08,Rhode Island,Paul Simon,3,FALSE,FALSE,primary
+1988-03-08,Tennessee,Paul Simon,1,FALSE,FALSE,primary
+1988-03-08,Texas,Paul Simon,2,FALSE,FALSE,primary
+1988-03-08,Virginia,Paul Simon,2,FALSE,FALSE,primary
+1988-03-08,Washington,Paul Simon,4,FALSE,FALSE,primary
+1988-03-08,American Samoa,Paul Simon,0,FALSE,FALSE,caucus
+1988-03-10,Alaska,Paul Simon,1,FALSE,FALSE,caucus
+1988-03-12,Colorado,Paul Simon,0,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Paul Simon,0,FALSE,FALSE,primary
+1988-03-15,Illinois,Paul Simon,43,TRUE,FALSE,primary
+1988-03-19,Kansas,Paul Simon,0,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Paul Simon,20,FALSE,FALSE,primary
+1988-03-24,Connecticut,Paul Simon,1,FALSE,FALSE,primary
+1988-03-26,Michigan,Paul Simon,2,FALSE,FALSE,caucus
+1988-04-05,Wisconsin,Paul Simon,5,FALSE,FALSE,primary
+1988-04-16,Arizona,Paul Simon,1,FALSE,FALSE,caucus
+1988-04-18,Delaware,Paul Simon,0,FALSE,FALSE,caucus
+1988-04-19,New York,Paul Simon,NA,NA,FALSE,primary
+1988-04-25,Utah,Paul Simon,0,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Paul Simon,1,FALSE,FALSE,primary
+1988-05-03,Indiana,Paul Simon,2,FALSE,FALSE,primary
+1988-05-03,Ohio,Paul Simon,1,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Paul Simon,1,FALSE,FALSE,primary
+1988-05-10,Nebraska,Paul Simon,1,FALSE,FALSE,primary
+1988-05-10,West Virginia,Paul Simon,1,FALSE,FALSE,primary
+1988-05-17,Oregon,Paul Simon,1,FALSE,FALSE,primary
+1988-06-07,California,Paul Simon,1,FALSE,FALSE,primary
+1988-06-07,Montana,Paul Simon,1,FALSE,FALSE,primary
+1988-06-07,New Jersey,Paul Simon,0,FALSE,FALSE,primary
+1988-06-07,New Mexico,Paul Simon,2,FALSE,FALSE,primary
+1988-06-14,North Dakota,Paul Simon,0,FALSE,FALSE,primary
+1988-02-08,Iowa,Gary Hart,1,FALSE,FALSE,caucus
+1988-02-16,New Hampshire,Gary Hart,4,FALSE,FALSE,primary
+1988-02-23,Minnesota,Gary Hart,0,FALSE,FALSE,primary
+1988-02-23,South Dakota,Gary Hart,6,FALSE,FALSE,primary
+1988-02-28,Maine,Gary Hart,1,FALSE,FALSE,primary
+1988-03-01,Vermont,Gary Hart,4,FALSE,FALSE,primary
+1988-03-05,Wyoming,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-08,Alabama,Gary Hart,2,FALSE,FALSE,primary
+1988-03-08,Arkansas,Gary Hart,4,FALSE,FALSE,primary
+1988-03-08,Florida,Gary Hart,3,FALSE,FALSE,primary
+1988-03-08,Georgia,Gary Hart,3,FALSE,FALSE,primary
+1988-03-08,Hawaii,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-08,Idaho,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Gary Hart,0,FALSE,FALSE,primary
+1988-03-08,Louisiana,Gary Hart,0,FALSE,FALSE,primary
+1988-03-08,Maryland,Gary Hart,2,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Gary Hart,0,FALSE,FALSE,primary
+1988-03-08,Mississippi,Gary Hart,4,FALSE,FALSE,primary
+1988-03-08,Missouri,Gary Hart,0,FALSE,FALSE,primary
+1988-03-08,Nevada,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-08,North Carolina,Gary Hart,2,FALSE,FALSE,primary
+1988-03-08,Oklahoma,Gary Hart,3,FALSE,FALSE,primary
+1988-03-08,Rhode Island,Gary Hart,2,FALSE,FALSE,primary
+1988-03-08,Tennessee,Gary Hart,1,FALSE,FALSE,primary
+1988-03-08,Texas,Gary Hart,5,FALSE,FALSE,primary
+1988-03-08,Virginia,Gary Hart,2,FALSE,FALSE,primary
+1988-03-08,Washington,Gary Hart,0,FALSE,FALSE,primary
+1988-03-08,American Samoa,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-10,Alaska,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-12,Colorado,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Gary Hart,0,FALSE,FALSE,primary
+1988-03-15,Illinois,Gary Hart,0,FALSE,FALSE,primary
+1988-03-19,Kansas,Gary Hart,0,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Gary Hart,0,FALSE,FALSE,primary
+1988-03-24,Connecticut,Gary Hart,2,FALSE,FALSE,primary
+1988-03-26,Michigan,Gary Hart,0,FALSE,FALSE,caucus
+1988-04-05,Wisconsin,Gary Hart,0,FALSE,FALSE,primary
+1988-04-16,Arizona,Gary Hart,0,FALSE,FALSE,caucus
+1988-04-18,Delaware,Gary Hart,0,FALSE,FALSE,caucus
+1988-04-19,New York,Gary Hart,0,TRUE,FALSE,primary
+1988-04-25,Utah,Gary Hart,0,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Gary Hart,1,FALSE,FALSE,primary
+1988-05-03,Indiana,Gary Hart,0,FALSE,FALSE,primary
+1988-05-03,Ohio,Gary Hart,2,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Gary Hart,0,FALSE,FALSE,primary
+1988-05-10,Nebraska,Gary Hart,3,FALSE,FALSE,primary
+1988-05-10,West Virginia,Gary Hart,3,FALSE,FALSE,primary
+1988-05-17,Oregon,Gary Hart,0,FALSE,FALSE,primary
+1988-06-07,California,Gary Hart,0,FALSE,FALSE,primary
+1988-06-07,Montana,Gary Hart,0,FALSE,FALSE,primary
+1988-06-07,New Jersey,Gary Hart,0,FALSE,FALSE,primary
+1988-06-07,New Mexico,Gary Hart,4,FALSE,FALSE,primary
+1988-06-14,North Dakota,Gary Hart,0,FALSE,FALSE,primary
+1988-02-08,Iowa,Bruce Babbitt,9,FALSE,FALSE,caucus
+1988-02-16,New Hampshire,Bruce Babbitt,5,FALSE,FALSE,primary
+1988-02-23,Minnesota,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-02-23,South Dakota,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-02-28,Maine,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-01,Vermont,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-05,Wyoming,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-08,Alabama,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Arkansas,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Florida,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Georgia,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Hawaii,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-08,Idaho,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-08,Kentucky,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Louisiana,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Maryland,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Massachusetts,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Mississippi,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Missouri,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Nevada,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-08,North Carolina,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Oklahoma,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Rhode Island,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Tennessee,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,Texas,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Virginia,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-08,Washington,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-08,American Samoa,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-10,Alaska,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-12,Colorado,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-12,South Carolina,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-15,Illinois,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-19,Kansas,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-03-20,Puerto Rico,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-03-24,Connecticut,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-03-26,Michigan,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-04-05,Wisconsin,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-04-16,Arizona,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-04-18,Delaware,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-04-19,New York,Bruce Babbitt,0,TRUE,FALSE,primary
+1988-04-25,Utah,Bruce Babbitt,0,FALSE,FALSE,caucus
+1988-04-26,Pennsylvania,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-05-03,Indiana,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-05-03,Ohio,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-05-03,"Washington, D.C.",Bruce Babbitt,0,FALSE,FALSE,primary
+1988-05-10,Nebraska,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-05-10,West Virginia,Bruce Babbitt,1,FALSE,FALSE,primary
+1988-05-17,Oregon,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-06-07,California,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-06-07,Montana,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-06-07,New Jersey,Bruce Babbitt,0,FALSE,FALSE,primary
+1988-06-07,New Mexico,Bruce Babbitt,2,FALSE,FALSE,primary
+1988-06-14,North Dakota,Bruce Babbitt,0,FALSE,FALSE,primary

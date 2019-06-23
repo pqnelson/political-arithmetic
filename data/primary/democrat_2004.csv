@@ -1,0 +1,514 @@
+date,state,candidate,vote_perc,is_nominee,won,event_type
+2004-01-14,District of Columbia,Carol Moseley Braun,12,FALSE,FALSE,primary
+2004-01-19,Iowa,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-03,Arizona,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-03,Delaware,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-03,Missouri,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-03,New Mexico,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-03,South Carolina,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-07,Michigan,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-07,Washington,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-08,Maine,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Carol Moseley Braun,1,FALSE,FALSE,primary
+2004-02-10,Virginia,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-14,Nevada,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-02-24,Hawaii,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-24,Idaho,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-02-24,Utah,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,California,Carol Moseley Braun,1,FALSE,FALSE,primary
+2004-03-02,Connecticut,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Georgia,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Maryland,Carol Moseley Braun,1,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Minnesota,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-03-02,New York,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Ohio,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-09,American Samoa,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Carol Moseley Braun,1,FALSE,FALSE,primary
+2004-03-09,Louisiana,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-09,Mississippi,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-09,Texas,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-03-13,Kansas,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-03-16,Illinois,Carol Moseley Braun,4,FALSE,FALSE,primary
+2004-03-20,Alaska,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-04-13,Colorado,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-04,Indiana,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-11,Nebraska,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-11,West Virginia,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-18,Arkansas,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-05-18,Oregon,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Carol Moseley Braun,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-06-08,New Jersey,Carol Moseley Braun,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,Wesley Clark,0,FALSE,FALSE,primary
+2004-01-19,Iowa,Wesley Clark,0,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Wesley Clark,12,FALSE,FALSE,primary
+2004-02-03,Arizona,Wesley Clark,27,FALSE,FALSE,primary
+2004-02-03,Delaware,Wesley Clark,9,FALSE,FALSE,primary
+2004-02-03,Missouri,Wesley Clark,4,FALSE,FALSE,primary
+2004-02-03,New Mexico,Wesley Clark,21,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Wesley Clark,24,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Wesley Clark,30,FALSE,TRUE,primary
+2004-02-03,South Carolina,Wesley Clark,7,FALSE,FALSE,primary
+2004-02-07,Michigan,Wesley Clark,7,FALSE,FALSE,caucus
+2004-02-07,Washington,Wesley Clark,3,FALSE,FALSE,caucus
+2004-02-08,Maine,Wesley Clark,4,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Wesley Clark,23,FALSE,FALSE,primary
+2004-02-10,Virginia,Wesley Clark,9,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Wesley Clark,1,FALSE,FALSE,caucus
+2004-02-14,Nevada,Wesley Clark,0,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Wesley Clark,2,FALSE,FALSE,primary
+2004-02-24,Hawaii,Wesley Clark,1,FALSE,FALSE,caucus
+2004-02-24,Idaho,Wesley Clark,0,FALSE,FALSE,caucus
+2004-02-24,Utah,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,California,Wesley Clark,2,FALSE,FALSE,primary
+2004-03-02,Connecticut,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Georgia,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Maryland,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Minnesota,Wesley Clark,0,FALSE,FALSE,caucus
+2004-03-02,New York,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Ohio,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Wesley Clark,3,FALSE,FALSE,primary
+2004-03-09,American Samoa,Wesley Clark,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Wesley Clark,1,FALSE,FALSE,primary
+2004-03-09,Louisiana,Wesley Clark,4,FALSE,FALSE,primary
+2004-03-09,Mississippi,Wesley Clark,2,FALSE,FALSE,primary
+2004-03-09,Texas,Wesley Clark,2,FALSE,FALSE,primary
+2004-03-13,Kansas,Wesley Clark,1,FALSE,FALSE,caucus
+2004-03-16,Illinois,Wesley Clark,2,FALSE,FALSE,primary
+2004-03-20,Alaska,Wesley Clark,0,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Wesley Clark,0,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Wesley Clark,10,FALSE,FALSE,caucus
+2004-04-13,Colorado,Wesley Clark,0,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Wesley Clark,0,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Wesley Clark,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Wesley Clark,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Wesley Clark,0,FALSE,FALSE,primary
+2004-05-04,Indiana,Wesley Clark,6,FALSE,FALSE,primary
+2004-05-11,Nebraska,Wesley Clark,0,FALSE,FALSE,primary
+2004-05-11,West Virginia,Wesley Clark,3,FALSE,FALSE,primary
+2004-05-18,Arkansas,Wesley Clark,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Wesley Clark,3,FALSE,FALSE,primary
+2004-05-18,Oregon,Wesley Clark,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Wesley Clark,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Wesley Clark,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Wesley Clark,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Wesley Clark,4,FALSE,FALSE,primary
+2004-06-08,New Jersey,Wesley Clark,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,Howard Dean,43,FALSE,TRUE,primary
+2004-01-19,Iowa,Howard Dean,18,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Howard Dean,26,FALSE,FALSE,primary
+2004-02-03,Arizona,Howard Dean,14,FALSE,FALSE,primary
+2004-02-03,Delaware,Howard Dean,10,FALSE,FALSE,primary
+2004-02-03,Missouri,Howard Dean,9,FALSE,FALSE,primary
+2004-02-03,New Mexico,Howard Dean,16,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Howard Dean,12,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Howard Dean,4,FALSE,FALSE,primary
+2004-02-03,South Carolina,Howard Dean,5,FALSE,FALSE,primary
+2004-02-07,Michigan,Howard Dean,17,FALSE,FALSE,caucus
+2004-02-07,Washington,Howard Dean,30,FALSE,FALSE,caucus
+2004-02-08,Maine,Howard Dean,27,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Howard Dean,4,FALSE,FALSE,primary
+2004-02-10,Virginia,Howard Dean,7,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Howard Dean,17,FALSE,FALSE,caucus
+2004-02-14,Nevada,Howard Dean,17,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Howard Dean,18,FALSE,FALSE,primary
+2004-02-24,Hawaii,Howard Dean,7,FALSE,FALSE,caucus
+2004-02-24,Idaho,Howard Dean,11,FALSE,FALSE,caucus
+2004-02-24,Utah,Howard Dean,4,FALSE,FALSE,primary
+2004-03-02,California,Howard Dean,4,FALSE,FALSE,primary
+2004-03-02,Connecticut,Howard Dean,4,FALSE,FALSE,primary
+2004-03-02,Georgia,Howard Dean,2,FALSE,FALSE,primary
+2004-03-02,Maryland,Howard Dean,3,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Howard Dean,3,FALSE,FALSE,primary
+2004-03-02,Minnesota,Howard Dean,2,FALSE,FALSE,caucus
+2004-03-02,New York,Howard Dean,0,FALSE,FALSE,primary
+2004-03-02,Ohio,Howard Dean,3,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Howard Dean,4,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Howard Dean,53,FALSE,TRUE,primary
+2004-03-09,American Samoa,Howard Dean,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Howard Dean,3,FALSE,FALSE,primary
+2004-03-09,Louisiana,Howard Dean,5,FALSE,FALSE,primary
+2004-03-09,Mississippi,Howard Dean,3,FALSE,FALSE,primary
+2004-03-09,Texas,Howard Dean,5,FALSE,FALSE,primary
+2004-03-13,Kansas,Howard Dean,7,FALSE,FALSE,caucus
+2004-03-16,Illinois,Howard Dean,4,FALSE,FALSE,primary
+2004-03-20,Alaska,Howard Dean,11,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Howard Dean,3,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Howard Dean,19,FALSE,FALSE,caucus
+2004-04-13,Colorado,Howard Dean,2,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Howard Dean,6,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Howard Dean,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Howard Dean,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Howard Dean,10,FALSE,FALSE,primary
+2004-05-04,Indiana,Howard Dean,7,FALSE,FALSE,primary
+2004-05-11,Nebraska,Howard Dean,7,FALSE,FALSE,primary
+2004-05-11,West Virginia,Howard Dean,4,FALSE,FALSE,primary
+2004-05-18,Arkansas,Howard Dean,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Howard Dean,4,FALSE,FALSE,primary
+2004-05-18,Oregon,Howard Dean,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Howard Dean,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Howard Dean,6,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Howard Dean,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Howard Dean,0,FALSE,FALSE,primary
+2004-06-08,New Jersey,Howard Dean,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,John Edwards,0,FALSE,FALSE,primary
+2004-01-19,Iowa,John Edwards,32,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,John Edwards,12,FALSE,FALSE,primary
+2004-02-03,Arizona,John Edwards,7,FALSE,FALSE,primary
+2004-02-03,Delaware,John Edwards,11,FALSE,FALSE,primary
+2004-02-03,Missouri,John Edwards,25,FALSE,FALSE,primary
+2004-02-03,New Mexico,John Edwards,11,FALSE,FALSE,caucus
+2004-02-03,North Dakota,John Edwards,10,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,John Edwards,30,FALSE,TRUE,primary
+2004-02-03,South Carolina,John Edwards,45,FALSE,TRUE,primary
+2004-02-07,Michigan,John Edwards,13,FALSE,FALSE,caucus
+2004-02-07,Washington,John Edwards,7,FALSE,FALSE,caucus
+2004-02-08,Maine,John Edwards,8,FALSE,FALSE,caucus
+2004-02-10,Tennessee,John Edwards,26,FALSE,FALSE,primary
+2004-02-10,Virginia,John Edwards,27,FALSE,FALSE,primary
+2004-02-14,District of Columbia,John Edwards,10,FALSE,FALSE,caucus
+2004-02-14,Nevada,John Edwards,10,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,John Edwards,34,FALSE,FALSE,primary
+2004-02-24,Hawaii,John Edwards,13,FALSE,FALSE,caucus
+2004-02-24,Idaho,John Edwards,22,FALSE,FALSE,caucus
+2004-02-24,Utah,John Edwards,30,FALSE,FALSE,primary
+2004-03-02,California,John Edwards,20,FALSE,FALSE,primary
+2004-03-02,Connecticut,John Edwards,24,FALSE,FALSE,primary
+2004-03-02,Georgia,John Edwards,42,FALSE,FALSE,primary
+2004-03-02,Maryland,John Edwards,26,FALSE,FALSE,primary
+2004-03-02,Massachusetts,John Edwards,18,FALSE,FALSE,primary
+2004-03-02,Minnesota,John Edwards,27,FALSE,FALSE,caucus
+2004-03-02,New York,John Edwards,0,FALSE,FALSE,primary
+2004-03-02,Ohio,John Edwards,34,FALSE,FALSE,primary
+2004-03-02,Rhode Island,John Edwards,19,FALSE,FALSE,primary
+2004-03-02,Vermont[47],John Edwards,6,FALSE,FALSE,primary
+2004-03-09,American Samoa,John Edwards,0,FALSE,FALSE,caucus
+2004-03-09,Florida,John Edwards,10,FALSE,FALSE,primary
+2004-03-09,Louisiana,John Edwards,16,FALSE,FALSE,primary
+2004-03-09,Mississippi,John Edwards,7,FALSE,FALSE,primary
+2004-03-09,Texas,John Edwards,14,FALSE,FALSE,primary
+2004-03-13,Kansas,John Edwards,9,FALSE,FALSE,caucus
+2004-03-16,Illinois,John Edwards,11,FALSE,FALSE,primary
+2004-03-20,Alaska,John Edwards,3,FALSE,FALSE,caucus
+2004-03-20,Wyoming,John Edwards,5,FALSE,FALSE,caucus
+2004-03-27,Expatriates,John Edwards,9,FALSE,FALSE,caucus
+2004-04-13,Colorado,John Edwards,1,FALSE,FALSE,caucus
+2004-04-17,North Carolina,John Edwards,52,FALSE,TRUE,caucus
+2004-04-17,Virgin Islands,John Edwards,0,FALSE,FALSE,caucus
+2004-04-24,Guam,John Edwards,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,John Edwards,10,FALSE,FALSE,primary
+2004-05-04,Indiana,John Edwards,11,FALSE,FALSE,primary
+2004-05-11,Nebraska,John Edwards,14,FALSE,FALSE,primary
+2004-05-11,West Virginia,John Edwards,13,FALSE,FALSE,primary
+2004-05-18,Arkansas,John Edwards,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,John Edwards,14,FALSE,FALSE,primary
+2004-05-18,Oregon,John Edwards,0,FALSE,FALSE,primary
+2004-06-01,Alabama,John Edwards,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,John Edwards,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,John Edwards,0,FALSE,FALSE,caucus
+2004-06-08,Montana,John Edwards,9,FALSE,FALSE,primary
+2004-06-08,New Jersey,John Edwards,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,Richard Gephardt,0,FALSE,FALSE,primary
+2004-01-19,Iowa,Richard Gephardt,11,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-03,Arizona,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-03,Delaware,Richard Gephardt,1,FALSE,FALSE,primary
+2004-02-03,Missouri,Richard Gephardt,2,FALSE,FALSE,primary
+2004-02-03,New Mexico,Richard Gephardt,1,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Richard Gephardt,1,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Richard Gephardt,1,FALSE,FALSE,primary
+2004-02-03,South Carolina,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-07,Michigan,Richard Gephardt,1,FALSE,FALSE,caucus
+2004-02-07,Washington,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-08,Maine,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-10,Virginia,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-14,Nevada,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Richard Gephardt,0,FALSE,FALSE,primary
+2004-02-24,Hawaii,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-24,Idaho,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-02-24,Utah,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,California,Richard Gephardt,1,FALSE,FALSE,primary
+2004-03-02,Connecticut,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,Georgia,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,Maryland,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,Minnesota,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-03-02,New York,Richard Gephardt,1,FALSE,FALSE,primary
+2004-03-02,Ohio,Richard Gephardt,1,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-09,American Samoa,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Richard Gephardt,1,FALSE,FALSE,primary
+2004-03-09,Louisiana,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-09,Mississippi,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-09,Texas,Richard Gephardt,1,FALSE,FALSE,primary
+2004-03-13,Kansas,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-03-16,Illinois,Richard Gephardt,0,FALSE,FALSE,primary
+2004-03-20,Alaska,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-04-13,Colorado,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-04,Indiana,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-11,Nebraska,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-11,West Virginia,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-18,Arkansas,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Richard Gephardt,0,FALSE,FALSE,primary
+2004-05-18,Oregon,Richard Gephardt,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Richard Gephardt,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Richard Gephardt,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Richard Gephardt,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Richard Gephardt,0,FALSE,FALSE,primary
+2004-06-08,New Jersey,Richard Gephardt,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,John Kerry,0,TRUE,FALSE,primary
+2004-01-19,Iowa,John Kerry,38,TRUE,TRUE,caucus
+2004-01-27,New Hampshire,John Kerry,38,TRUE,TRUE,primary
+2004-02-03,Arizona,John Kerry,43,TRUE,TRUE,primary
+2004-02-03,Delaware,John Kerry,50,TRUE,TRUE,primary
+2004-02-03,Missouri,John Kerry,51,TRUE,TRUE,primary
+2004-02-03,New Mexico,John Kerry,42,TRUE,TRUE,caucus
+2004-02-03,North Dakota,John Kerry,51,TRUE,TRUE,caucus
+2004-02-03,Oklahoma,John Kerry,27,TRUE,FALSE,primary
+2004-02-03,South Carolina,John Kerry,30,TRUE,FALSE,primary
+2004-02-07,Michigan,John Kerry,52,TRUE,TRUE,caucus
+2004-02-07,Washington,John Kerry,48,TRUE,TRUE,caucus
+2004-02-08,Maine,John Kerry,45,TRUE,TRUE,caucus
+2004-02-10,Tennessee,John Kerry,41,TRUE,TRUE,primary
+2004-02-10,Virginia,John Kerry,52,TRUE,TRUE,primary
+2004-02-14,District of Columbia,John Kerry,47,TRUE,TRUE,caucus
+2004-02-14,Nevada,John Kerry,63,TRUE,TRUE,caucus
+2004-02-17,Wisconsin,John Kerry,40,TRUE,TRUE,primary
+2004-02-24,Hawaii,John Kerry,47,TRUE,TRUE,caucus
+2004-02-24,Idaho,John Kerry,54,TRUE,TRUE,caucus
+2004-02-24,Utah,John Kerry,55,TRUE,TRUE,primary
+2004-03-02,California,John Kerry,64,TRUE,TRUE,primary
+2004-03-02,Connecticut,John Kerry,58,TRUE,TRUE,primary
+2004-03-02,Georgia,John Kerry,47,TRUE,TRUE,primary
+2004-03-02,Maryland,John Kerry,60,TRUE,TRUE,primary
+2004-03-02,Massachusetts,John Kerry,72,TRUE,TRUE,primary
+2004-03-02,Minnesota,John Kerry,51,TRUE,TRUE,caucus
+2004-03-02,New York,John Kerry,0,TRUE,FALSE,primary
+2004-03-02,Ohio,John Kerry,52,TRUE,TRUE,primary
+2004-03-02,Rhode Island,John Kerry,71,TRUE,TRUE,primary
+2004-03-02,Vermont[47],John Kerry,31,TRUE,FALSE,primary
+2004-03-09,American Samoa,John Kerry,83,TRUE,TRUE,caucus
+2004-03-09,Florida,John Kerry,77,TRUE,TRUE,primary
+2004-03-09,Louisiana,John Kerry,70,TRUE,TRUE,primary
+2004-03-09,Mississippi,John Kerry,78,TRUE,TRUE,primary
+2004-03-09,Texas,John Kerry,67,TRUE,TRUE,primary
+2004-03-13,Kansas,John Kerry,72,TRUE,TRUE,caucus
+2004-03-16,Illinois,John Kerry,72,TRUE,TRUE,primary
+2004-03-20,Alaska,John Kerry,48,TRUE,TRUE,caucus
+2004-03-20,Wyoming,John Kerry,77,TRUE,TRUE,caucus
+2004-03-27,Expatriates,John Kerry,56,TRUE,TRUE,caucus
+2004-04-13,Colorado,John Kerry,64,TRUE,TRUE,caucus
+2004-04-17,North Carolina,John Kerry,27,TRUE,FALSE,caucus
+2004-04-17,Virgin Islands,John Kerry,0,TRUE,FALSE,caucus
+2004-04-24,Guam,John Kerry,77,TRUE,TRUE,caucus
+2004-04-27,Pennsylvania,John Kerry,74,TRUE,TRUE,primary
+2004-05-04,Indiana,John Kerry,73,TRUE,TRUE,primary
+2004-05-11,Nebraska,John Kerry,73,TRUE,TRUE,primary
+2004-05-11,West Virginia,John Kerry,70,TRUE,TRUE,primary
+2004-05-18,Arkansas,John Kerry,66,TRUE,TRUE,primary
+2004-05-18,Kentucky,John Kerry,60,TRUE,TRUE,primary
+2004-05-18,Oregon,John Kerry,81,TRUE,TRUE,primary
+2004-06-01,Alabama,John Kerry,75,TRUE,TRUE,primary
+2004-06-01,South Dakota,John Kerry,82,TRUE,TRUE,primary
+2004-06-06,Puerto Rico,John Kerry,0,TRUE,FALSE,caucus
+2004-06-08,Montana,John Kerry,68,TRUE,TRUE,primary
+2004-06-08,New Jersey,John Kerry,92,TRUE,TRUE,primary
+2004-01-14,District of Columbia,Dennis Kucinich,8,FALSE,FALSE,primary
+2004-01-19,Iowa,Dennis Kucinich,1,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-03,Arizona,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-02-03,Delaware,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-03,Missouri,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-03,New Mexico,Dennis Kucinich,6,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Dennis Kucinich,3,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-03,South Carolina,Dennis Kucinich,0,FALSE,FALSE,primary
+2004-02-07,Michigan,Dennis Kucinich,3,FALSE,FALSE,caucus
+2004-02-07,Washington,Dennis Kucinich,8,FALSE,FALSE,caucus
+2004-02-08,Maine,Dennis Kucinich,16,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-10,Virginia,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Dennis Kucinich,3,FALSE,FALSE,caucus
+2004-02-14,Nevada,Dennis Kucinich,7,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Dennis Kucinich,3,FALSE,FALSE,primary
+2004-02-24,Hawaii,Dennis Kucinich,31,FALSE,FALSE,caucus
+2004-02-24,Idaho,Dennis Kucinich,6,FALSE,FALSE,caucus
+2004-02-24,Utah,Dennis Kucinich,7,FALSE,FALSE,primary
+2004-03-02,California,Dennis Kucinich,5,FALSE,FALSE,primary
+2004-03-02,Connecticut,Dennis Kucinich,3,FALSE,FALSE,primary
+2004-03-02,Georgia,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-03-02,Maryland,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Dennis Kucinich,4,FALSE,FALSE,primary
+2004-03-02,Minnesota,Dennis Kucinich,17,FALSE,FALSE,caucus
+2004-03-02,New York,Dennis Kucinich,0,FALSE,FALSE,primary
+2004-03-02,Ohio,Dennis Kucinich,9,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Dennis Kucinich,3,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Dennis Kucinich,4,FALSE,FALSE,primary
+2004-03-09,American Samoa,Dennis Kucinich,17,FALSE,FALSE,caucus
+2004-03-09,Florida,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-03-09,Louisiana,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-03-09,Mississippi,Dennis Kucinich,1,FALSE,FALSE,primary
+2004-03-09,Texas,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-03-13,Kansas,Dennis Kucinich,10,FALSE,FALSE,caucus
+2004-03-16,Illinois,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-03-20,Alaska,Dennis Kucinich,27,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Dennis Kucinich,6,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Dennis Kucinich,5,FALSE,FALSE,caucus
+2004-04-13,Colorado,Dennis Kucinich,13,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Dennis Kucinich,12,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Dennis Kucinich,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Dennis Kucinich,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Dennis Kucinich,4,FALSE,FALSE,primary
+2004-05-04,Indiana,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-05-11,Nebraska,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-05-11,West Virginia,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-05-18,Arkansas,Dennis Kucinich,5,FALSE,FALSE,primary
+2004-05-18,Kentucky,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-05-18,Oregon,Dennis Kucinich,17,FALSE,FALSE,primary
+2004-06-01,Alabama,Dennis Kucinich,4,FALSE,FALSE,primary
+2004-06-01,South Dakota,Dennis Kucinich,2,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Dennis Kucinich,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Dennis Kucinich,11,FALSE,FALSE,primary
+2004-06-08,New Jersey,Dennis Kucinich,4,FALSE,FALSE,primary
+2004-01-14,District of Columbia,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-01-19,Iowa,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Joseph Lieberman,9,FALSE,FALSE,primary
+2004-02-03,Arizona,Joseph Lieberman,7,FALSE,FALSE,primary
+2004-02-03,Delaware,Joseph Lieberman,11,FALSE,FALSE,primary
+2004-02-03,Missouri,Joseph Lieberman,4,FALSE,FALSE,primary
+2004-02-03,New Mexico,Joseph Lieberman,3,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Joseph Lieberman,1,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Joseph Lieberman,7,FALSE,FALSE,primary
+2004-02-03,South Carolina,Joseph Lieberman,2,FALSE,FALSE,primary
+2004-02-07,Michigan,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-07,Washington,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-08,Maine,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-02-10,Virginia,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-14,Nevada,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-02-24,Hawaii,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-24,Idaho,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-02-24,Utah,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,California,Joseph Lieberman,2,FALSE,FALSE,primary
+2004-03-02,Connecticut,Joseph Lieberman,5,FALSE,FALSE,primary
+2004-03-02,Georgia,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Maryland,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Minnesota,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-03-02,New York,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Ohio,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Joseph Lieberman,0,FALSE,FALSE,primary
+2004-03-09,American Samoa,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Joseph Lieberman,2,FALSE,FALSE,primary
+2004-03-09,Louisiana,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-03-09,Mississippi,Joseph Lieberman,1,FALSE,FALSE,primary
+2004-03-09,Texas,Joseph Lieberman,3,FALSE,FALSE,primary
+2004-03-13,Kansas,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-03-16,Illinois,Joseph Lieberman,2,FALSE,FALSE,primary
+2004-03-20,Alaska,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-04-13,Colorado,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-05-04,Indiana,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-05-11,Nebraska,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-05-11,West Virginia,Joseph Lieberman,6,FALSE,FALSE,primary
+2004-05-18,Arkansas,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Joseph Lieberman,5,FALSE,FALSE,primary
+2004-05-18,Oregon,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Joseph Lieberman,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-06-08,New Jersey,Joseph Lieberman,0,FALSE,FALSE,primary
+2004-01-14,District of Columbia,Al Sharpton,34,FALSE,FALSE,primary
+2004-01-19,Iowa,Al Sharpton,0,FALSE,FALSE,caucus
+2004-01-27,New Hampshire,Al Sharpton,0,FALSE,FALSE,primary
+2004-02-03,Arizona,Al Sharpton,0,FALSE,FALSE,primary
+2004-02-03,Delaware,Al Sharpton,6,FALSE,FALSE,primary
+2004-02-03,Missouri,Al Sharpton,3,FALSE,FALSE,primary
+2004-02-03,New Mexico,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-03,North Dakota,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-03,Oklahoma,Al Sharpton,1,FALSE,FALSE,primary
+2004-02-03,South Carolina,Al Sharpton,10,FALSE,FALSE,primary
+2004-02-07,Michigan,Al Sharpton,7,FALSE,FALSE,caucus
+2004-02-07,Washington,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-08,Maine,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-10,Tennessee,Al Sharpton,2,FALSE,FALSE,primary
+2004-02-10,Virginia,Al Sharpton,3,FALSE,FALSE,primary
+2004-02-14,District of Columbia,Al Sharpton,20,FALSE,FALSE,caucus
+2004-02-14,Nevada,Al Sharpton,1,FALSE,FALSE,caucus
+2004-02-17,Wisconsin,Al Sharpton,2,FALSE,FALSE,primary
+2004-02-24,Hawaii,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-24,Idaho,Al Sharpton,0,FALSE,FALSE,caucus
+2004-02-24,Utah,Al Sharpton,0,FALSE,FALSE,primary
+2004-03-02,California,Al Sharpton,4,FALSE,FALSE,primary
+2004-03-02,Connecticut,Al Sharpton,3,FALSE,FALSE,primary
+2004-03-02,Georgia,Al Sharpton,6,FALSE,FALSE,primary
+2004-03-02,Maryland,Al Sharpton,5,FALSE,FALSE,primary
+2004-03-02,Massachusetts,Al Sharpton,1,FALSE,FALSE,primary
+2004-03-02,Minnesota,Al Sharpton,1,FALSE,FALSE,caucus
+2004-03-02,New York,Al Sharpton,8,FALSE,TRUE,primary
+2004-03-02,Ohio,Al Sharpton,0,FALSE,FALSE,primary
+2004-03-02,Rhode Island,Al Sharpton,0,FALSE,FALSE,primary
+2004-03-02,Vermont[47],Al Sharpton,0,FALSE,FALSE,primary
+2004-03-09,American Samoa,Al Sharpton,0,FALSE,FALSE,caucus
+2004-03-09,Florida,Al Sharpton,3,FALSE,FALSE,primary
+2004-03-09,Louisiana,Al Sharpton,0,FALSE,FALSE,primary
+2004-03-09,Mississippi,Al Sharpton,5,FALSE,FALSE,primary
+2004-03-09,Texas,Al Sharpton,4,FALSE,FALSE,primary
+2004-03-13,Kansas,Al Sharpton,0,FALSE,FALSE,caucus
+2004-03-16,Illinois,Al Sharpton,3,FALSE,FALSE,primary
+2004-03-20,Alaska,Al Sharpton,0,FALSE,FALSE,caucus
+2004-03-20,Wyoming,Al Sharpton,1,FALSE,FALSE,caucus
+2004-03-27,Expatriates,Al Sharpton,1,FALSE,FALSE,caucus
+2004-04-13,Colorado,Al Sharpton,0,FALSE,FALSE,caucus
+2004-04-17,North Carolina,Al Sharpton,3,FALSE,FALSE,caucus
+2004-04-17,Virgin Islands,Al Sharpton,0,FALSE,FALSE,caucus
+2004-04-24,Guam,Al Sharpton,0,FALSE,FALSE,caucus
+2004-04-27,Pennsylvania,Al Sharpton,0,FALSE,FALSE,primary
+2004-05-04,Indiana,Al Sharpton,0,FALSE,FALSE,primary
+2004-05-11,Nebraska,Al Sharpton,2,FALSE,FALSE,primary
+2004-05-11,West Virginia,Al Sharpton,0,FALSE,FALSE,primary
+2004-05-18,Arkansas,Al Sharpton,0,FALSE,FALSE,primary
+2004-05-18,Kentucky,Al Sharpton,2,FALSE,FALSE,primary
+2004-05-18,Oregon,Al Sharpton,0,FALSE,FALSE,primary
+2004-06-01,Alabama,Al Sharpton,0,FALSE,FALSE,primary
+2004-06-01,South Dakota,Al Sharpton,0,FALSE,FALSE,primary
+2004-06-06,Puerto Rico,Al Sharpton,0,FALSE,FALSE,caucus
+2004-06-08,Montana,Al Sharpton,0,FALSE,FALSE,primary
+2004-06-08,New Jersey,Al Sharpton,0,FALSE,FALSE,primary

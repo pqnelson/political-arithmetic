@@ -1,0 +1,361 @@
+date,state,candidate,vote_perc,won_state,is_nominee,event_type
+1984-01-24,Iowa,Walter Mondale,48.89,TRUE,TRUE,caucus
+1984-02-28,New Hampshire,Walter Mondale,27.86,FALSE,TRUE,primary
+1984-03-06,Vermont,Walter Mondale,20.03,FALSE,TRUE,primary
+1984-03-10,Wyoming,Walter Mondale,35.87,FALSE,TRUE,primary
+1984-03-13,Alabama,Walter Mondale,34.6,TRUE,TRUE,primary
+1984-03-13,Democrats Abroad,Walter Mondale,37.54,TRUE,TRUE,primary
+1984-03-13,Florida,Walter Mondale,33.36,FALSE,TRUE,primary
+1984-03-13,Georgia,Walter Mondale,30.47,TRUE,TRUE,primary
+1984-03-13,Massachusetts,Walter Mondale,25.5,FALSE,TRUE,primary
+1984-03-13,Rhode Island,Walter Mondale,34.46,FALSE,TRUE,primary
+1984-03-17,Michigan,Walter Mondale,50.7,TRUE,TRUE,primary
+1984-03-18,Puerto Rico,Walter Mondale,99.06,TRUE,TRUE,primary
+1984-03-20,Illinois,Walter Mondale,40.43,TRUE,TRUE,primary
+1984-03-20,Minnesota,Walter Mondale,62,TRUE,TRUE,caucus
+1984-03-27,Connecticut,Walter Mondale,29.08,FALSE,TRUE,primary
+1984-04-03,New York,Walter Mondale,0,FALSE,TRUE,primary
+1984-04-03,Wisconsin,Walter Mondale,41.11,FALSE,TRUE,primary
+1984-04-07,Wisconsin,Walter Mondale,54.07,TRUE,TRUE,caucus
+1984-04-10,Pennsylvania,Walter Mondale,45.12,TRUE,TRUE,primary
+1984-05-01,District of Columbia,Walter Mondale,25.62,FALSE,TRUE,primary
+1984-05-01,Tennessee,Walter Mondale,41.05,TRUE,TRUE,primary
+1984-05-05,Louisiana,Walter Mondale,22.32,FALSE,TRUE,primary
+1984-05-08,Indiana,Walter Mondale,40.93,FALSE,TRUE,primary
+1984-05-08,Maryland,Walter Mondale,42.46,TRUE,TRUE,primary
+1984-05-08,North Carolina,Walter Mondale,35.63,TRUE,TRUE,primary
+1984-05-08,Ohio,Walter Mondale,40.33,FALSE,TRUE,primary
+1984-05-15,Idaho,Walter Mondale,30.08,FALSE,TRUE,primary
+1984-05-15,Nebraska,Walter Mondale,26.63,FALSE,TRUE,primary
+1984-05-15,Oregon,Walter Mondale,27.62,FALSE,TRUE,primary
+1984-06-05,California,Walter Mondale,35.32,FALSE,TRUE,primary
+1984-06-05,Montana,Walter Mondale,5.92,FALSE,TRUE,primary
+1984-06-05,New Jersey,Walter Mondale,45.16,TRUE,TRUE,primary
+1984-06-05,New Mexico,Walter Mondale,36.11,FALSE,TRUE,primary
+1984-06-05,South Dakota,Walter Mondale,38.99,FALSE,TRUE,primary
+1984-06-05,West Virginia,Walter Mondale,53.83,TRUE,TRUE,primary
+1984-06-12,North Dakota,Walter Mondale,2.78,FALSE,TRUE,primary
+1984-01-24,Iowa,Gary Hart,16.5,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Gary Hart,37.28,TRUE,FALSE,primary
+1984-03-06,Vermont,Gary Hart,70.04,TRUE,FALSE,primary
+1984-03-10,Wyoming,Gary Hart,60.36,TRUE,FALSE,primary
+1984-03-13,Alabama,Gary Hart,20.66,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Gary Hart,30.89,FALSE,FALSE,primary
+1984-03-13,Florida,Gary Hart,39.23,TRUE,FALSE,primary
+1984-03-13,Georgia,Gary Hart,27.3,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Gary Hart,38.98,TRUE,FALSE,primary
+1984-03-13,Rhode Island,Gary Hart,44.96,TRUE,FALSE,primary
+1984-03-17,Michigan,Gary Hart,32.32,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Gary Hart,0.61,FALSE,FALSE,primary
+1984-03-20,Illinois,Gary Hart,35.23,FALSE,FALSE,primary
+1984-03-20,Minnesota,Gary Hart,7,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Gary Hart,52.66,TRUE,FALSE,primary
+1984-04-03,New York,Gary Hart,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Gary Hart,44.42,TRUE,FALSE,primary
+1984-04-07,Wisconsin,Gary Hart,29.2,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Gary Hart,33.29,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Gary Hart,7.11,FALSE,FALSE,primary
+1984-05-01,Tennessee,Gary Hart,29.1,FALSE,FALSE,primary
+1984-05-05,Louisiana,Gary Hart,24.97,FALSE,FALSE,primary
+1984-05-08,Indiana,Gary Hart,41.77,TRUE,FALSE,primary
+1984-05-08,Maryland,Gary Hart,24.34,FALSE,FALSE,primary
+1984-05-08,North Carolina,Gary Hart,30.17,FALSE,FALSE,primary
+1984-05-08,Ohio,Gary Hart,42.05,TRUE,FALSE,primary
+1984-05-15,Idaho,Gary Hart,58,TRUE,FALSE,primary
+1984-05-15,Nebraska,Gary Hart,58.17,TRUE,FALSE,primary
+1984-05-15,Oregon,Gary Hart,58.46,TRUE,FALSE,primary
+1984-06-05,California,Gary Hart,38.89,TRUE,FALSE,primary
+1984-06-05,Montana,Gary Hart,9,FALSE,FALSE,primary
+1984-06-05,New Jersey,Gary Hart,29.7,FALSE,FALSE,primary
+1984-06-05,New Mexico,Gary Hart,46.75,TRUE,FALSE,primary
+1984-06-05,South Dakota,Gary Hart,50.69,TRUE,FALSE,primary
+1984-06-05,West Virginia,Gary Hart,37.34,FALSE,FALSE,primary
+1984-06-12,North Dakota,Gary Hart,85.11,TRUE,FALSE,primary
+1984-01-24,Iowa,Jesse Jackson,1.5,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Jesse Jackson,5.25,FALSE,FALSE,primary
+1984-03-06,Vermont,Jesse Jackson,7.78,FALSE,FALSE,primary
+1984-03-10,Wyoming,Jesse Jackson,0.4,FALSE,FALSE,primary
+1984-03-13,Alabama,Jesse Jackson,19.56,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Jesse Jackson,9.62,FALSE,FALSE,primary
+1984-03-13,Florida,Jesse Jackson,12.2,FALSE,FALSE,primary
+1984-03-13,Georgia,Jesse Jackson,21,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Jesse Jackson,5.04,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Jesse Jackson,8.71,FALSE,FALSE,primary
+1984-03-17,Michigan,Jesse Jackson,16.98,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Jesse Jackson,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Jesse Jackson,21.02,FALSE,FALSE,primary
+1984-03-20,Minnesota,Jesse Jackson,3,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Jesse Jackson,11.95,FALSE,FALSE,primary
+1984-04-03,New York,Jesse Jackson,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Jesse Jackson,9.83,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Jesse Jackson,15.22,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Jesse Jackson,15.97,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Jesse Jackson,67.27,TRUE,FALSE,primary
+1984-05-01,Tennessee,Jesse Jackson,25.28,FALSE,FALSE,primary
+1984-05-05,Louisiana,Jesse Jackson,42.88,TRUE,FALSE,primary
+1984-05-08,Indiana,Jesse Jackson,13.7,FALSE,FALSE,primary
+1984-05-08,Maryland,Jesse Jackson,25.53,FALSE,FALSE,primary
+1984-05-08,North Carolina,Jesse Jackson,25.39,FALSE,FALSE,primary
+1984-05-08,Ohio,Jesse Jackson,16.39,FALSE,FALSE,primary
+1984-05-15,Idaho,Jesse Jackson,5.67,FALSE,FALSE,primary
+1984-05-15,Nebraska,Jesse Jackson,9.07,FALSE,FALSE,primary
+1984-05-15,Oregon,Jesse Jackson,9.28,FALSE,FALSE,primary
+1984-06-05,California,Jesse Jackson,18.4,FALSE,FALSE,primary
+1984-06-05,Montana,Jesse Jackson,1.13,FALSE,FALSE,primary
+1984-06-05,New Jersey,Jesse Jackson,23.62,FALSE,FALSE,primary
+1984-06-05,New Mexico,Jesse Jackson,11.83,FALSE,FALSE,primary
+1984-06-05,South Dakota,Jesse Jackson,5.21,FALSE,FALSE,primary
+1984-06-05,West Virginia,Jesse Jackson,6.69,FALSE,FALSE,primary
+1984-06-12,North Dakota,Jesse Jackson,0.15,FALSE,FALSE,primary
+1984-01-24,Iowa,John Glenn,3.5,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,John Glenn,11.95,FALSE,FALSE,primary
+1984-03-06,Vermont,John Glenn,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,John Glenn,0.09,FALSE,FALSE,primary
+1984-03-13,Alabama,John Glenn,20.85,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,John Glenn,4.03,FALSE,FALSE,primary
+1984-03-13,Florida,John Glenn,10.85,FALSE,FALSE,primary
+1984-03-13,Georgia,John Glenn,17.93,FALSE,FALSE,primary
+1984-03-13,Massachusetts,John Glenn,7.2,FALSE,FALSE,primary
+1984-03-13,Rhode Island,John Glenn,5.05,FALSE,FALSE,primary
+1984-03-17,Michigan,John Glenn,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,John Glenn,0.31,FALSE,FALSE,primary
+1984-03-20,Illinois,John Glenn,1.19,FALSE,FALSE,primary
+1984-03-20,Minnesota,John Glenn,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,John Glenn,0.43,FALSE,FALSE,primary
+1984-04-03,New York,John Glenn,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,John Glenn,1.01,FALSE,FALSE,primary
+1984-04-07,Wisconsin,John Glenn,0,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,John Glenn,1.37,FALSE,FALSE,primary
+1984-05-01,District of Columbia,John Glenn,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,John Glenn,1.3,FALSE,FALSE,primary
+1984-05-05,Louisiana,John Glenn,0,FALSE,FALSE,primary
+1984-05-08,Indiana,John Glenn,2.24,FALSE,FALSE,primary
+1984-05-08,Maryland,John Glenn,1.23,FALSE,FALSE,primary
+1984-05-08,North Carolina,John Glenn,1.84,FALSE,FALSE,primary
+1984-05-08,Ohio,John Glenn,0,FALSE,FALSE,primary
+1984-05-15,Idaho,John Glenn,0,FALSE,FALSE,primary
+1984-05-15,Nebraska,John Glenn,0,FALSE,FALSE,primary
+1984-05-15,Oregon,John Glenn,2.71,FALSE,FALSE,primary
+1984-06-05,California,John Glenn,3.26,FALSE,FALSE,primary
+1984-06-05,Montana,John Glenn,0.02,FALSE,FALSE,primary
+1984-06-05,New Jersey,John Glenn,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,John Glenn,0,FALSE,FALSE,primary
+1984-06-05,South Dakota,John Glenn,0,FALSE,FALSE,primary
+1984-06-05,West Virginia,John Glenn,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,John Glenn,0,FALSE,FALSE,primary
+1984-01-24,Iowa,George McGovern,10.3,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,George McGovern,5.16,FALSE,FALSE,primary
+1984-03-06,Vermont,George McGovern,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,George McGovern,0.23,FALSE,FALSE,primary
+1984-03-13,Alabama,George McGovern,0,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,George McGovern,4.66,FALSE,FALSE,primary
+1984-03-13,Florida,George McGovern,1.49,FALSE,FALSE,primary
+1984-03-13,Georgia,George McGovern,1.65,FALSE,FALSE,primary
+1984-03-13,Massachusetts,George McGovern,21.29,FALSE,FALSE,primary
+1984-03-13,Rhode Island,George McGovern,4.82,FALSE,FALSE,primary
+1984-03-17,Michigan,George McGovern,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,George McGovern,0,FALSE,FALSE,primary
+1984-03-20,Illinois,George McGovern,1.53,FALSE,FALSE,primary
+1984-03-20,Minnesota,George McGovern,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,George McGovern,1.1,FALSE,FALSE,primary
+1984-04-03,New York,George McGovern,0.33,FALSE,FALSE,primary
+1984-04-03,Wisconsin,George McGovern,1.6,FALSE,FALSE,primary
+1984-04-07,Wisconsin,George McGovern,0.01,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,George McGovern,0.79,FALSE,FALSE,primary
+1984-05-01,District of Columbia,George McGovern,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,George McGovern,1.19,FALSE,FALSE,primary
+1984-05-05,Louisiana,George McGovern,0.99,FALSE,FALSE,primary
+1984-05-08,Indiana,George McGovern,0,FALSE,FALSE,primary
+1984-05-08,Maryland,George McGovern,1.14,FALSE,FALSE,primary
+1984-05-08,North Carolina,George McGovern,1.06,FALSE,FALSE,primary
+1984-05-08,Ohio,George McGovern,0.62,FALSE,FALSE,primary
+1984-05-15,Idaho,George McGovern,0,FALSE,FALSE,primary
+1984-05-15,Nebraska,George McGovern,1.05,FALSE,FALSE,primary
+1984-05-15,Oregon,George McGovern,0,FALSE,FALSE,primary
+1984-06-05,California,George McGovern,2.35,FALSE,FALSE,primary
+1984-06-05,Montana,George McGovern,0,FALSE,FALSE,primary
+1984-06-05,New Jersey,George McGovern,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,George McGovern,2.74,FALSE,FALSE,primary
+1984-06-05,South Dakota,George McGovern,0,FALSE,FALSE,primary
+1984-06-05,West Virginia,George McGovern,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,George McGovern,0,FALSE,FALSE,primary
+1984-01-24,Iowa,Ernest Hollings,0.01,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Ernest Hollings,3.54,FALSE,FALSE,primary
+1984-03-06,Vermont,Ernest Hollings,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,Ernest Hollings,0,FALSE,FALSE,primary
+1984-03-13,Alabama,Ernest Hollings,1.11,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Ernest Hollings,0.38,FALSE,FALSE,primary
+1984-03-13,Florida,Ernest Hollings,0.26,FALSE,FALSE,primary
+1984-03-13,Georgia,Ernest Hollings,0.56,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Ernest Hollings,0.19,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Ernest Hollings,0.19,FALSE,FALSE,primary
+1984-03-17,Michigan,Ernest Hollings,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Ernest Hollings,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Ernest Hollings,0,FALSE,FALSE,primary
+1984-03-20,Minnesota,Ernest Hollings,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Ernest Hollings,1.03,FALSE,FALSE,primary
+1984-04-03,New York,Ernest Hollings,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Ernest Hollings,0.26,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Ernest Hollings,0,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Ernest Hollings,0.18,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-05,Louisiana,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-08,Indiana,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-08,Maryland,Ernest Hollings,0.29,FALSE,FALSE,primary
+1984-05-08,North Carolina,Ernest Hollings,0.87,FALSE,FALSE,primary
+1984-05-08,Ohio,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-15,Idaho,Ernest Hollings,0,FALSE,FALSE,primary
+1984-05-15,Nebraska,Ernest Hollings,0.3,FALSE,FALSE,primary
+1984-05-15,Oregon,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,California,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,Montana,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,New Jersey,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,South Dakota,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-05,West Virginia,Ernest Hollings,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,Ernest Hollings,0,FALSE,FALSE,primary
+1984-01-24,Iowa,Reubin Askew,2.5,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Reubin Askew,1.01,FALSE,FALSE,primary
+1984-03-06,Vermont,Reubin Askew,0.6,FALSE,FALSE,primary
+1984-03-10,Wyoming,Reubin Askew,0,FALSE,FALSE,primary
+1984-03-13,Alabama,Reubin Askew,0.43,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Reubin Askew,0.47,FALSE,FALSE,primary
+1984-03-13,Florida,Reubin Askew,2.22,FALSE,FALSE,primary
+1984-03-13,Georgia,Reubin Askew,0.24,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Reubin Askew,0.22,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Reubin Askew,0.22,FALSE,FALSE,primary
+1984-03-17,Michigan,Reubin Askew,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Reubin Askew,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Reubin Askew,0.13,FALSE,FALSE,primary
+1984-03-20,Minnesota,Reubin Askew,28,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Reubin Askew,2.76,FALSE,FALSE,primary
+1984-04-03,New York,Reubin Askew,0.21,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Reubin Askew,0.11,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Reubin Askew,0,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Reubin Askew,0.31,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-05,Louisiana,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-08,Indiana,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-08,Maryland,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-08,North Carolina,Reubin Askew,0.33,FALSE,FALSE,primary
+1984-05-08,Ohio,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-15,Idaho,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-15,Nebraska,Reubin Askew,0,FALSE,FALSE,primary
+1984-05-15,Oregon,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,California,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,Montana,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,New Jersey,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,South Dakota,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-05,West Virginia,Reubin Askew,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,Reubin Askew,0,FALSE,FALSE,primary
+1984-01-24,Iowa,Alan Cranston,7.4,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Alan Cranston,2.11,FALSE,FALSE,primary
+1984-03-06,Vermont,Alan Cranston,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,Alan Cranston,0,FALSE,FALSE,primary
+1984-03-13,Alabama,Alan Cranston,0.32,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Alan Cranston,3.43,FALSE,FALSE,primary
+1984-03-13,Florida,Alan Cranston,0.18,FALSE,FALSE,primary
+1984-03-13,Georgia,Alan Cranston,0.14,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Alan Cranston,0.14,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Alan Cranston,0.61,FALSE,FALSE,primary
+1984-03-17,Michigan,Alan Cranston,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Alan Cranston,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Alan Cranston,0.17,FALSE,FALSE,primary
+1984-03-20,Minnesota,Alan Cranston,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Alan Cranston,0.09,FALSE,FALSE,primary
+1984-04-03,New York,Alan Cranston,0.49,TRUE,FALSE,primary
+1984-04-03,Wisconsin,Alan Cranston,0.47,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Alan Cranston,0,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Alan Cranston,1.38,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Alan Cranston,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,Alan Cranston,0,FALSE,FALSE,primary
+1984-05-05,Louisiana,Alan Cranston,0,FALSE,FALSE,primary
+1984-05-08,Indiana,Alan Cranston,0,FALSE,FALSE,primary
+1984-05-08,Maryland,Alan Cranston,0.35,FALSE,FALSE,primary
+1984-05-08,North Carolina,Alan Cranston,0.13,FALSE,FALSE,primary
+1984-05-08,Ohio,Alan Cranston,0.32,FALSE,FALSE,primary
+1984-05-15,Idaho,Alan Cranston,0,FALSE,FALSE,primary
+1984-05-15,Nebraska,Alan Cranston,0.36,FALSE,FALSE,primary
+1984-05-15,Oregon,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,California,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,Montana,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,New Jersey,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,South Dakota,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-05,West Virginia,Alan Cranston,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,Alan Cranston,0,FALSE,FALSE,primary
+1984-01-24,Iowa,Uncommitted,9.4,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Uncommitted,0,FALSE,FALSE,primary
+1984-03-06,Vermont,Uncommitted,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,Uncommitted,3.06,FALSE,FALSE,primary
+1984-03-13,Alabama,Uncommitted,1.04,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Uncommitted,8.98,FALSE,FALSE,primary
+1984-03-13,Florida,Uncommitted,0,FALSE,FALSE,primary
+1984-03-13,Georgia,Uncommitted,0.45,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Uncommitted,0.81,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Uncommitted,0.99,FALSE,FALSE,primary
+1984-03-17,Michigan,Uncommitted,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Uncommitted,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Uncommitted,0,FALSE,FALSE,primary
+1984-03-20,Minnesota,Uncommitted,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Uncommitted,0.89,FALSE,FALSE,primary
+1984-04-03,New York,Uncommitted,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Uncommitted,1.11,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Uncommitted,1.5,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Uncommitted,0,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Uncommitted,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,Uncommitted,2.08,FALSE,FALSE,primary
+1984-05-05,Louisiana,Uncommitted,6.09,FALSE,FALSE,primary
+1984-05-08,Indiana,Uncommitted,0,FALSE,FALSE,primary
+1984-05-08,Maryland,Uncommitted,3.12,FALSE,FALSE,primary
+1984-05-08,North Carolina,Uncommitted,4.6,FALSE,FALSE,primary
+1984-05-08,Ohio,Uncommitted,0,FALSE,FALSE,primary
+1984-05-15,Idaho,Uncommitted,4.07,FALSE,FALSE,primary
+1984-05-15,Nebraska,Uncommitted,3.11,FALSE,FALSE,primary
+1984-05-15,Oregon,Uncommitted,0,FALSE,FALSE,primary
+1984-06-05,California,Uncommitted,0,FALSE,FALSE,primary
+1984-06-05,Montana,Uncommitted,82.96,TRUE,FALSE,primary
+1984-06-05,New Jersey,Uncommitted,0,FALSE,FALSE,primary
+1984-06-05,New Mexico,Uncommitted,0.79,FALSE,FALSE,primary
+1984-06-05,South Dakota,Uncommitted,2.48,FALSE,FALSE,primary
+1984-06-05,West Virginia,Uncommitted,0,FALSE,FALSE,primary
+1984-06-12,North Dakota,Uncommitted,0,FALSE,FALSE,primary
+1984-01-24,Iowa,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1984-02-28,New Hampshire,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-06,Vermont,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-10,Wyoming,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Alabama,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Democrats Abroad,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Florida,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Georgia,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Massachusetts,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-13,Rhode Island,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-17,Michigan,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-18,Puerto Rico,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-20,Illinois,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-03-20,Minnesota,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1984-03-27,Connecticut,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-04-03,New York,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-04-03,Wisconsin,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-04-07,Wisconsin,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1984-04-10,Pennsylvania,Lyndon LaRouche,1.16,FALSE,FALSE,primary
+1984-05-01,District of Columbia,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-05-01,Tennessee,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-05-05,Louisiana,Lyndon LaRouche,1.56,FALSE,FALSE,primary
+1984-05-08,Indiana,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-05-08,Maryland,Lyndon LaRouche,1.55,FALSE,FALSE,primary
+1984-05-08,North Carolina,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-05-08,Ohio,Lyndon LaRouche,0.3,FALSE,FALSE,primary
+1984-05-15,Idaho,Lyndon LaRouche,2.19,FALSE,FALSE,primary
+1984-05-15,Nebraska,Lyndon LaRouche,0.82,FALSE,FALSE,primary
+1984-05-15,Oregon,Lyndon LaRouche,1.49,FALSE,FALSE,primary
+1984-06-05,California,Lyndon LaRouche,1.77,FALSE,FALSE,primary
+1984-06-05,Montana,Lyndon LaRouche,0,FALSE,FALSE,primary
+1984-06-05,New Jersey,Lyndon LaRouche,1.52,FALSE,FALSE,primary
+1984-06-05,New Mexico,Lyndon LaRouche,1.78,FALSE,FALSE,primary
+1984-06-05,South Dakota,Lyndon LaRouche,2.63,FALSE,FALSE,primary
+1984-06-05,West Virginia,Lyndon LaRouche,1.97,FALSE,FALSE,primary
+1984-06-12,North Dakota,Lyndon LaRouche,11.96,FALSE,FALSE,primary
