@@ -24,30 +24,52 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Overview
 
-I want to create a decision tree to guide the user to determine who is likely to win the nomination.
+I want to create a decision tree to guide the user to determine who is likely to win the nomination. Fortunately, I have created a tidy dataset for the Democratic primaries, so lets load it up.
+
+```{r, load_tidy_data}
+primary_data <- rbind(read_csv("../data/primary/democrat_1984.csv"),
+                      read_csv("../data/primary/democrat_1988.csv"),
+                      read_csv("../data/primary/democrat_1992.csv"),
+                      read_csv("../data/primary/democrat_2004.csv")) %>%
+  mutate(year = format(date,"%Y"),
+         won_nomination = ifelse(is_nominee, 1, 0),
+         event_type = factor(event_type,labels=c("primary","caucus"))) %>%
+  group_by(year) %>%
+  mutate(days_since_start = as.numeric(date - min(date))) %>%
+  ungroup() %>%
+  select(-year)
+```
+
 
 ```{r}
-.data <- as.data.frame(tribble(
-  ~name,    ~year, ~iowa, ~new_hampshire, ~nevada, ~south_carolina, ~won_nomination,
-  "Clinton", 2016,     1,              0,       1,               1,               1,
-  "Sanders", 2016,     0,              1,       0,               0,               0,
-  "Obama",   2008,     1,              0,       1,               1,               1,
-  "Edwards", 2008,     0,              0,       0,               0,               0,
-  "Clinton", 2008,     0,              0,       0,               0,               0,
-  "Kerry",   2004,     1,              1,       1,               0,               1,
-  "Edwards", 2004,     1,              0,       0,               1,               0,
-  "Harkin",  1992,     1,              0,       0,               0,               0,
-  "Tsongas", 1992,     0,              1,       1,               0,               0,
-  "Clinton", 1992,     0,              1,       1,               1,               1
-))
+dt1 <- primary_data
+dt1$state <- tolower(str_replace_all(dt1$state, "\\s+", "_"))
+dt1$state <- str_replace(dt1$state, "\\[\\d+\\]", "")
+dt1$year <- format(dt1$date, "%Y")
 ```
 
 ```{r}
-tree_fit <- ctree(won_nomination ~ iowa + new_hampshire + nevada + south_carolina, data = .data)
+dt2 <- dt1 %>% 
+  mutate(won_state = ifelse(won_state, 1, 0)) %>%
+  filter(days_since_start < 20) %>%
+  select(candidate,year,state,won_nomination,won_state) %>%
+  rowid_to_column() %>%
+  group_by(candidate,year) %>%
+  nest() %>%
+  mutate(data = map(data, spread, state, won_state, fill=0)) %>%
+  unnest() %>% select(-rowid) %>% group_by(candidate,year,won_nomination) %>% summarise_each(funs(max))
 ```
 
 ```{r}
-rtree_fit <- rpart(won_nomination ~ iowa + new_hampshire + nevada + south_carolina, .data, method = "class", model = T, control = rpart.control(minsplit = 2))
+paste(colnames(dt2), collapse=" + ")
+```
+
+
+
+```{r}
+rtree_fit <- rpart(won_nomination ~ iowa + minnesota + new_hampshire + south_dakota + maine + district_of_columbia, 
+                   dt2, method = "class", model = T, control = rpart.control(minsplit = 4)
+                   )
 rpart.plot(rtree_fit)
 ```
 
@@ -56,3 +78,25 @@ We should read this tree as stating three rows in each outcome bubble:
 1. Did the candidate become the nominee? `0` for "No", `1` for "Yes"
 2. The probability of this outcome (0.00 for "impossible to become nominee" to 1.00 for "almost certainly the nominee")
 3. The percentage of data points which fall in the outcome.
+
+```{r}
+dt0 <- filter(primary_data, !is.na(vote_perc))
+```
+
+
+```{r}
+glm(won_nomination ~ won_state*days_since_start*vote_perc, data=dt0, family = binomial(link="logit"))
+```
+
+```{r}
+logitMod <- glm(won_nomination ~ won_state:vote_perc:days_since_start, data=dt0, family = binomial(link="logit"))
+
+predicted <- predict(logitMod, dt0, type="response")  # predicted scores
+dt0$prediction <- predicted
+
+precision <- (dt0 %>% filter(is_nominee) %>% select(prediction) %>% sum)/sum(predicted)
+recall <- (dt0 %>% filter(is_nominee) %>% select(prediction) %>% sum)/(dt0 %>% filter(is_nominee) %>% nrow)
+Fmeasure <- 2 * precision * recall / (precision + recall)
+```
+
+
