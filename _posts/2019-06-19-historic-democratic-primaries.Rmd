@@ -114,6 +114,18 @@ parse_delegates <- function(contest) {
 parse_delegates("Iowa Caucus(49 of 49 Delegates)")
 ```
 ```{r}
+parse_1992_votes <- function(s) {
+  if ("" == s) {
+    return(0)
+  } else if (grepl("(\\d+[.]?\\d*)[%]?$", s)) {
+    return(as.numeric(str_match(s, "(\\d+[.]?\\d*)[%]?$")[,2]))
+  }
+  return(as.numeric(str_match(s, "(\\d+[.]?\\d*)%")[,2]))
+}
+parse_1992_votes("24.78%(9-Delegates)") == 24.78
+```
+
+```{r}
 tidy_1992 <- function() {
   html("../data/primary/wiki_1992.html") %>%
     html_table(header=T) %>%
@@ -127,11 +139,14 @@ tidy_1992 <- function() {
            candidate = Candidate,
            vote_perc = Vote) %>%
     mutate(state = gsub("[(].*$", "", contest)) %>%
+    group_by(state,candidate) %>%
+    mutate(vote_perc = parse_1992_votes(vote_perc)) %>%
+    ungroup() %>%
     group_by(state) %>%
     transmute(candidate,
               date,
-              vote_perc = as.numeric(gsub("[%].*$", "", vote_perc)),
-              delegates = parse_delegates(contest),
+              vote_perc,
+              # delegates = parse_delegates(contest),
               won_state = (max(vote_perc, na.rm = T) == vote_perc),
               is_nominee = (candidate == "Bill Clinton")) %>%
     ungroup() %>%
@@ -160,7 +175,7 @@ tidy_2004 <- function() {
            vote_perc = Vote,
            candidate = Candidate) %>%
     group_by(state) %>%
-    mutate(won = ifelse(is.na(vote_perc), F, (vote_perc == max(vote_perc, na.rm=T))),
+    mutate(won_state = ifelse(is.na(vote_perc), F, (vote_perc == max(vote_perc, na.rm=T))),
            vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
     ungroup() %>%
     mutate(event_type = ifelse(is_caucus(state), "caucus", "primary"),

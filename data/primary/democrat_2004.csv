@@ -1,4 +1,4 @@
-date,state,candidate,vote_perc,is_nominee,won,event_type
+date,state,candidate,vote_perc,is_nominee,won_state,event_type
 2004-01-14,District of Columbia,Carol Moseley Braun,12,FALSE,FALSE,primary
 2004-01-19,Iowa,Carol Moseley Braun,0,FALSE,FALSE,caucus
 2004-01-27,New Hampshire,Carol Moseley Braun,0,FALSE,FALSE,primary
