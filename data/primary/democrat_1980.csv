@@ -1,0 +1,313 @@
+date,state,candidate,vote_perc,won_state,is_nominee,event_type
+1980-01-21,Iowa,Jimmy Carter,59.16,TRUE,TRUE,caucus
+1980-02-10,Maine,Jimmy Carter,43.6,TRUE,TRUE,caucus
+1980-02-26,New Hampshire,Jimmy Carter,47.08,TRUE,TRUE,primary
+1980-03-04,Massachusetts,Jimmy Carter,28.7,FALSE,TRUE,primary
+1980-03-04,Vermont *,Jimmy Carter,73.08,TRUE,TRUE,primary
+1980-03-11,Alabama,Jimmy Carter,81.59,TRUE,TRUE,primary
+1980-03-11,Florida,Jimmy Carter,60.69,TRUE,TRUE,primary
+1980-03-11,Georgia,Jimmy Carter,88.04,TRUE,TRUE,primary
+1980-03-16,Puerto Rico,Jimmy Carter,51.67,TRUE,TRUE,primary
+1980-03-18,Illinois,Jimmy Carter,65.01,TRUE,TRUE,primary
+1980-03-25,Connecticut,Jimmy Carter,41.47,FALSE,TRUE,primary
+1980-03-25,New York,Jimmy Carter,0,TRUE,TRUE,primary
+1980-04-01,Kansas,Jimmy Carter,56.63,TRUE,TRUE,primary
+1980-04-01,Wisconsin,Jimmy Carter,56.17,TRUE,TRUE,primary
+1980-04-05,Louisiana,Jimmy Carter,55.74,TRUE,TRUE,primary
+1980-04-22,Pennsylvania,Jimmy Carter,45.4,FALSE,TRUE,primary
+1980-04-22,Vermont,Jimmy Carter,32,FALSE,TRUE,caucus
+1980-04-26,Michigan,Jimmy Carter,46.68,FALSE,TRUE,caucus
+1980-05-03,Texas,Jimmy Carter,55.93,TRUE,TRUE,primary
+1980-05-06,Washington D.C.,Jimmy Carter,36.94,FALSE,TRUE,primary
+1980-05-06,Indiana,Jimmy Carter,67.68,TRUE,TRUE,primary
+1980-05-06,North Carolina,Jimmy Carter,70.09,TRUE,TRUE,primary
+1980-05-06,Tennessee,Jimmy Carter,75.22,TRUE,TRUE,primary
+1980-05-13,Nebraska,Jimmy Carter,46.87,TRUE,TRUE,primary
+1980-05-13,Maryland,Jimmy Carter,47.48,TRUE,TRUE,primary
+1980-05-20,Oregon,Jimmy Carter,56.83,TRUE,TRUE,primary
+1980-05-20,Michigan **,Jimmy Carter,0,FALSE,TRUE,caucus
+1980-05-27,Arkansas,Jimmy Carter,60.09,TRUE,TRUE,primary
+1980-05-27,Idaho,Jimmy Carter,62.17,TRUE,TRUE,primary
+1980-05-27,Kentucky,Jimmy Carter,66.92,TRUE,TRUE,primary
+1980-05-27,Nevada,Jimmy Carter,37.58,TRUE,TRUE,primary
+1980-06-03,California,Jimmy Carter,37.64,FALSE,TRUE,primary
+1980-06-03,Montana,Jimmy Carter,51.46,TRUE,TRUE,primary
+1980-06-03,New Jersey,Jimmy Carter,37.87,FALSE,TRUE,primary
+1980-06-03,New Mexico,Jimmy Carter,41.8,FALSE,TRUE,primary
+1980-06-03,Ohio,Jimmy Carter,51.06,TRUE,TRUE,primary
+1980-06-03,Rhode Island,Jimmy Carter,25.85,FALSE,TRUE,primary
+1980-06-03,South Dakota,Jimmy Carter,45.45,FALSE,TRUE,primary
+1980-06-03,West Virginia,Jimmy Carter,62.18,TRUE,TRUE,primary
+1980-01-21,Iowa,Ted Kennedy,31.23,FALSE,FALSE,caucus
+1980-02-10,Maine,Ted Kennedy,40.2,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Ted Kennedy,37.3,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Ted Kennedy,65.07,TRUE,FALSE,primary
+1980-03-04,Vermont *,Ted Kennedy,25.53,FALSE,FALSE,primary
+1980-03-11,Alabama,Ted Kennedy,13.22,FALSE,FALSE,primary
+1980-03-11,Florida,Ted Kennedy,23.2,FALSE,FALSE,primary
+1980-03-11,Georgia,Ted Kennedy,8.4,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Ted Kennedy,48.04,FALSE,FALSE,primary
+1980-03-18,Illinois,Ted Kennedy,29.96,FALSE,FALSE,primary
+1980-03-25,Connecticut,Ted Kennedy,46.92,TRUE,FALSE,primary
+1980-03-25,New York,Ted Kennedy,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Ted Kennedy,31.62,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Ted Kennedy,30.1,FALSE,FALSE,primary
+1980-04-05,Louisiana,Ted Kennedy,22.52,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Ted Kennedy,45.68,TRUE,FALSE,primary
+1980-04-22,Vermont,Ted Kennedy,45,TRUE,FALSE,caucus
+1980-04-26,Michigan,Ted Kennedy,48.08,TRUE,FALSE,caucus
+1980-05-03,Texas,Ted Kennedy,22.81,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Ted Kennedy,61.67,TRUE,FALSE,primary
+1980-05-06,Indiana,Ted Kennedy,32.32,FALSE,FALSE,primary
+1980-05-06,North Carolina,Ted Kennedy,17.73,FALSE,FALSE,primary
+1980-05-06,Tennessee,Ted Kennedy,18.07,FALSE,FALSE,primary
+1980-05-13,Nebraska,Ted Kennedy,37.58,FALSE,FALSE,primary
+1980-05-13,Maryland,Ted Kennedy,37.96,FALSE,FALSE,primary
+1980-05-20,Oregon,Ted Kennedy,31.22,FALSE,FALSE,primary
+1980-05-20,Michigan **,Ted Kennedy,0,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Ted Kennedy,17.52,FALSE,FALSE,primary
+1980-05-27,Idaho,Ted Kennedy,21.96,FALSE,FALSE,primary
+1980-05-27,Kentucky,Ted Kennedy,22.96,FALSE,FALSE,primary
+1980-05-27,Nevada,Ted Kennedy,28.82,FALSE,FALSE,primary
+1980-06-03,California,Ted Kennedy,44.8,TRUE,FALSE,primary
+1980-06-03,Montana,Ted Kennedy,36.65,FALSE,FALSE,primary
+1980-06-03,New Jersey,Ted Kennedy,56.18,TRUE,FALSE,primary
+1980-06-03,New Mexico,Ted Kennedy,46.26,TRUE,FALSE,primary
+1980-06-03,Ohio,Ted Kennedy,44.16,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Ted Kennedy,68.3,TRUE,FALSE,primary
+1980-06-03,South Dakota,Ted Kennedy,48.6,TRUE,FALSE,primary
+1980-06-03,West Virginia,Ted Kennedy,37.82,FALSE,FALSE,primary
+1980-01-21,Iowa,Jerry Brown,0,FALSE,FALSE,caucus
+1980-02-10,Maine,Jerry Brown,13.9,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Jerry Brown,9.6,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Jerry Brown,3.47,FALSE,FALSE,primary
+1980-03-04,Vermont *,Jerry Brown,0.9,FALSE,FALSE,primary
+1980-03-11,Alabama,Jerry Brown,4.01,FALSE,FALSE,primary
+1980-03-11,Florida,Jerry Brown,4.87,FALSE,FALSE,primary
+1980-03-11,Georgia,Jerry Brown,1.89,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Jerry Brown,0.19,FALSE,FALSE,primary
+1980-03-18,Illinois,Jerry Brown,3.26,FALSE,FALSE,primary
+1980-03-25,Connecticut,Jerry Brown,2.56,FALSE,FALSE,primary
+1980-03-25,New York,Jerry Brown,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Jerry Brown,4.87,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Jerry Brown,11.83,FALSE,FALSE,primary
+1980-04-05,Louisiana,Jerry Brown,4.68,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Jerry Brown,2.34,FALSE,FALSE,primary
+1980-04-22,Vermont,Jerry Brown,0,FALSE,FALSE,caucus
+1980-04-26,Michigan,Jerry Brown,0,FALSE,FALSE,caucus
+1980-05-03,Texas,Jerry Brown,2.58,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Jerry Brown,0,FALSE,FALSE,primary
+1980-05-06,Indiana,Jerry Brown,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Jerry Brown,2.91,FALSE,FALSE,primary
+1980-05-06,Tennessee,Jerry Brown,1.9,FALSE,FALSE,primary
+1980-05-13,Nebraska,Jerry Brown,3.56,FALSE,FALSE,primary
+1980-05-13,Maryland,Jerry Brown,3,FALSE,FALSE,primary
+1980-05-20,Oregon,Jerry Brown,9.37,FALSE,FALSE,primary
+1980-05-20,Michigan **,Jerry Brown,29.38,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Jerry Brown,0,FALSE,FALSE,primary
+1980-05-27,Idaho,Jerry Brown,4.12,FALSE,FALSE,primary
+1980-05-27,Kentucky,Jerry Brown,0,FALSE,FALSE,primary
+1980-05-27,Nevada,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,California,Jerry Brown,4.04,FALSE,FALSE,primary
+1980-06-03,Montana,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,New Jersey,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,New Mexico,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,Ohio,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Jerry Brown,0.81,FALSE,FALSE,primary
+1980-06-03,South Dakota,Jerry Brown,0,FALSE,FALSE,primary
+1980-06-03,West Virginia,Jerry Brown,0,FALSE,FALSE,primary
+1980-01-21,Iowa,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1980-02-10,Maine,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Lyndon LaRouche,2.08,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-03-04,Vermont *,Lyndon LaRouche,0.02,FALSE,FALSE,primary
+1980-03-11,Alabama,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-03-11,Florida,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-03-11,Georgia,Lyndon LaRouche,0.13,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-03-18,Illinois,Lyndon LaRouche,1.6,FALSE,FALSE,primary
+1980-03-25,Connecticut,Lyndon LaRouche,2.67,FALSE,FALSE,primary
+1980-03-25,New York,Lyndon LaRouche,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Lyndon LaRouche,1.1,FALSE,FALSE,primary
+1980-04-05,Louisiana,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-04-22,Vermont,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1980-04-26,Michigan,Lyndon LaRouche,0,FALSE,FALSE,caucus
+1980-05-03,Texas,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Lyndon LaRouche,1.39,FALSE,FALSE,primary
+1980-05-06,Indiana,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-06,Tennessee,Lyndon LaRouche,0.31,FALSE,FALSE,primary
+1980-05-13,Nebraska,Lyndon LaRouche,0.76,FALSE,FALSE,primary
+1980-05-13,Maryland,Lyndon LaRouche,0.92,FALSE,FALSE,primary
+1980-05-20,Oregon,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-20,Michigan **,Lyndon LaRouche,11.41,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-27,Idaho,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-27,Kentucky,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-05-27,Nevada,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-06-03,California,Lyndon LaRouche,2.13,FALSE,FALSE,primary
+1980-06-03,Montana,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-06-03,New Jersey,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-06-03,New Mexico,Lyndon LaRouche,3.01,FALSE,FALSE,primary
+1980-06-03,Ohio,Lyndon LaRouche,2.97,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Lyndon LaRouche,3.03,FALSE,FALSE,primary
+1980-06-03,South Dakota,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-06-03,West Virginia,Lyndon LaRouche,0,FALSE,FALSE,primary
+1980-01-21,Iowa,Cliff Finch,0,FALSE,FALSE,caucus
+1980-02-10,Maine,Cliff Finch,0,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-04,Vermont *,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-11,Alabama,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-11,Florida,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-11,Georgia,Cliff Finch,0.36,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-18,Illinois,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-25,Connecticut,Cliff Finch,0,FALSE,FALSE,primary
+1980-03-25,New York,Cliff Finch,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Cliff Finch,0.32,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Cliff Finch,0.29,FALSE,FALSE,primary
+1980-04-05,Louisiana,Cliff Finch,3.11,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Cliff Finch,0,FALSE,FALSE,primary
+1980-04-22,Vermont,Cliff Finch,0,FALSE,FALSE,caucus
+1980-04-26,Michigan,Cliff Finch,0,FALSE,FALSE,caucus
+1980-05-03,Texas,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-06,Indiana,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-06,Tennessee,Cliff Finch,0.56,FALSE,FALSE,primary
+1980-05-13,Nebraska,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-13,Maryland,Cliff Finch,1.03,FALSE,FALSE,primary
+1980-05-20,Oregon,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-20,Michigan **,Cliff Finch,0,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Cliff Finch,4.34,FALSE,FALSE,primary
+1980-05-27,Idaho,Cliff Finch,0,FALSE,FALSE,primary
+1980-05-27,Kentucky,Cliff Finch,1.05,FALSE,FALSE,primary
+1980-05-27,Nevada,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,California,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,Montana,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,New Jersey,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,New Mexico,Cliff Finch,2.82,FALSE,FALSE,primary
+1980-06-03,Ohio,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,South Dakota,Cliff Finch,0,FALSE,FALSE,primary
+1980-06-03,West Virginia,Cliff Finch,0,FALSE,FALSE,primary
+1980-01-21,Iowa,Richard Kay,0,FALSE,FALSE,caucus
+1980-02-10,Maine,Richard Kay,0,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Richard Kay,0.51,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Richard Kay,0,FALSE,FALSE,primary
+1980-03-04,Vermont *,Richard Kay,0,FALSE,FALSE,primary
+1980-03-11,Alabama,Richard Kay,0,FALSE,FALSE,primary
+1980-03-11,Florida,Richard Kay,1.75,FALSE,FALSE,primary
+1980-03-11,Georgia,Richard Kay,0.22,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Richard Kay,0,FALSE,FALSE,primary
+1980-03-18,Illinois,Richard Kay,0,FALSE,FALSE,primary
+1980-03-25,Connecticut,Richard Kay,0,FALSE,FALSE,primary
+1980-03-25,New York,Richard Kay,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Richard Kay,0,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Richard Kay,0,FALSE,FALSE,primary
+1980-04-05,Louisiana,Richard Kay,0.94,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Richard Kay,0,FALSE,FALSE,primary
+1980-04-22,Vermont,Richard Kay,0,FALSE,FALSE,caucus
+1980-04-26,Michigan,Richard Kay,0,FALSE,FALSE,caucus
+1980-05-03,Texas,Richard Kay,0,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Richard Kay,0,FALSE,FALSE,primary
+1980-05-06,Indiana,Richard Kay,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Richard Kay,0,FALSE,FALSE,primary
+1980-05-06,Tennessee,Richard Kay,0,FALSE,FALSE,primary
+1980-05-13,Nebraska,Richard Kay,0,FALSE,FALSE,primary
+1980-05-13,Maryland,Richard Kay,0,FALSE,FALSE,primary
+1980-05-20,Oregon,Richard Kay,0,FALSE,FALSE,primary
+1980-05-20,Michigan **,Richard Kay,0,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Richard Kay,0,FALSE,FALSE,primary
+1980-05-27,Idaho,Richard Kay,0,FALSE,FALSE,primary
+1980-05-27,Kentucky,Richard Kay,1.09,FALSE,FALSE,primary
+1980-05-27,Nevada,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,California,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,Montana,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,New Jersey,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,New Mexico,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,Ohio,Richard Kay,1.81,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,South Dakota,Richard Kay,0,FALSE,FALSE,primary
+1980-06-03,West Virginia,Richard Kay,0,FALSE,FALSE,primary
+1980-01-21,Iowa,Unpledged,9.61,FALSE,FALSE,caucus
+1980-02-10,Maine,Unpledged,2.4,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Unpledged,0,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Unpledged,2.17,FALSE,FALSE,primary
+1980-03-04,Vermont *,Unpledged,0,FALSE,FALSE,primary
+1980-03-11,Alabama,Unpledged,0.7,FALSE,FALSE,primary
+1980-03-11,Florida,Unpledged,9.5,FALSE,FALSE,primary
+1980-03-11,Georgia,Unpledged,0.96,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Unpledged,0,FALSE,FALSE,primary
+1980-03-18,Illinois,Unpledged,0,FALSE,FALSE,primary
+1980-03-25,Connecticut,Unpledged,6.37,FALSE,FALSE,primary
+1980-03-25,New York,Unpledged,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Unpledged,0,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Unpledged,0.43,FALSE,FALSE,primary
+1980-04-05,Louisiana,Unpledged,11.6,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Unpledged,5.82,FALSE,FALSE,primary
+1980-04-22,Vermont,Unpledged,23,FALSE,FALSE,caucus
+1980-04-26,Michigan,Unpledged,5.24,FALSE,FALSE,caucus
+1980-05-03,Texas,Unpledged,18.68,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Unpledged,0,FALSE,FALSE,primary
+1980-05-06,Indiana,Unpledged,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Unpledged,9.28,FALSE,FALSE,primary
+1980-05-06,Tennessee,Unpledged,3.91,FALSE,FALSE,primary
+1980-05-13,Nebraska,Unpledged,10.42,FALSE,FALSE,primary
+1980-05-13,Maryland,Unpledged,9.62,FALSE,FALSE,primary
+1980-05-20,Oregon,Unpledged,0,FALSE,FALSE,primary
+1980-05-20,Michigan **,Unpledged,46.4,TRUE,FALSE,caucus
+1980-05-27,Arkansas,Unpledged,18.05,FALSE,FALSE,primary
+1980-05-27,Idaho,Unpledged,11.76,FALSE,FALSE,primary
+1980-05-27,Kentucky,Unpledged,8,FALSE,FALSE,primary
+1980-05-27,Nevada,Unpledged,33.6,FALSE,FALSE,primary
+1980-06-03,California,Unpledged,11.38,FALSE,FALSE,primary
+1980-06-03,Montana,Unpledged,11.89,FALSE,FALSE,primary
+1980-06-03,New Jersey,Unpledged,3.48,FALSE,FALSE,primary
+1980-06-03,New Mexico,Unpledged,6.11,FALSE,FALSE,primary
+1980-06-03,Ohio,Unpledged,0,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Unpledged,2.01,FALSE,FALSE,primary
+1980-06-03,South Dakota,Unpledged,5.95,FALSE,FALSE,primary
+1980-06-03,West Virginia,Unpledged,0,FALSE,FALSE,primary
+1980-01-21,Iowa,Others,0,FALSE,FALSE,caucus
+1980-02-10,Maine,Others,0,FALSE,FALSE,caucus
+1980-02-26,New Hampshire,Others,3.45,FALSE,FALSE,primary
+1980-03-04,Massachusetts,Others,0.59,FALSE,FALSE,primary
+1980-03-04,Vermont *,Others,0.48,FALSE,FALSE,primary
+1980-03-11,Alabama,Others,0.49,FALSE,FALSE,primary
+1980-03-11,Florida,Others,0,FALSE,FALSE,primary
+1980-03-11,Georgia,Others,0,FALSE,FALSE,primary
+1980-03-16,Puerto Rico,Others,0.1,FALSE,FALSE,primary
+1980-03-18,Illinois,Others,0.17,FALSE,FALSE,primary
+1980-03-25,Connecticut,Others,0,FALSE,FALSE,primary
+1980-03-25,New York,Others,0,TRUE,FALSE,primary
+1980-04-01,Kansas,Others,0.81,FALSE,FALSE,primary
+1980-04-01,Wisconsin,Others,0.08,FALSE,FALSE,primary
+1980-04-05,Louisiana,Others,1.42,FALSE,FALSE,primary
+1980-04-22,Pennsylvania,Others,0.78,FALSE,FALSE,primary
+1980-04-22,Vermont,Others,0,FALSE,FALSE,caucus
+1980-04-26,Michigan,Others,0,FALSE,FALSE,caucus
+1980-05-03,Texas,Others,0,FALSE,FALSE,primary
+1980-05-06,Washington D.C.,Others,0,FALSE,FALSE,primary
+1980-05-06,Indiana,Others,0,FALSE,FALSE,primary
+1980-05-06,North Carolina,Others,0,FALSE,FALSE,primary
+1980-05-06,Tennessee,Others,0.01,FALSE,FALSE,primary
+1980-05-13,Nebraska,Others,0.81,FALSE,FALSE,primary
+1980-05-13,Maryland,Others,0,FALSE,FALSE,primary
+1980-05-20,Oregon,Others,2.57,FALSE,FALSE,primary
+1980-05-20,Michigan **,Others,12.81,FALSE,FALSE,caucus
+1980-05-27,Arkansas,Others,0,FALSE,FALSE,primary
+1980-05-27,Idaho,Others,0,FALSE,FALSE,primary
+1980-05-27,Kentucky,Others,0,FALSE,FALSE,primary
+1980-05-27,Nevada,Others,0,FALSE,FALSE,primary
+1980-06-03,California,Others,0,FALSE,FALSE,primary
+1980-06-03,Montana,Others,0,FALSE,FALSE,primary
+1980-06-03,New Jersey,Others,2.48,FALSE,FALSE,primary
+1980-06-03,New Mexico,Others,0,FALSE,FALSE,primary
+1980-06-03,Ohio,Others,0,FALSE,FALSE,primary
+1980-06-03,Rhode Island,Others,0,FALSE,FALSE,primary
+1980-06-03,South Dakota,Others,0,FALSE,FALSE,primary
+1980-06-03,West Virginia,Others,0,FALSE,FALSE,primary

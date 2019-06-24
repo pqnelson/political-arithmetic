@@ -23,11 +23,15 @@ knitr::opts_chunk$set(echo = TRUE)
 source("../R/states.R")
 ```
 
+REMEMBER: the McGovern-Fraser reforms of 1972 didn't take effect until the 1976 cycle. So there is no relevant data BEFORE 1976.
+
 # Cleaning up the Primary Data
 
 I'd like to organize a tidy primary data set, I'm consulting [US Election Atlas](https://uselectionatlas.org/RESULTS/national.php?year=1992&off=0&elect=1&f=0) and wikipedia.
 
-## 1984 Primary
+## Helper Functions
+
+We have a few helper functions to classify each contest as a primary or a caucus. Some states had both a primary and a caucus (Washington state, apparently, had both until the 1990s).
 
 ```{r}
 is_caucus <- function(state) {
@@ -36,12 +40,76 @@ is_caucus <- function(state) {
 is_primary <- function(state) {
   grepl("primary", state, ignore.case=T)
 }
+remove_tail <- function(s) {
+  sub("\\s*\\[.*\\].*$", "", s)
+}
 cleanup_state <- function(state) {
   sub("\\s*[\\(]?caucus[es\\)]{0,3}", "",
       sub("\\s*[\\(]?primary[\\)]?", "", state, ignore.case=T),
       ignore.case=T)
 }
 ```
+
+## 1976 Primary
+
+```{r}
+tidy_1976 <- function() {
+  html("../data/primary/wiki_1976.html") %>%
+  html_table(header=T) %>%
+  `[[`(1) %>%
+  gather(`Jimmy Carter`,`Jerry Brown`,`George Wallace`,
+         `Morris Udall`,`Scoop Jackson`,`Frank Church`,
+         `Lloyd Bentsen`,`Robert Byrd`,`Sargent Shriver`,
+         `Fred Harris`,`Ellen McCormack`,`Milton Shapp`,
+         `Birch Bayh`,`Uncommitted`,
+         key="Candidate", value="vote_perc") %>%
+  mutate(Date = as.Date(paste0(Date, " 1976"), format="%B %d %Y"),
+         vote_perc = ifelse(vote_perc == "-", "0%", vote_perc),
+         vote_perc = as.numeric(gsub("%.*$", "", vote_perc)),
+         vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
+  rename(date = Date,
+         state = Contest,
+         candidate = Candidate) %>%
+  group_by(state) %>%
+  mutate(won_state = (vote_perc == max(vote_perc, na.rm = T)),
+         is_nominee = (candidate == "Jimmy Carter")) %>%
+  ungroup() %>%
+  mutate(event_type = ifelse(is_caucus(state), "caucus", "primary"),
+         state = remove_tail(cleanup_state(state)))
+}
+write_csv(tidy_1976(), "../data/primary/democrat_1976.csv")
+```
+## 1980 Primary
+
+```{r}
+tidy_1980 <- function() {
+  html("./data/primary/wiki_1980.html") %>%
+    html_table(header=T) %>%
+    `[[`(1) %>%
+    gather(`Jimmy Carter`,`Ted Kennedy`,`Jerry Brown`,
+           `Lyndon LaRouche`,`Cliff Finch`,`Richard Kay`,
+           `Unpledged`,`Others`,
+           key="Candidate", value="vote_perc") %>%
+    mutate(Date = as.Date(paste0(Date, " 1980"), format="%B %d %Y"),
+           vote_perc = ifelse(vote_perc == "-", "0%", vote_perc),
+           vote_perc = as.numeric(gsub("%.*$", "", vote_perc)),
+           vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
+    rename(date = Date,
+           state = State,
+           candidate = Candidate) %>%
+    group_by(state) %>%
+    mutate(won_state = (vote_perc == max(vote_perc, na.rm = T)),
+           is_nominee = (candidate == "Jimmy Carter")) %>%
+    ungroup() %>%
+    mutate(event_type = ifelse(is_caucus(state), "caucus", "primary"),
+           state = remove_tail(cleanup_state(state)))
+} 
+write_csv(tidy_1980(), "../data/primary/democrat_1980.csv")
+```
+
+
+
+## 1984 Primary
 
 
 ```{r}

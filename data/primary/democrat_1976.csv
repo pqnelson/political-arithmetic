@@ -1,0 +1,729 @@
+date,state,candidate,vote_perc,won_state,is_nominee,event_type
+1976-01-19,Iowa,Jimmy Carter,27.57,FALSE,TRUE,caucus
+1976-01-24,Mississippi,Jimmy Carter,13.76,FALSE,TRUE,caucus
+1976-02-07,Oklahoma,Jimmy Carter,18.5,FALSE,TRUE,caucus
+1976-02-14,Mississippi,Jimmy Carter,11.3,FALSE,TRUE,primary
+1976-02-21,Mississippi,Jimmy Carter,0,TRUE,TRUE,caucus
+1976-02-24,New Hampshire,Jimmy Carter,28.37,TRUE,TRUE,primary
+1976-03-02,Massachusetts,Jimmy Carter,13.86,FALSE,TRUE,primary
+1976-03-02,Vermont,Jimmy Carter,45.84,TRUE,TRUE,primary
+1976-03-02,Washington,Jimmy Carter,0,TRUE,TRUE,caucus
+1976-03-09,Florida,Jimmy Carter,34.34,TRUE,TRUE,primary
+1976-03-16,Illinois,Jimmy Carter,48.09,TRUE,TRUE,primary
+1976-03-20,Oklahoma,Jimmy Carter,0,TRUE,TRUE,caucus
+1976-03-23,North Carolina,Jimmy Carter,53.64,TRUE,TRUE,primary
+1976-03-31,South Carolina,Jimmy Carter,0,TRUE,TRUE,primary
+1976-04-03,Kansas,Jimmy Carter,38.16,FALSE,TRUE,caucus
+1976-04-03,Oklahoma,Jimmy Carter,0,TRUE,TRUE,primary
+1976-04-03,Virginia,Jimmy Carter,30.3,FALSE,TRUE,caucus
+1976-04-06,New York,Jimmy Carter,0,TRUE,TRUE,primary
+1976-04-06,Wisconsin,Jimmy Carter,36.63,TRUE,TRUE,primary
+1976-04-10,Iowa,Jimmy Carter,0,TRUE,TRUE,caucus
+1976-04-21,Missouri,Jimmy Carter,13.23,FALSE,TRUE,caucus
+1976-04-26,Arizona,Jimmy Carter,13.23,FALSE,TRUE,caucus
+1976-04-27,Pennsylvania,Jimmy Carter,36.95,TRUE,TRUE,primary
+1976-05-01,Texas,Jimmy Carter,47.65,TRUE,TRUE,primary
+1976-05-04,Alabama,Jimmy Carter,0,TRUE,TRUE,primary
+1976-05-04,Georgia,Jimmy Carter,83.44,TRUE,TRUE,primary
+1976-05-04,Indiana,Jimmy Carter,67.95,TRUE,TRUE,primary
+1976-05-04,"Washington, D.C.",Jimmy Carter,31.6,FALSE,TRUE,primary
+1976-05-11,Connecticut,Jimmy Carter,33.16,TRUE,TRUE,primary
+1976-05-11,Missouri,Jimmy Carter,30.13,FALSE,TRUE,caucus
+1976-05-11,Nebraska,Jimmy Carter,37.62,FALSE,TRUE,primary
+1976-05-11,West Virginia,Jimmy Carter,0,FALSE,TRUE,primary
+1976-05-18,Maryland,Jimmy Carter,37.08,FALSE,TRUE,primary
+1976-05-18,Michigan,Jimmy Carter,43.4,TRUE,TRUE,primary
+1976-05-22,Vermont,Jimmy Carter,0,TRUE,TRUE,primary
+1976-05-25,Arkansas,Jimmy Carter,62.23,TRUE,TRUE,primary
+1976-05-25,Idaho,Jimmy Carter,11.85,FALSE,TRUE,primary
+1976-05-25,Kentucky,Jimmy Carter,59.38,TRUE,TRUE,primary
+1976-05-25,Missouri,Jimmy Carter,0,TRUE,TRUE,primary
+1976-05-25,Nevada,Jimmy Carter,23.35,FALSE,TRUE,primary
+1976-05-25,Oregon,Jimmy Carter,26.65,FALSE,TRUE,primary
+1976-05-25,Tennessee,Jimmy Carter,77.6,TRUE,TRUE,primary
+1976-05-29,Iowa,Jimmy Carter,0,TRUE,TRUE,primary
+1976-05-30,Hawaii,Jimmy Carter,0,TRUE,TRUE,primary
+1976-06-01,Montana,Jimmy Carter,24.64,FALSE,TRUE,primary
+1976-06-01,Rhode Island,Jimmy Carter,30.22,FALSE,TRUE,primary
+1976-06-01,South Dakota,Jimmy Carter,41.22,TRUE,TRUE,primary
+1976-06-06,Minnesota,Jimmy Carter,0,TRUE,TRUE,primary
+1976-06-08,California,Jimmy Carter,20.44,FALSE,TRUE,primary
+1976-06-08,New Jersey,Jimmy Carter,58.38,TRUE,TRUE,primary
+1976-06-08,New Jersey,Jimmy Carter,27.97,FALSE,TRUE,primary
+1976-06-08,Ohio,Jimmy Carter,52.29,TRUE,TRUE,primary
+1976-01-19,Iowa,Jerry Brown,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Jerry Brown,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Jerry Brown,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Jerry Brown,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Jerry Brown,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-02,Vermont,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-02,Washington,Jerry Brown,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-16,Illinois,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Jerry Brown,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Jerry Brown,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Jerry Brown,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Jerry Brown,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Jerry Brown,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Jerry Brown,0,FALSE,FALSE,caucus
+1976-04-06,New York,Jerry Brown,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Jerry Brown,0,FALSE,FALSE,primary
+1976-04-10,Iowa,Jerry Brown,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Jerry Brown,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Jerry Brown,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-01,Texas,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Jerry Brown,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-04,Indiana,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Jerry Brown,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Jerry Brown,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-11,West Virginia,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Jerry Brown,48.45,TRUE,FALSE,primary
+1976-05-18,Michigan,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Jerry Brown,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Jerry Brown,1.95,FALSE,FALSE,primary
+1976-05-25,Kentucky,Jerry Brown,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Jerry Brown,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Jerry Brown,52.73,TRUE,FALSE,primary
+1976-05-25,Oregon,Jerry Brown,24.69,FALSE,FALSE,primary
+1976-05-25,Tennessee,Jerry Brown,0.47,FALSE,FALSE,primary
+1976-05-29,Iowa,Jerry Brown,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Jerry Brown,0,TRUE,FALSE,primary
+1976-06-01,Montana,Jerry Brown,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Jerry Brown,0,FALSE,FALSE,primary
+1976-06-01,South Dakota,Jerry Brown,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Jerry Brown,0,TRUE,FALSE,primary
+1976-06-08,California,Jerry Brown,59.04,TRUE,FALSE,primary
+1976-06-08,New Jersey,Jerry Brown,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Jerry Brown,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Jerry Brown,0,FALSE,FALSE,primary
+1976-01-19,Iowa,George Wallace,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,George Wallace,44.62,TRUE,FALSE,caucus
+1976-02-07,Oklahoma,George Wallace,10.4,FALSE,FALSE,caucus
+1976-02-14,Mississippi,George Wallace,49,TRUE,FALSE,primary
+1976-02-21,Mississippi,George Wallace,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,George Wallace,1.29,FALSE,FALSE,primary
+1976-03-02,Massachusetts,George Wallace,16.73,FALSE,FALSE,primary
+1976-03-02,Vermont,George Wallace,0,FALSE,FALSE,primary
+1976-03-02,Washington,George Wallace,0,TRUE,FALSE,caucus
+1976-03-09,Florida,George Wallace,30.61,FALSE,FALSE,primary
+1976-03-16,Illinois,George Wallace,28.18,FALSE,FALSE,primary
+1976-03-20,Oklahoma,George Wallace,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,George Wallace,34.75,FALSE,FALSE,primary
+1976-03-31,South Carolina,George Wallace,0,TRUE,FALSE,primary
+1976-04-03,Kansas,George Wallace,0.49,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,George Wallace,0,TRUE,FALSE,primary
+1976-04-03,Virginia,George Wallace,3.19,FALSE,FALSE,caucus
+1976-04-06,New York,George Wallace,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,George Wallace,12.49,FALSE,FALSE,primary
+1976-04-10,Iowa,George Wallace,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,George Wallace,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,George Wallace,6.97,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,George Wallace,11.25,FALSE,FALSE,primary
+1976-05-01,Texas,George Wallace,17.53,FALSE,FALSE,primary
+1976-05-04,Alabama,George Wallace,0,TRUE,FALSE,primary
+1976-05-04,Georgia,George Wallace,11.46,FALSE,FALSE,primary
+1976-05-04,Indiana,George Wallace,15.16,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",George Wallace,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,George Wallace,0,FALSE,FALSE,primary
+1976-05-11,Missouri,George Wallace,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,George Wallace,3.18,FALSE,FALSE,primary
+1976-05-11,West Virginia,George Wallace,10.99,FALSE,FALSE,primary
+1976-05-18,Maryland,George Wallace,4.09,FALSE,FALSE,primary
+1976-05-18,Michigan,George Wallace,6.94,FALSE,FALSE,primary
+1976-05-22,Vermont,George Wallace,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,George Wallace,16.54,FALSE,FALSE,primary
+1976-05-25,Idaho,George Wallace,1.5,FALSE,FALSE,primary
+1976-05-25,Kentucky,George Wallace,16.84,FALSE,FALSE,primary
+1976-05-25,Missouri,George Wallace,0,TRUE,FALSE,primary
+1976-05-25,Nevada,George Wallace,3.31,FALSE,FALSE,primary
+1976-05-25,Oregon,George Wallace,1.34,FALSE,FALSE,primary
+1976-05-25,Tennessee,George Wallace,10.92,FALSE,FALSE,primary
+1976-05-29,Iowa,George Wallace,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,George Wallace,0,TRUE,FALSE,primary
+1976-06-01,Montana,George Wallace,3.44,FALSE,FALSE,primary
+1976-06-01,Rhode Island,George Wallace,0.84,FALSE,FALSE,primary
+1976-06-01,South Dakota,George Wallace,2.41,FALSE,FALSE,primary
+1976-06-06,Minnesota,George Wallace,0,TRUE,FALSE,primary
+1976-06-08,California,George Wallace,3,FALSE,FALSE,primary
+1976-06-08,New Jersey,George Wallace,8.64,FALSE,FALSE,primary
+1976-06-08,New Jersey,George Wallace,6.25,FALSE,FALSE,primary
+1976-06-08,Ohio,George Wallace,5.64,FALSE,FALSE,primary
+1976-01-19,Iowa,Morris Udall,5.99,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Morris Udall,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Morris Udall,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Morris Udall,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Morris Udall,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Morris Udall,22.71,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Morris Udall,17.73,FALSE,FALSE,primary
+1976-03-02,Vermont,Morris Udall,0,FALSE,FALSE,primary
+1976-03-02,Washington,Morris Udall,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Morris Udall,2.05,FALSE,FALSE,primary
+1976-03-16,Illinois,Morris Udall,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Morris Udall,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Morris Udall,2.32,FALSE,FALSE,primary
+1976-03-31,South Carolina,Morris Udall,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Morris Udall,4.77,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Morris Udall,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Morris Udall,4.07,FALSE,FALSE,caucus
+1976-04-06,New York,Morris Udall,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Morris Udall,35.62,FALSE,FALSE,primary
+1976-04-10,Iowa,Morris Udall,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Morris Udall,5.13,FALSE,FALSE,caucus
+1976-04-26,Arizona,Morris Udall,71.39,TRUE,FALSE,caucus
+1976-04-27,Pennsylvania,Morris Udall,18.71,FALSE,FALSE,primary
+1976-05-01,Texas,Morris Udall,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Morris Udall,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Morris Udall,1.94,FALSE,FALSE,primary
+1976-05-04,Indiana,Morris Udall,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Morris Udall,21.02,FALSE,FALSE,primary
+1976-05-11,Connecticut,Morris Udall,30.86,FALSE,FALSE,primary
+1976-05-11,Missouri,Morris Udall,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Morris Udall,2.68,FALSE,FALSE,primary
+1976-05-11,West Virginia,Morris Udall,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Morris Udall,5.54,FALSE,FALSE,primary
+1976-05-18,Michigan,Morris Udall,43.06,FALSE,FALSE,primary
+1976-05-22,Vermont,Morris Udall,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Morris Udall,7.53,FALSE,FALSE,primary
+1976-05-25,Idaho,Morris Udall,1.32,FALSE,FALSE,primary
+1976-05-25,Kentucky,Morris Udall,10.87,FALSE,FALSE,primary
+1976-05-25,Missouri,Morris Udall,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Morris Udall,2.97,FALSE,FALSE,primary
+1976-05-25,Oregon,Morris Udall,2.72,FALSE,FALSE,primary
+1976-05-25,Tennessee,Morris Udall,3.72,FALSE,FALSE,primary
+1976-05-29,Iowa,Morris Udall,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Morris Udall,0,TRUE,FALSE,primary
+1976-06-01,Montana,Morris Udall,6.28,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Morris Udall,4.21,FALSE,FALSE,primary
+1976-06-01,South Dakota,Morris Udall,33.25,FALSE,FALSE,primary
+1976-06-06,Minnesota,Morris Udall,0,TRUE,FALSE,primary
+1976-06-08,California,Morris Udall,5.03,FALSE,FALSE,primary
+1976-06-08,New Jersey,Morris Udall,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Morris Udall,12.83,FALSE,FALSE,primary
+1976-06-08,Ohio,Morris Udall,21.19,FALSE,FALSE,primary
+1976-01-19,Iowa,Scoop Jackson,1.1,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Scoop Jackson,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Scoop Jackson,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Scoop Jackson,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Scoop Jackson,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Scoop Jackson,2.25,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Scoop Jackson,22.34,TRUE,FALSE,primary
+1976-03-02,Vermont,Scoop Jackson,0,FALSE,FALSE,primary
+1976-03-02,Washington,Scoop Jackson,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Scoop Jackson,23.9,FALSE,FALSE,primary
+1976-03-16,Illinois,Scoop Jackson,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Scoop Jackson,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Scoop Jackson,4.26,FALSE,FALSE,primary
+1976-03-31,South Carolina,Scoop Jackson,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Scoop Jackson,7.07,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Scoop Jackson,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Scoop Jackson,0,FALSE,FALSE,caucus
+1976-04-06,New York,Scoop Jackson,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Scoop Jackson,6.43,FALSE,FALSE,primary
+1976-04-10,Iowa,Scoop Jackson,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Scoop Jackson,2.15,FALSE,FALSE,caucus
+1976-04-26,Arizona,Scoop Jackson,5.5,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Scoop Jackson,24.57,FALSE,FALSE,primary
+1976-05-01,Texas,Scoop Jackson,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Scoop Jackson,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Scoop Jackson,0.67,FALSE,FALSE,primary
+1976-05-04,Indiana,Scoop Jackson,11.73,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Scoop Jackson,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Scoop Jackson,17.75,FALSE,FALSE,primary
+1976-05-11,Missouri,Scoop Jackson,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Scoop Jackson,1.51,FALSE,FALSE,primary
+1976-05-11,West Virginia,Scoop Jackson,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Scoop Jackson,2.36,FALSE,FALSE,primary
+1976-05-18,Michigan,Scoop Jackson,1.46,FALSE,FALSE,primary
+1976-05-22,Vermont,Scoop Jackson,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Scoop Jackson,1.9,FALSE,FALSE,primary
+1976-05-25,Idaho,Scoop Jackson,0.65,FALSE,FALSE,primary
+1976-05-25,Kentucky,Scoop Jackson,2.68,FALSE,FALSE,primary
+1976-05-25,Missouri,Scoop Jackson,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Scoop Jackson,2.52,FALSE,FALSE,primary
+1976-05-25,Oregon,Scoop Jackson,1.23,FALSE,FALSE,primary
+1976-05-25,Tennessee,Scoop Jackson,1.7,FALSE,FALSE,primary
+1976-05-29,Iowa,Scoop Jackson,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Scoop Jackson,0,TRUE,FALSE,primary
+1976-06-01,Montana,Scoop Jackson,2.67,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Scoop Jackson,1.25,FALSE,FALSE,primary
+1976-06-01,South Dakota,Scoop Jackson,0.95,FALSE,FALSE,primary
+1976-06-06,Minnesota,Scoop Jackson,0,TRUE,FALSE,primary
+1976-06-08,California,Scoop Jackson,1.13,FALSE,FALSE,primary
+1976-06-08,New Jersey,Scoop Jackson,8.82,FALSE,FALSE,primary
+1976-06-08,New Jersey,Scoop Jackson,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Scoop Jackson,3.12,FALSE,FALSE,primary
+1976-01-19,Iowa,Frank Church,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Frank Church,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Frank Church,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Frank Church,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Frank Church,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Frank Church,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Frank Church,0,FALSE,FALSE,primary
+1976-03-02,Vermont,Frank Church,0,FALSE,FALSE,primary
+1976-03-02,Washington,Frank Church,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Frank Church,0.43,FALSE,FALSE,primary
+1976-03-16,Illinois,Frank Church,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Frank Church,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Frank Church,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Frank Church,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Frank Church,0.33,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Frank Church,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Frank Church,0,FALSE,FALSE,caucus
+1976-04-06,New York,Frank Church,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Frank Church,0,FALSE,FALSE,primary
+1976-04-10,Iowa,Frank Church,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Frank Church,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Frank Church,1.6,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Frank Church,0,FALSE,FALSE,primary
+1976-05-01,Texas,Frank Church,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Frank Church,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Frank Church,0.49,FALSE,FALSE,primary
+1976-05-04,Indiana,Frank Church,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Frank Church,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Frank Church,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Frank Church,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Frank Church,38.45,TRUE,FALSE,primary
+1976-05-11,West Virginia,Frank Church,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Frank Church,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Frank Church,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Frank Church,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Frank Church,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Frank Church,78.72,TRUE,FALSE,primary
+1976-05-25,Kentucky,Frank Church,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Frank Church,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Frank Church,9.01,FALSE,FALSE,primary
+1976-05-25,Oregon,Frank Church,33.61,TRUE,FALSE,primary
+1976-05-25,Tennessee,Frank Church,2.4,FALSE,FALSE,primary
+1976-05-29,Iowa,Frank Church,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Frank Church,0,TRUE,FALSE,primary
+1976-06-01,Montana,Frank Church,59.39,TRUE,FALSE,primary
+1976-06-01,Rhode Island,Frank Church,27.21,FALSE,FALSE,primary
+1976-06-01,South Dakota,Frank Church,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Frank Church,0,TRUE,FALSE,primary
+1976-06-08,California,Frank Church,7.35,FALSE,FALSE,primary
+1976-06-08,New Jersey,Frank Church,13.59,FALSE,FALSE,primary
+1976-06-08,New Jersey,Frank Church,6.68,FALSE,FALSE,primary
+1976-06-08,Ohio,Frank Church,13.92,FALSE,FALSE,primary
+1976-01-19,Iowa,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Lloyd Bentsen,1.56,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Lloyd Bentsen,12.8,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Lloyd Bentsen,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Lloyd Bentsen,0.05,FALSE,FALSE,primary
+1976-03-02,Vermont,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-03-02,Washington,Lloyd Bentsen,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-03-16,Illinois,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Lloyd Bentsen,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Lloyd Bentsen,0.28,FALSE,FALSE,primary
+1976-03-31,South Carolina,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-04-06,New York,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Lloyd Bentsen,0.23,FALSE,FALSE,primary
+1976-04-10,Iowa,Lloyd Bentsen,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-01,Texas,Lloyd Bentsen,22.2,FALSE,FALSE,primary
+1976-05-04,Alabama,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Lloyd Bentsen,0.06,FALSE,FALSE,primary
+1976-05-04,Indiana,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Lloyd Bentsen,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-11,West Virginia,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-25,Tennessee,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-05-29,Iowa,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-06-01,Montana,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-01,South Dakota,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Lloyd Bentsen,0,TRUE,FALSE,primary
+1976-06-08,California,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Lloyd Bentsen,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Robert Byrd,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Robert Byrd,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Robert Byrd,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Robert Byrd,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Robert Byrd,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Robert Byrd,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Robert Byrd,0,FALSE,FALSE,primary
+1976-03-02,Vermont,Robert Byrd,0,FALSE,FALSE,primary
+1976-03-02,Washington,Robert Byrd,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Robert Byrd,0.46,FALSE,FALSE,primary
+1976-03-16,Illinois,Robert Byrd,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Robert Byrd,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Robert Byrd,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Robert Byrd,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Robert Byrd,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Robert Byrd,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Robert Byrd,0,FALSE,FALSE,caucus
+1976-04-06,New York,Robert Byrd,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Robert Byrd,0,FALSE,FALSE,primary
+1976-04-10,Iowa,Robert Byrd,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Robert Byrd,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Robert Byrd,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-01,Texas,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Robert Byrd,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Robert Byrd,0.72,FALSE,FALSE,primary
+1976-05-04,Indiana,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Robert Byrd,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Robert Byrd,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-11,West Virginia,Robert Byrd,89.01,TRUE,FALSE,primary
+1976-05-18,Maryland,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Robert Byrd,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Robert Byrd,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-25,Tennessee,Robert Byrd,0,FALSE,FALSE,primary
+1976-05-29,Iowa,Robert Byrd,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Robert Byrd,0,TRUE,FALSE,primary
+1976-06-01,Montana,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-01,South Dakota,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Robert Byrd,0,TRUE,FALSE,primary
+1976-06-08,California,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Robert Byrd,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Robert Byrd,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Sargent Shriver,3.3,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Sargent Shriver,12,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Sargent Shriver,10.5,FALSE,FALSE,primary
+1976-02-21,Mississippi,Sargent Shriver,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Sargent Shriver,8.19,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Sargent Shriver,7.24,FALSE,FALSE,primary
+1976-03-02,Vermont,Sargent Shriver,30.52,FALSE,FALSE,primary
+1976-03-02,Washington,Sargent Shriver,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Sargent Shriver,0.54,FALSE,FALSE,primary
+1976-03-16,Illinois,Sargent Shriver,16.67,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Sargent Shriver,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Sargent Shriver,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Sargent Shriver,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Sargent Shriver,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-04-06,New York,Sargent Shriver,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Sargent Shriver,0.69,FALSE,FALSE,primary
+1976-04-10,Iowa,Sargent Shriver,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-01,Texas,Sargent Shriver,1.85,FALSE,FALSE,primary
+1976-05-04,Alabama,Sargent Shriver,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Sargent Shriver,0.27,FALSE,FALSE,primary
+1976-05-04,Indiana,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Sargent Shriver,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Sargent Shriver,0.22,FALSE,FALSE,primary
+1976-05-11,West Virginia,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Sargent Shriver,0.81,FALSE,FALSE,primary
+1976-05-22,Vermont,Sargent Shriver,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Sargent Shriver,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-25,Tennessee,Sargent Shriver,0,FALSE,FALSE,primary
+1976-05-29,Iowa,Sargent Shriver,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Sargent Shriver,0,TRUE,FALSE,primary
+1976-06-01,Montana,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-01,South Dakota,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Sargent Shriver,0,TRUE,FALSE,primary
+1976-06-08,California,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Sargent Shriver,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Sargent Shriver,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Fred Harris,9.89,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Fred Harris,1.05,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Fred Harris,17,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Fred Harris,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Fred Harris,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Fred Harris,10.76,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Fred Harris,7.57,FALSE,FALSE,primary
+1976-03-02,Vermont,Fred Harris,14.22,FALSE,FALSE,primary
+1976-03-02,Washington,Fred Harris,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Fred Harris,0.44,FALSE,FALSE,primary
+1976-03-16,Illinois,Fred Harris,7.7,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Fred Harris,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Fred Harris,0.98,FALSE,FALSE,primary
+1976-03-31,South Carolina,Fred Harris,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Fred Harris,2.14,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Fred Harris,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Fred Harris,0,FALSE,FALSE,caucus
+1976-04-06,New York,Fred Harris,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Fred Harris,1.11,FALSE,FALSE,primary
+1976-04-10,Iowa,Fred Harris,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Fred Harris,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Fred Harris,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Fred Harris,0.94,FALSE,FALSE,primary
+1976-05-01,Texas,Fred Harris,2.03,FALSE,FALSE,primary
+1976-05-04,Alabama,Fred Harris,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Fred Harris,0.14,FALSE,FALSE,primary
+1976-05-04,Indiana,Fred Harris,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Fred Harris,1.39,FALSE,FALSE,primary
+1976-05-11,Connecticut,Fred Harris,0.17,FALSE,FALSE,primary
+1976-05-11,Missouri,Fred Harris,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Fred Harris,0.46,FALSE,FALSE,primary
+1976-05-11,West Virginia,Fred Harris,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Fred Harris,1.16,FALSE,FALSE,primary
+1976-05-18,Michigan,Fred Harris,0.58,FALSE,FALSE,primary
+1976-05-22,Vermont,Fred Harris,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Fred Harris,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Fred Harris,0.43,FALSE,FALSE,primary
+1976-05-25,Kentucky,Fred Harris,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Fred Harris,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Fred Harris,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Fred Harris,0.31,FALSE,FALSE,primary
+1976-05-25,Tennessee,Fred Harris,0.49,FALSE,FALSE,primary
+1976-05-29,Iowa,Fred Harris,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Fred Harris,0,TRUE,FALSE,primary
+1976-06-01,Montana,Fred Harris,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Fred Harris,0,FALSE,FALSE,primary
+1976-06-01,South Dakota,Fred Harris,0.98,FALSE,FALSE,primary
+1976-06-06,Minnesota,Fred Harris,0,TRUE,FALSE,primary
+1976-06-08,California,Fred Harris,0.5,FALSE,FALSE,primary
+1976-06-08,New Jersey,Fred Harris,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Fred Harris,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Fred Harris,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Ellen McCormack,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Ellen McCormack,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Ellen McCormack,1.22,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Ellen McCormack,3.5,FALSE,FALSE,primary
+1976-03-02,Vermont,Ellen McCormack,9.42,FALSE,FALSE,primary
+1976-03-02,Washington,Ellen McCormack,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Ellen McCormack,0.58,FALSE,FALSE,primary
+1976-03-16,Illinois,Ellen McCormack,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Ellen McCormack,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Ellen McCormack,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Ellen McCormack,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Ellen McCormack,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-04-06,New York,Ellen McCormack,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Ellen McCormack,3.64,FALSE,FALSE,primary
+1976-04-10,Iowa,Ellen McCormack,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Ellen McCormack,1.2,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Ellen McCormack,2.8,FALSE,FALSE,primary
+1976-05-01,Texas,Ellen McCormack,0.37,FALSE,FALSE,primary
+1976-05-04,Alabama,Ellen McCormack,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Ellen McCormack,0.13,FALSE,FALSE,primary
+1976-05-04,Indiana,Ellen McCormack,5.16,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Ellen McCormack,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Ellen McCormack,5.16,FALSE,FALSE,primary
+1976-05-11,Missouri,Ellen McCormack,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Ellen McCormack,3.45,FALSE,FALSE,primary
+1976-05-11,West Virginia,Ellen McCormack,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Ellen McCormack,1.34,FALSE,FALSE,primary
+1976-05-18,Michigan,Ellen McCormack,1.08,FALSE,FALSE,primary
+1976-05-22,Vermont,Ellen McCormack,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Ellen McCormack,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Ellen McCormack,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Ellen McCormack,5.58,FALSE,FALSE,primary
+1976-05-25,Missouri,Ellen McCormack,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Ellen McCormack,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Ellen McCormack,0.87,FALSE,FALSE,primary
+1976-05-25,Tennessee,Ellen McCormack,0.53,FALSE,FALSE,primary
+1976-05-29,Iowa,Ellen McCormack,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Ellen McCormack,0,TRUE,FALSE,primary
+1976-06-01,Montana,Ellen McCormack,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Ellen McCormack,4.09,FALSE,FALSE,primary
+1976-06-01,South Dakota,Ellen McCormack,7.77,FALSE,FALSE,primary
+1976-06-06,Minnesota,Ellen McCormack,0,TRUE,FALSE,primary
+1976-06-08,California,Ellen McCormack,0.86,FALSE,FALSE,primary
+1976-06-08,New Jersey,Ellen McCormack,6.03,FALSE,FALSE,primary
+1976-06-08,New Jersey,Ellen McCormack,4.26,FALSE,FALSE,primary
+1976-06-08,Ohio,Ellen McCormack,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Milton Shapp,0,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Milton Shapp,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Milton Shapp,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Milton Shapp,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Milton Shapp,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Milton Shapp,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Milton Shapp,2.95,FALSE,FALSE,primary
+1976-03-02,Vermont,Milton Shapp,0,FALSE,FALSE,primary
+1976-03-02,Washington,Milton Shapp,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Milton Shapp,2.42,FALSE,FALSE,primary
+1976-03-16,Illinois,Milton Shapp,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Milton Shapp,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Milton Shapp,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Milton Shapp,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Milton Shapp,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Milton Shapp,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Milton Shapp,0,FALSE,FALSE,caucus
+1976-04-06,New York,Milton Shapp,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Milton Shapp,0.08,FALSE,FALSE,primary
+1976-04-10,Iowa,Milton Shapp,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Milton Shapp,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Milton Shapp,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Milton Shapp,2.38,FALSE,FALSE,primary
+1976-05-01,Texas,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Milton Shapp,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Milton Shapp,0.04,FALSE,FALSE,primary
+1976-05-04,Indiana,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Milton Shapp,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Milton Shapp,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-11,West Virginia,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Milton Shapp,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Milton Shapp,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Milton Shapp,0,FALSE,FALSE,primary
+1976-05-25,Tennessee,Milton Shapp,0.15,FALSE,FALSE,primary
+1976-05-29,Iowa,Milton Shapp,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Milton Shapp,0,TRUE,FALSE,primary
+1976-06-01,Montana,Milton Shapp,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Milton Shapp,0.22,FALSE,FALSE,primary
+1976-06-01,South Dakota,Milton Shapp,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Milton Shapp,0,TRUE,FALSE,primary
+1976-06-08,California,Milton Shapp,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Milton Shapp,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Milton Shapp,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Milton Shapp,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Birch Bayh,13.19,FALSE,FALSE,caucus
+1976-01-24,Mississippi,Birch Bayh,0,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Birch Bayh,0,FALSE,FALSE,caucus
+1976-02-14,Mississippi,Birch Bayh,0,FALSE,FALSE,primary
+1976-02-21,Mississippi,Birch Bayh,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Birch Bayh,15.19,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Birch Bayh,4.75,FALSE,FALSE,primary
+1976-03-02,Vermont,Birch Bayh,0,FALSE,FALSE,primary
+1976-03-02,Washington,Birch Bayh,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Birch Bayh,0.67,FALSE,FALSE,primary
+1976-03-16,Illinois,Birch Bayh,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Birch Bayh,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Birch Bayh,0,FALSE,FALSE,primary
+1976-03-31,South Carolina,Birch Bayh,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Birch Bayh,0,FALSE,FALSE,caucus
+1976-04-03,Oklahoma,Birch Bayh,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Birch Bayh,0,FALSE,FALSE,caucus
+1976-04-06,New York,Birch Bayh,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Birch Bayh,0.17,FALSE,FALSE,primary
+1976-04-10,Iowa,Birch Bayh,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Birch Bayh,0,FALSE,FALSE,caucus
+1976-04-26,Arizona,Birch Bayh,0,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Birch Bayh,1.11,FALSE,FALSE,primary
+1976-05-01,Texas,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-04,Alabama,Birch Bayh,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Birch Bayh,0.16,FALSE,FALSE,primary
+1976-05-04,Indiana,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Birch Bayh,0,FALSE,FALSE,primary
+1976-05-11,Connecticut,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-11,Missouri,Birch Bayh,0,FALSE,FALSE,caucus
+1976-05-11,Nebraska,Birch Bayh,0.23,FALSE,FALSE,primary
+1976-05-11,West Virginia,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-22,Vermont,Birch Bayh,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-25,Idaho,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-25,Kentucky,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-25,Missouri,Birch Bayh,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-25,Oregon,Birch Bayh,0.17,FALSE,FALSE,primary
+1976-05-25,Tennessee,Birch Bayh,0,FALSE,FALSE,primary
+1976-05-29,Iowa,Birch Bayh,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Birch Bayh,0,TRUE,FALSE,primary
+1976-06-01,Montana,Birch Bayh,0,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Birch Bayh,0.41,FALSE,FALSE,primary
+1976-06-01,South Dakota,Birch Bayh,0,FALSE,FALSE,primary
+1976-06-06,Minnesota,Birch Bayh,0,TRUE,FALSE,primary
+1976-06-08,California,Birch Bayh,0.34,FALSE,FALSE,primary
+1976-06-08,New Jersey,Birch Bayh,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Birch Bayh,0,FALSE,FALSE,primary
+1976-06-08,Ohio,Birch Bayh,0,FALSE,FALSE,primary
+1976-01-19,Iowa,Uncommitted,37.16,TRUE,FALSE,caucus
+1976-01-24,Mississippi,Uncommitted,27,FALSE,FALSE,caucus
+1976-02-07,Oklahoma,Uncommitted,40,TRUE,FALSE,caucus
+1976-02-14,Mississippi,Uncommitted,28,FALSE,FALSE,primary
+1976-02-21,Mississippi,Uncommitted,0,TRUE,FALSE,caucus
+1976-02-24,New Hampshire,Uncommitted,0,FALSE,FALSE,primary
+1976-03-02,Massachusetts,Uncommitted,1.33,FALSE,FALSE,primary
+1976-03-02,Vermont,Uncommitted,0,FALSE,FALSE,primary
+1976-03-02,Washington,Uncommitted,0,TRUE,FALSE,caucus
+1976-03-09,Florida,Uncommitted,2.92,FALSE,FALSE,primary
+1976-03-16,Illinois,Uncommitted,0,FALSE,FALSE,primary
+1976-03-20,Oklahoma,Uncommitted,0,TRUE,FALSE,caucus
+1976-03-23,North Carolina,Uncommitted,3.78,FALSE,FALSE,primary
+1976-03-31,South Carolina,Uncommitted,0,TRUE,FALSE,primary
+1976-04-03,Kansas,Uncommitted,47.03,TRUE,FALSE,caucus
+1976-04-03,Oklahoma,Uncommitted,0,TRUE,FALSE,primary
+1976-04-03,Virginia,Uncommitted,62.03,TRUE,FALSE,caucus
+1976-04-06,New York,Uncommitted,0,TRUE,FALSE,primary
+1976-04-06,Wisconsin,Uncommitted,0.97,FALSE,FALSE,primary
+1976-04-10,Iowa,Uncommitted,0,TRUE,FALSE,caucus
+1976-04-21,Missouri,Uncommitted,65.2,TRUE,FALSE,caucus
+1976-04-26,Arizona,Uncommitted,2.95,FALSE,FALSE,caucus
+1976-04-27,Pennsylvania,Uncommitted,0,FALSE,FALSE,primary
+1976-05-01,Texas,Uncommitted,8.38,FALSE,FALSE,primary
+1976-05-04,Alabama,Uncommitted,0,TRUE,FALSE,primary
+1976-05-04,Georgia,Uncommitted,0,FALSE,FALSE,primary
+1976-05-04,Indiana,Uncommitted,0,FALSE,FALSE,primary
+1976-05-04,"Washington, D.C.",Uncommitted,45.99,TRUE,FALSE,primary
+1976-05-11,Connecticut,Uncommitted,12.9,FALSE,FALSE,primary
+1976-05-11,Missouri,Uncommitted,64.74,TRUE,FALSE,caucus
+1976-05-11,Nebraska,Uncommitted,0,FALSE,FALSE,primary
+1976-05-11,West Virginia,Uncommitted,0,FALSE,FALSE,primary
+1976-05-18,Maryland,Uncommitted,0,FALSE,FALSE,primary
+1976-05-18,Michigan,Uncommitted,2.24,FALSE,FALSE,primary
+1976-05-22,Vermont,Uncommitted,0,TRUE,FALSE,primary
+1976-05-25,Arkansas,Uncommitted,11.39,FALSE,FALSE,primary
+1976-05-25,Idaho,Uncommitted,1.3,FALSE,FALSE,primary
+1976-05-25,Kentucky,Uncommitted,3.91,FALSE,FALSE,primary
+1976-05-25,Missouri,Uncommitted,0,TRUE,FALSE,primary
+1976-05-25,Nevada,Uncommitted,6.12,FALSE,FALSE,primary
+1976-05-25,Oregon,Uncommitted,0,FALSE,FALSE,primary
+1976-05-25,Tennessee,Uncommitted,1.84,FALSE,FALSE,primary
+1976-05-29,Iowa,Uncommitted,0,TRUE,FALSE,primary
+1976-05-30,Hawaii,Uncommitted,0,TRUE,FALSE,primary
+1976-06-01,Montana,Uncommitted,3.58,FALSE,FALSE,primary
+1976-06-01,Rhode Island,Uncommitted,31.54,TRUE,FALSE,primary
+1976-06-01,South Dakota,Uncommitted,13.42,FALSE,FALSE,primary
+1976-06-06,Minnesota,Uncommitted,0,TRUE,FALSE,primary
+1976-06-08,California,Uncommitted,2.31,FALSE,FALSE,primary
+1976-06-08,New Jersey,Uncommitted,0,FALSE,FALSE,primary
+1976-06-08,New Jersey,Uncommitted,42.06,TRUE,FALSE,primary
+1976-06-08,Ohio,Uncommitted,3.85,FALSE,FALSE,primary
