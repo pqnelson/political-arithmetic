@@ -13,8 +13,6 @@ output:
 library(rvest)                    # scraping
 library(tidyverse)                # data cleaning and ggplot2 - tidy!
 library(stringr)                  # string manipulation
-library(plotly)                   # interactive visualization
-library(ggalt)                    # visualization
 library(tibble)
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -28,6 +26,7 @@ REMEMBER: the McGovern-Fraser reforms of 1972 didn't take effect until the 1976 
 # Cleaning up the Primary Data
 
 I'd like to organize a tidy primary data set, I'm consulting [US Election Atlas](https://uselectionatlas.org/RESULTS/national.php?year=1992&off=0&elect=1&f=0) and wikipedia.
+Wikipedia provides clearer data for the 1976-2004 primaries, but sadly for 2008 and 2016 wikipedia falls down short.
 
 ## Helper Functions
 
@@ -44,8 +43,8 @@ remove_tail <- function(s) {
   sub("\\s*\\[.*\\].*$", "", s)
 }
 cleanup_state <- function(state) {
-  sub("\\s*[\\(]?caucus[es\\)]{0,3}", "",
-      sub("\\s*[\\(]?primary[\\)]?", "", state, ignore.case=T),
+  sub("\\s*[\\(]?caucus[es\\)]{0,3}.*", "",
+      sub("\\s*[\\(]?primary[\\)]?.*", "", state, ignore.case=T),
       ignore.case=T)
 }
 ```
@@ -62,8 +61,8 @@ tidy_1976 <- function() {
          `Lloyd Bentsen`,`Robert Byrd`,`Sargent Shriver`,
          `Fred Harris`,`Ellen McCormack`,`Milton Shapp`,
          `Birch Bayh`,`Uncommitted`,
-         key="Candidate", value="vote_perc") %>%
-  mutate(Date = as.Date(paste0(Date, " 1976"), format="%B %d %Y"),
+         key = "Candidate", value = "vote_perc") %>%
+  mutate(Date = as.Date(paste0(Date, " 1976"), format = "%B %d %Y"),
          vote_perc = ifelse(vote_perc == "-", "0%", vote_perc),
          vote_perc = as.numeric(gsub("%.*$", "", vote_perc)),
          vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
@@ -84,13 +83,13 @@ write_csv(tidy_1976(), "../data/primary/democrat_1976.csv")
 ```{r}
 tidy_1980 <- function() {
   html("./data/primary/wiki_1980.html") %>%
-    html_table(header=T) %>%
+    html_table(header = T) %>%
     `[[`(1) %>%
     gather(`Jimmy Carter`,`Ted Kennedy`,`Jerry Brown`,
            `Lyndon LaRouche`,`Cliff Finch`,`Richard Kay`,
            `Unpledged`,`Others`,
-           key="Candidate", value="vote_perc") %>%
-    mutate(Date = as.Date(paste0(Date, " 1980"), format="%B %d %Y"),
+           key = "Candidate", value = "vote_perc") %>%
+    mutate(Date = as.Date(paste0(Date, " 1980"), format = "%B %d %Y"),
            vote_perc = ifelse(vote_perc == "-", "0%", vote_perc),
            vote_perc = as.numeric(gsub("%.*$", "", vote_perc)),
            vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
@@ -113,14 +112,14 @@ write_csv(tidy_1980(), "../data/primary/democrat_1980.csv")
 
 
 ```{r}
-tidy_1984 <- function () {
+tidy_1984 <- function() {
   html("../data/primary/wiki_1984.html") %>%
-    html_table(header=T) %>%
+    html_table(header = T) %>%
     `[[`(1) %>%
     gather(`Walter Mondale`,`Gary Hart`,`Jesse Jackson`,`John Glenn`,
            `George McGovern`,`Ernest Hollings`,`Reubin Askew`,
            `Alan Cranston`,`Uncommitted`,`Lyndon LaRouche`,
-           key="Candidate", value="vote_perc") %>%
+           key = "Candidate", value = "vote_perc") %>%
     mutate(Date = as.Date(paste0(Date, " 1984"), format="%B %d %Y"),
            vote_perc = as.numeric(gsub("%", "", vote_perc)),
            vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
@@ -143,12 +142,12 @@ write_csv(tidy_1984(), "../data/primary/democrat_1984.csv")
 ```{r}
 tidy_1988 <- function() {
   html("../data/primary/wiki_1988.html") %>%
-    html_table(header=T) %>%
+    html_table(header = T) %>%
     `[[`(1) %>%
     gather(`Michael Dukakis`,`Jesse Jackson`,`Al Gore`,
            `Dick Gephardt`,`Paul Simon`,`Gary Hart`,`Bruce Babbitt`,
-           key="candidate", value="vote_perc") %>%
-    mutate(Date = as.Date(paste0(Date, " 1988"), format="%B %d %Y"),
+           key = "candidate", value = "vote_perc") %>%
+    mutate(Date = as.Date(paste0(Date, " 1988"), format = "%B %d %Y"),
            State = gsub("\\[\\d+\\]$","", State),
            vote_perc = as.numeric(gsub("%", "", vote_perc))) %>%
     rename(date = Date,
@@ -196,12 +195,12 @@ parse_1992_votes("24.78%(9-Delegates)") == 24.78
 ```{r}
 tidy_1992 <- function() {
   html("../data/primary/wiki_1992.html") %>%
-    html_table(header=T) %>%
+    html_table(header = T) %>%
     `[[`(1) %>%
     gather(`Bill Clinton`, `Jerry Brown`, `Paul Tsongas`, `Bob Kerrey`,
            `Tom Harkin`, `Larry Agran`, `Uncommitted`, `Charles Woods`,
-           `Eugene McCarthy`, `Lyndon LaRouche`, key="Candidate", value="Vote") %>%
-    mutate(Date = as.Date(paste0(Date, " 1992"), format="%B %d %Y")) %>%
+           `Eugene McCarthy`, `Lyndon LaRouche`, key = "Candidate", value = "Vote") %>%
+    mutate(Date = as.Date(paste0(Date, " 1992"), format = "%B %d %Y")) %>%
     rename(date = Date,
            contest = Contest,
            candidate = Candidate,
@@ -229,21 +228,22 @@ write_csv(tidy_1992(), "../data/primary/democrat_1992.csv")
 ```{r}
 tidy_2004 <- function() {
   html("../data/primary/wiki_2004.html") %>%
-    html_table(header=T) %>%
+    html_table(header = T) %>%
     `[[`(1) %>%
     filter(Date != '') %>%
-    gather(`Carol Moseley Braun`,`Wesley Clark`,`Howard Dean`,
-           `John Edwards`,`Richard Gephardt`,`John Kerry`,`Dennis Kucinich`,
-           `Joseph Lieberman`,`Al Sharpton`,key="Candidate", value="Vote") %>%
-    mutate(Date = as.Date(paste0(Date, " 2004"), format="%B %d %Y"),
-           Vote = as.numeric(gsub("%.*$","",Vote)),
+    gather(`Carol Moseley Braun`, `Wesley Clark`, `Howard Dean`,
+           `John Edwards`, `Richard Gephardt`, `John Kerry`, `Dennis Kucinich`,
+           `Joseph Lieberman`, `Al Sharpton`,
+           key = "Candidate", value = "Vote") %>%
+    mutate(Date = as.Date(paste0(Date, " 2004"), format = "%B %d %Y"),
+           Vote = as.numeric(gsub("%.*$","", Vote)),
            is_nominee = (Candidate == "John Kerry")) %>%
     rename(date = Date,
            state = State,
            vote_perc = Vote,
            candidate = Candidate) %>%
     group_by(state) %>%
-    mutate(won_state = ifelse(is.na(vote_perc), F, (vote_perc == max(vote_perc, na.rm=T))),
+    mutate(won_state = ifelse(is.na(vote_perc), F, (vote_perc == max(vote_perc, na.rm = T))),
            vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
     ungroup() %>%
     mutate(event_type = ifelse(is_caucus(state), "caucus", "primary"),
@@ -252,4 +252,41 @@ tidy_2004 <- function() {
 write_csv(tidy_2004(), "../data/primary/democrat_2004.csv")
 ```
 
+## 2008
 
+```{r}
+extract_2008_votes <- function(s) {
+  if ("" == s) {
+    return(0)
+  }
+  as.numeric(gsub("%", "", regmatches(s, regexpr("(\\d+)%$", s, perl = TRUE))))
+}
+```
+
+
+
+```{r}
+tidy_2008 <- function() {
+  html("../data/primary/wiki_2008.html") %>%
+    html_table(header = T) %>%
+    `[[`(1) %>%
+    select(-Uncommitted) %>%
+    gather(`Hillary Clinton`, `Barack Obama`, `Mike Gravel`, `John Edwards`,
+           `Dennis Kucinich`, `Bill Richardson`, `Joe Biden`, `Chris Dodd`,
+           key = "Candidate", value = "Vote") %>%
+    mutate(Date = as.Date(paste0(Date, " 2008"), format = "%B %d %Y"),
+           Vote = ifelse(Vote == "", 0, extract_2008_votes(Vote)),
+           is_nominee = (Candidate == "Barack Obama")) %>%
+    rename(date = Date,
+           state = State,
+           vote_perc = Vote,
+           candidate = Candidate) %>%
+    group_by(state) %>%
+    mutate(won_state = ifelse(is.na(vote_perc), F, (vote_perc == max(vote_perc, na.rm = T))),
+           vote_perc = ifelse(is.na(vote_perc), 0, vote_perc)) %>%
+    ungroup() %>%
+    mutate(event_type = ifelse(is_caucus(state), "caucus", "primary"),
+           state = cleanup_state(state))
+} 
+write_csv(tidy_2008(), "../data/primary/democrat_2008.csv")
+```
