@@ -43,9 +43,13 @@ remove_tail <- function(s) {
   sub("\\s*\\[.*\\].*$", "", s)
 }
 cleanup_state <- function(state) {
-  sub("\\s*[\\(]?caucus[es\\)]{0,3}.*", "",
-      sub("\\s*[\\(]?primary[\\)]?.*", "", state, ignore.case=T),
-      ignore.case=T)
+  sub("\\s*precinct\\s*", "",
+      sub("\\s*[\\(]?caucus[es\\)]{0,3}.*", "",
+          sub("\\s*[\\(]?primary[\\)]?.*", "", 
+              state, 
+              ignore.case = T),
+          ignore.case = T),
+      ignore.case = T)
 }
 ```
 

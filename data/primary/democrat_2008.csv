@@ -2,7 +2,7 @@ date,state,candidate,vote_perc,is_nominee,won_state,event_type
 2008-01-03,Iowa,Hillary Clinton,29,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Hillary Clinton,39,FALSE,FALSE,primary
 2008-01-15,Michigan,Hillary Clinton,55,FALSE,TRUE,primary
-2008-01-19,Nevada precinct,Hillary Clinton,51,FALSE,TRUE,caucus
+2008-01-19,Nevada,Hillary Clinton,51,FALSE,TRUE,caucus
 2008-01-26,South Carolina,Hillary Clinton,27,FALSE,FALSE,primary
 2008-01-29,Florida,Hillary Clinton,50,FALSE,FALSE,primary
 2008-02-05,Alabama,Hillary Clinton,42,FALSE,FALSE,primary
@@ -11,27 +11,27 @@ date,state,candidate,vote_perc,is_nominee,won_state,event_type
 2008-02-05,Arizona,Hillary Clinton,50,FALSE,FALSE,primary
 2008-02-05,Arkansas,Hillary Clinton,70,FALSE,TRUE,primary
 2008-02-05,California,Hillary Clinton,51,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Hillary Clinton,32,FALSE,FALSE,caucus
+2008-02-05,Colorado,Hillary Clinton,32,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Hillary Clinton,47,FALSE,FALSE,primary
 2008-02-05,Delaware,Hillary Clinton,42,FALSE,FALSE,primary
 2008-02-05,Georgia,Hillary Clinton,31,FALSE,FALSE,primary
 2008-02-05,Idaho county,Hillary Clinton,17,FALSE,FALSE,caucus
 2008-02-05,Illinois,Hillary Clinton,33,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Hillary Clinton,26,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Hillary Clinton,26,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Hillary Clinton,56,FALSE,FALSE,primary
 2008-02-05,Minnesota,Hillary Clinton,32,FALSE,FALSE,caucus
 2008-02-05,Missouri,Hillary Clinton,48,FALSE,FALSE,primary
 2008-02-05,New Jersey,Hillary Clinton,54,FALSE,FALSE,primary
 2008-02-05,New Mexico,Hillary Clinton,49,FALSE,TRUE,caucus
 2008-02-05,New York,Hillary Clinton,57,FALSE,TRUE,primary
-2008-02-05,North Dakota precinct,Hillary Clinton,37,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Hillary Clinton,37,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Hillary Clinton,55,FALSE,FALSE,primary
 2008-02-05,Tennessee,Hillary Clinton,54,FALSE,FALSE,primary
 2008-02-05,Utah,Hillary Clinton,39,FALSE,FALSE,primary
 2008-02-09,Louisiana,Hillary Clinton,36,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Hillary Clinton,32,FALSE,TRUE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Hillary Clinton,7,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Hillary Clinton,31,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Hillary Clinton,32,FALSE,TRUE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Hillary Clinton,7,FALSE,FALSE,primary
+2008-02-09,Washington,Hillary Clinton,31,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Hillary Clinton,40,FALSE,TRUE,caucus
 NA,Democrats Abroad,Hillary Clinton,32,FALSE,FALSE,primary
 2008-02-12,District of Columbia,Hillary Clinton,24,FALSE,FALSE,primary
@@ -42,47 +42,42 @@ NA,Democrats Abroad,Hillary Clinton,32,FALSE,FALSE,primary
 2008-03-04,Ohio,Hillary Clinton,53,FALSE,TRUE,primary
 2008-03-04,Rhode Island,Hillary Clinton,58,FALSE,TRUE,primary
 2008-03-04,Texas,Hillary Clinton,51,FALSE,TRUE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Hillary Clinton,44,FALSE,TRUE,primary
+2008-03-04,Texas conventions,Hillary Clinton,44,FALSE,TRUE,primary
 2008-03-04,Vermont,Hillary Clinton,39,FALSE,FALSE,primary
 2008-03-08,Wyoming county,Hillary Clinton,38,FALSE,TRUE,caucus
 2008-03-11,Mississippi,Hillary Clinton,37,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Hillary Clinton,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Hillary Clinton,50,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Hillary Clinton,51,FALSE,TRUE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Hillary Clinton,42,FALSE,TRUE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Hillary Clinton,67,FALSE,TRUE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Hillary Clinton,66,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Hillary Clinton,50,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Hillary Clinton,51,FALSE,TRUE,primary
+2008-03-29,Texas county and senatorial district conventions,Hillary Clinton,42,FALSE,TRUE,primary
+NA,North Dakota state convention,Hillary Clinton,67,FALSE,TRUE,primary
+NA,Nevada county conventions,Hillary Clinton,66,FALSE,TRUE,primary
 2008-04-22,Pennsylvania,Hillary Clinton,41,FALSE,TRUE,primary
-NA,Washington legislative district,Hillary Clinton,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Hillary Clinton,41,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Hillary Clinton,55,FALSE,TRUE,primary
+2008-04-26,Iowa district conventions,Hillary Clinton,41,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Hillary Clinton,55,FALSE,TRUE,primary
 2008-05-06,Indiana,Hillary Clinton,38,FALSE,TRUE,primary
 2008-05-06,North Carolina,Hillary Clinton,36,FALSE,TRUE,primary
 2008-05-13,West Virginia,Hillary Clinton,45,FALSE,TRUE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Hillary Clinton,55,FALSE,TRUE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Hillary Clinton,33,FALSE,TRUE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Hillary Clinton,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Hillary Clinton,75,FALSE,TRUE,primary
+NA,Colorado,Hillary Clinton,55,FALSE,TRUE,primary
+2008-05-17,Colorado state convention,Hillary Clinton,33,FALSE,TRUE,primary
+2008-05-17,Kansas state convention,Hillary Clinton,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Hillary Clinton,75,FALSE,TRUE,primary
 2008-05-17,Washington congressional district,Hillary Clinton,42,FALSE,TRUE,caucus
 2008-05-20,Kentucky,Hillary Clinton,42,FALSE,TRUE,primary
 2008-05-20,Oregon,Hillary Clinton,26,FALSE,TRUE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Hillary Clinton,43,FALSE,TRUE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Hillary Clinton,67,FALSE,TRUE,primary
+2008-05-24,Alaska state convention,Hillary Clinton,43,FALSE,TRUE,primary
+2008-05-24,Wyoming state convention,Hillary Clinton,67,FALSE,TRUE,primary
 2008-05-31,"Maine state convention,",Hillary Clinton,51,FALSE,TRUE,caucus
 2008-06-01,Puerto Rico,Hillary Clinton,53,FALSE,TRUE,primary
 2008-06-03,Montana,Hillary Clinton,66,FALSE,TRUE,primary
 2008-06-03,South Dakota,Hillary Clinton,80,FALSE,TRUE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Hillary Clinton,65,FALSE,TRUE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Hillary Clinton,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Hillary Clinton,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Hillary Clinton,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Hillary Clinton,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Hillary Clinton,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Hillary Clinton,0,FALSE,TRUE,caucus
+NA,Texas state convention (see 3/29),Hillary Clinton,65,FALSE,TRUE,primary
+2008-06-14,Iowa state convention,Hillary Clinton,0,FALSE,TRUE,primary
+2008-06-21,Puerto Rico commonwealth convention,Hillary Clinton,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Hillary Clinton,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,Barack Obama,40,TRUE,TRUE,caucus
 2008-01-08,New Hampshire,Barack Obama,61,TRUE,TRUE,primary
 2008-01-15,Michigan,Barack Obama,31,TRUE,FALSE,primary
-2008-01-19,Nevada precinct,Barack Obama,40,TRUE,FALSE,caucus
+2008-01-19,Nevada,Barack Obama,40,TRUE,FALSE,caucus
 2008-01-26,South Carolina,Barack Obama,57,TRUE,TRUE,primary
 2008-01-29,Florida,Barack Obama,57,TRUE,TRUE,primary
 2008-02-05,Alabama,Barack Obama,68,TRUE,TRUE,primary
@@ -91,27 +86,27 @@ NA,Nebraska state convention (2/9,Hillary Clinton,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,Barack Obama,59,TRUE,TRUE,primary
 2008-02-05,Arkansas,Barack Obama,66,TRUE,FALSE,primary
 2008-02-05,California,Barack Obama,75,TRUE,TRUE,primary
-2008-02-05,Colorado precinct,Barack Obama,61,TRUE,TRUE,caucus
+2008-02-05,Colorado,Barack Obama,61,TRUE,TRUE,caucus
 2008-02-05,Connecticut,Barack Obama,64,TRUE,TRUE,primary
 2008-02-05,Delaware,Barack Obama,76,TRUE,TRUE,primary
 2008-02-05,Georgia,Barack Obama,58,TRUE,TRUE,primary
 2008-02-05,Idaho county,Barack Obama,45,TRUE,TRUE,caucus
 2008-02-05,Illinois,Barack Obama,40,TRUE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Barack Obama,47,TRUE,TRUE,primary
+2008-02-05,Kansas local unit conventions,Barack Obama,47,TRUE,TRUE,primary
 2008-02-05,Massachusetts,Barack Obama,56,TRUE,FALSE,primary
 2008-02-05,Minnesota,Barack Obama,59,TRUE,FALSE,caucus
 2008-02-05,Missouri,Barack Obama,61,TRUE,TRUE,primary
 2008-02-05,New Jersey,Barack Obama,61,TRUE,TRUE,primary
 2008-02-05,New Mexico,Barack Obama,45,TRUE,FALSE,caucus
 2008-02-05,New York,Barack Obama,50,TRUE,FALSE,primary
-2008-02-05,North Dakota precinct,Barack Obama,49,TRUE,TRUE,caucus
+2008-02-05,North Dakota,Barack Obama,49,TRUE,TRUE,caucus
 2008-02-05,Oklahoma,Barack Obama,56,TRUE,TRUE,primary
 2008-02-05,Tennessee,Barack Obama,26,TRUE,FALSE,primary
 2008-02-05,Utah,Barack Obama,30,TRUE,FALSE,primary
 2008-02-09,Louisiana,Barack Obama,59,TRUE,TRUE,primary
-2008-02-09,Nebraska precinct,Barack Obama,32,TRUE,TRUE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Barack Obama,56,TRUE,TRUE,primary
-2008-02-09,Washington precinct,Barack Obama,45,TRUE,TRUE,caucus
+2008-02-09,Nebraska,Barack Obama,32,TRUE,TRUE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Barack Obama,56,TRUE,TRUE,primary
+2008-02-09,Washington,Barack Obama,45,TRUE,TRUE,caucus
 2008-02-10,Maine municipal,Barack Obama,0,TRUE,FALSE,caucus
 NA,Democrats Abroad,Barack Obama,0,TRUE,FALSE,primary
 2008-02-12,District of Columbia,Barack Obama,0,TRUE,FALSE,primary
@@ -122,47 +117,38 @@ NA,Democrats Abroad,Barack Obama,0,TRUE,FALSE,primary
 2008-03-04,Ohio,Barack Obama,0,TRUE,FALSE,primary
 2008-03-04,Rhode Island,Barack Obama,0,TRUE,FALSE,primary
 2008-03-04,Texas,Barack Obama,0,TRUE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Barack Obama,0,TRUE,FALSE,primary
+2008-03-04,Texas conventions,Barack Obama,0,TRUE,FALSE,primary
 2008-03-04,Vermont,Barack Obama,0,TRUE,FALSE,primary
 2008-03-08,Wyoming county,Barack Obama,0,TRUE,FALSE,caucus
 2008-03-11,Mississippi,Barack Obama,0,TRUE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Barack Obama,0,TRUE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Barack Obama,0,TRUE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Barack Obama,0,TRUE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Barack Obama,0,TRUE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Barack Obama,0,TRUE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Barack Obama,0,TRUE,FALSE,primary
+2008-03-15,Iowa county conventions,Barack Obama,0,TRUE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Barack Obama,0,TRUE,FALSE,primary
 2008-04-22,Pennsylvania,Barack Obama,1,TRUE,FALSE,primary
-NA,Washington legislative district,Barack Obama,0,TRUE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Barack Obama,17,TRUE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Barack Obama,4,TRUE,FALSE,primary
+2008-04-26,Iowa district conventions,Barack Obama,17,TRUE,FALSE,primary
+2008-05-03,Guam territorial convention,Barack Obama,4,TRUE,FALSE,primary
 2008-05-06,Indiana,Barack Obama,18,TRUE,FALSE,primary
 2008-05-06,North Carolina,Barack Obama,14,TRUE,FALSE,primary
 2008-05-13,West Virginia,Barack Obama,1,TRUE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Barack Obama,5,TRUE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Barack Obama,2,TRUE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Barack Obama,0,TRUE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Barack Obama,0,TRUE,FALSE,primary
+NA,Colorado congressional district conventions,Barack Obama,5,TRUE,FALSE,primary
+2008-05-17,Colorado state convention,Barack Obama,2,TRUE,FALSE,primary
+2008-05-17,Kansas state convention,Barack Obama,0,TRUE,TRUE,primary
+2008-05-17,Nevada state convention,Barack Obama,0,TRUE,FALSE,primary
 2008-05-17,Washington congressional district,Barack Obama,1,TRUE,FALSE,caucus
 2008-05-20,Kentucky,Barack Obama,1,TRUE,FALSE,primary
 2008-05-20,Oregon,Barack Obama,2,TRUE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Barack Obama,1,TRUE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Barack Obama,2,TRUE,FALSE,primary
-2008-05-31,"Maine state convention,",Barack Obama,0,TRUE,FALSE,caucus
+2008-05-24,Alaska state convention,Barack Obama,1,TRUE,FALSE,primary
+2008-05-24,Wyoming state convention,Barack Obama,2,TRUE,FALSE,primary
+2008-05-31,Maine state convention,Barack Obama,0,TRUE,FALSE,caucus
 2008-06-01,Puerto Rico,Barack Obama,2,TRUE,FALSE,primary
 2008-06-03,Montana,Barack Obama,0,TRUE,FALSE,primary
 2008-06-03,South Dakota,Barack Obama,2,TRUE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Barack Obama,1,TRUE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Barack Obama,0,TRUE,TRUE,primary
-NA,Idaho state convention (2/5,Barack Obama,0,TRUE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Barack Obama,0,TRUE,TRUE,primary
-NA,Washington state convention (5/17,Barack Obama,0,TRUE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Barack Obama,0,TRUE,TRUE,primary
-NA,Nebraska state convention (2/9,Barack Obama,0,TRUE,TRUE,caucus
+NA,Texas state convention,Barack Obama,1,TRUE,FALSE,primary
+2008-06-14,Iowa state convention,Barack Obama,0,TRUE,TRUE,primary
+2008-06-21,Puerto Rico commonwealth convention,Barack Obama,0,TRUE,TRUE,primary
 2008-01-03,Iowa,Mike Gravel,3,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Mike Gravel,1,FALSE,FALSE,primary
 2008-01-15,Michigan,Mike Gravel,0,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,Mike Gravel,1,FALSE,FALSE,caucus
+2008-01-19,Nevada,Mike Gravel,1,FALSE,FALSE,caucus
 2008-01-26,South Carolina,Mike Gravel,1,FALSE,FALSE,primary
 2008-01-29,Florida,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,Alabama,Mike Gravel,0,FALSE,FALSE,primary
@@ -171,27 +157,27 @@ NA,Nebraska state convention (2/9,Barack Obama,0,TRUE,TRUE,caucus
 2008-02-05,Arizona,Mike Gravel,1,FALSE,FALSE,primary
 2008-02-05,Arkansas,Mike Gravel,1,FALSE,FALSE,primary
 2008-02-05,California,Mike Gravel,1,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Mike Gravel,7,FALSE,FALSE,caucus
+2008-02-05,Colorado,Mike Gravel,7,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Mike Gravel,2,FALSE,FALSE,primary
 2008-02-05,Delaware,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,Georgia,Mike Gravel,1,FALSE,FALSE,primary
 2008-02-05,Idaho county,Mike Gravel,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,Mike Gravel,0,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Mike Gravel,0,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Mike Gravel,1,FALSE,FALSE,primary
 2008-02-05,Minnesota,Mike Gravel,0,FALSE,FALSE,caucus
 2008-02-05,Missouri,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,New Jersey,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,New Mexico,Mike Gravel,0,FALSE,FALSE,caucus
 2008-02-05,New York,Mike Gravel,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,Mike Gravel,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Mike Gravel,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,Tennessee,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-05,Utah,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-09,Louisiana,Mike Gravel,0,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Mike Gravel,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Mike Gravel,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Mike Gravel,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Mike Gravel,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Mike Gravel,0,FALSE,FALSE,primary
+2008-02-09,Washington,Mike Gravel,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Mike Gravel,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,Mike Gravel,0,FALSE,FALSE,primary
 2008-02-12,District of Columbia,Mike Gravel,0,FALSE,FALSE,primary
@@ -202,47 +188,47 @@ NA,Democrats Abroad,Mike Gravel,0,FALSE,FALSE,primary
 2008-03-04,Ohio,Mike Gravel,0,FALSE,FALSE,primary
 2008-03-04,Rhode Island,Mike Gravel,0,FALSE,FALSE,primary
 2008-03-04,Texas,Mike Gravel,0,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Mike Gravel,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,Mike Gravel,0,FALSE,FALSE,primary
 2008-03-04,Vermont,Mike Gravel,0,FALSE,FALSE,primary
 2008-03-08,Wyoming county,Mike Gravel,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,Mike Gravel,5,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Mike Gravel,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Mike Gravel,0,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Mike Gravel,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Mike Gravel,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Mike Gravel,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Mike Gravel,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,Mike Gravel,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Mike Gravel,0,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Mike Gravel,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Mike Gravel,0,FALSE,FALSE,primary
+NA,North Dakota state convention,Mike Gravel,0,FALSE,FALSE,primary
+NA,Nevada county conventions,Mike Gravel,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,Mike Gravel,0,FALSE,FALSE,primary
 NA,Washington legislative district,Mike Gravel,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Mike Gravel,0,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Mike Gravel,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,Mike Gravel,0,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Mike Gravel,0,FALSE,FALSE,primary
 2008-05-06,Indiana,Mike Gravel,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,Mike Gravel,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,Mike Gravel,0,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Mike Gravel,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Mike Gravel,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Mike Gravel,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Mike Gravel,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,Mike Gravel,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,Mike Gravel,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,Mike Gravel,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Mike Gravel,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,Mike Gravel,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,Mike Gravel,0,FALSE,FALSE,primary
 2008-05-20,Oregon,Mike Gravel,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Mike Gravel,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Mike Gravel,0,FALSE,FALSE,primary
-2008-05-31,"Maine state convention,",Mike Gravel,0,FALSE,FALSE,caucus
+2008-05-24,Alaska state convention,Mike Gravel,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,Mike Gravel,0,FALSE,FALSE,primary
+2008-05-31,"Maine state convention",Mike Gravel,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,Mike Gravel,0,FALSE,FALSE,primary
 2008-06-03,Montana,Mike Gravel,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,Mike Gravel,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Mike Gravel,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Mike Gravel,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Mike Gravel,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Mike Gravel,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Mike Gravel,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Mike Gravel,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Mike Gravel,0,FALSE,TRUE,caucus
+NA,Texas state convention,Mike Gravel,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,Mike Gravel,0,FALSE,TRUE,primary
+NA,Idaho state convention,Mike Gravel,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,Mike Gravel,0,FALSE,TRUE,primary
+NA,Washington state convention,Mike Gravel,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,Mike Gravel,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Mike Gravel,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,John Edwards,0,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,John Edwards,0,FALSE,FALSE,primary
 2008-01-15,Michigan,John Edwards,0,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,John Edwards,0,FALSE,FALSE,caucus
+2008-01-19,Nevada,John Edwards,0,FALSE,FALSE,caucus
 2008-01-26,South Carolina,John Edwards,0,FALSE,FALSE,primary
 2008-01-29,Florida,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Alabama,John Edwards,0,FALSE,FALSE,primary
@@ -251,27 +237,27 @@ NA,Nebraska state convention (2/9,Mike Gravel,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Arkansas,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,California,John Edwards,0,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,John Edwards,2,FALSE,FALSE,caucus
+2008-02-05,Colorado,John Edwards,2,FALSE,FALSE,caucus
 2008-02-05,Connecticut,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Delaware,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Georgia,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Idaho county,John Edwards,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,John Edwards,0,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],John Edwards,0,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Massachusetts,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Minnesota,John Edwards,0,FALSE,FALSE,caucus
 2008-02-05,Missouri,John Edwards,1,FALSE,FALSE,primary
 2008-02-05,New Jersey,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,New Mexico,John Edwards,0,FALSE,FALSE,caucus
 2008-02-05,New York,John Edwards,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,John Edwards,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,John Edwards,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Tennessee,John Edwards,0,FALSE,FALSE,primary
 2008-02-05,Utah,John Edwards,0,FALSE,FALSE,primary
 2008-02-09,Louisiana,John Edwards,0,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,John Edwards,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,John Edwards,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,John Edwards,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,John Edwards,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,John Edwards,0,FALSE,FALSE,primary
+2008-02-09,Washington,John Edwards,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,John Edwards,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,John Edwards,0,FALSE,FALSE,primary
 2008-02-12,District of Columbia,John Edwards,0,FALSE,FALSE,primary
@@ -282,47 +268,47 @@ NA,Democrats Abroad,John Edwards,0,FALSE,FALSE,primary
 2008-03-04,Ohio,John Edwards,1,FALSE,FALSE,primary
 2008-03-04,Rhode Island,John Edwards,0,FALSE,FALSE,primary
 2008-03-04,Texas,John Edwards,0,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],John Edwards,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,John Edwards,0,FALSE,FALSE,primary
 2008-03-04,Vermont,John Edwards,0,FALSE,FALSE,primary
 2008-03-08,Wyoming county,John Edwards,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,John Edwards,39,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],John Edwards,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],John Edwards,51,FALSE,TRUE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],John Edwards,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],John Edwards,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],John Edwards,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],John Edwards,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,John Edwards,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,John Edwards,51,FALSE,TRUE,primary
+NA,Colorado county assemblies/conventions,John Edwards,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,John Edwards,0,FALSE,FALSE,primary
+NA,North Dakota state convention,John Edwards,0,FALSE,FALSE,primary
+NA,Nevada county conventions,John Edwards,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,John Edwards,0,FALSE,FALSE,primary
 NA,Washington legislative district,John Edwards,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],John Edwards,70,FALSE,TRUE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,John Edwards,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,John Edwards,70,FALSE,TRUE,primary
+2008-05-03,Guam territorial convention,John Edwards,0,FALSE,FALSE,primary
 2008-05-06,Indiana,John Edwards,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,John Edwards,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,John Edwards,42,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],John Edwards,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],John Edwards,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],John Edwards,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],John Edwards,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,John Edwards,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,John Edwards,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,John Edwards,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,John Edwards,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,John Edwards,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,John Edwards,32,FALSE,FALSE,primary
 2008-05-20,Oregon,John Edwards,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],John Edwards,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],John Edwards,0,FALSE,FALSE,primary
-2008-05-31,"Maine state convention,",John Edwards,0,FALSE,FALSE,caucus
+2008-05-24,Alaska state convention,John Edwards,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,John Edwards,0,FALSE,FALSE,primary
+2008-05-31,"Maine state convention",John Edwards,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,John Edwards,0,FALSE,FALSE,primary
 2008-06-03,Montana,John Edwards,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,John Edwards,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],John Edwards,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],John Edwards,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,John Edwards,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],John Edwards,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,John Edwards,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],John Edwards,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,John Edwards,0,FALSE,TRUE,caucus
+NA,Texas state convention,John Edwards,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,John Edwards,0,FALSE,TRUE,primary
+NA,Idaho state convention,John Edwards,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,John Edwards,0,FALSE,TRUE,primary
+NA,Washington state convention,John Edwards,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,John Edwards,0,FALSE,TRUE,primary
+NA,Nebraska state convention,John Edwards,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,Dennis Kucinich,24,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Dennis Kucinich,36,FALSE,FALSE,primary
 2008-01-15,Michigan,Dennis Kucinich,35,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,Dennis Kucinich,24,FALSE,FALSE,caucus
+2008-01-19,Nevada,Dennis Kucinich,24,FALSE,FALSE,caucus
 2008-01-26,South Carolina,Dennis Kucinich,41,FALSE,FALSE,primary
 2008-01-29,Florida,Dennis Kucinich,53,FALSE,FALSE,primary
 2008-02-05,Alabama,Dennis Kucinich,0,FALSE,FALSE,primary
@@ -331,27 +317,27 @@ NA,Nebraska state convention (2/9,John Edwards,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,Dennis Kucinich,39,FALSE,FALSE,primary
 2008-02-05,Arkansas,Dennis Kucinich,38,FALSE,FALSE,primary
 2008-02-05,California,Dennis Kucinich,37,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Dennis Kucinich,55,FALSE,FALSE,caucus
+2008-02-05,Colorado,Dennis Kucinich,55,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Dennis Kucinich,50,FALSE,FALSE,primary
 2008-02-05,Delaware,Dennis Kucinich,51,FALSE,FALSE,primary
 2008-02-05,Georgia,Dennis Kucinich,42,FALSE,FALSE,primary
 2008-02-05,Idaho county,Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,Dennis Kucinich,66,FALSE,TRUE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Dennis Kucinich,41,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Dennis Kucinich,41,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Dennis Kucinich,68,FALSE,TRUE,primary
 2008-02-05,Minnesota,Dennis Kucinich,41,FALSE,FALSE,caucus
 2008-02-05,Missouri,Dennis Kucinich,55,FALSE,FALSE,primary
 2008-02-05,New Jersey,Dennis Kucinich,38,FALSE,FALSE,primary
 2008-02-05,New Mexico,Dennis Kucinich,36,FALSE,FALSE,caucus
 2008-02-05,New York,Dennis Kucinich,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,Dennis Kucinich,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Dennis Kucinich,33,FALSE,FALSE,primary
 2008-02-05,Tennessee,Dennis Kucinich,56,FALSE,TRUE,primary
 2008-02-05,Utah,Dennis Kucinich,75,FALSE,TRUE,primary
 2008-02-09,Louisiana,Dennis Kucinich,0,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Dennis Kucinich,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Dennis Kucinich,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Dennis Kucinich,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Dennis Kucinich,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-02-09,Washington,Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Dennis Kucinich,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,Dennis Kucinich,51,FALSE,TRUE,primary
 2008-02-12,District of Columbia,Dennis Kucinich,53,FALSE,TRUE,primary
@@ -362,47 +348,47 @@ NA,Democrats Abroad,Dennis Kucinich,51,FALSE,TRUE,primary
 2008-03-04,Ohio,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-03-04,Rhode Island,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-03-04,Texas,Dennis Kucinich,0,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Dennis Kucinich,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-03-04,Vermont,Dennis Kucinich,48,FALSE,TRUE,primary
 2008-03-08,Wyoming county,Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,Dennis Kucinich,61,FALSE,TRUE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Dennis Kucinich,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Dennis Kucinich,0,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Dennis Kucinich,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Dennis Kucinich,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Dennis Kucinich,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,Dennis Kucinich,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Dennis Kucinich,0,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Dennis Kucinich,0,FALSE,FALSE,primary
+NA,North Dakota state convention,Dennis Kucinich,0,FALSE,FALSE,primary
+NA,Nevada county conventions,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,Dennis Kucinich,0,FALSE,FALSE,primary
 NA,Washington legislative district,Dennis Kucinich,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-06,Indiana,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,Dennis Kucinich,0,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Dennis Kucinich,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Dennis Kucinich,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,Dennis Kucinich,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-20,Oregon,Dennis Kucinich,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Dennis Kucinich,0,FALSE,FALSE,primary
+2008-05-24,Alaska state convention,Dennis Kucinich,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-05-31,"Maine state convention,",Dennis Kucinich,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-06-03,Montana,Dennis Kucinich,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,Dennis Kucinich,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Dennis Kucinich,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Dennis Kucinich,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Dennis Kucinich,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Dennis Kucinich,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Dennis Kucinich,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Dennis Kucinich,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Dennis Kucinich,0,FALSE,TRUE,caucus
+NA,Texas state convention,Dennis Kucinich,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,Dennis Kucinich,0,FALSE,TRUE,primary
+NA,Idaho state convention,Dennis Kucinich,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,Dennis Kucinich,0,FALSE,TRUE,primary
+NA,Washington state convention,Dennis Kucinich,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,Dennis Kucinich,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Dennis Kucinich,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,Bill Richardson,0,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Bill Richardson,0,FALSE,FALSE,primary
 2008-01-15,Michigan,Bill Richardson,0,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,Bill Richardson,0,FALSE,FALSE,caucus
+2008-01-19,Nevada,Bill Richardson,0,FALSE,FALSE,caucus
 2008-01-26,South Carolina,Bill Richardson,0,FALSE,FALSE,primary
 2008-01-29,Florida,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,Alabama,Bill Richardson,0,FALSE,FALSE,primary
@@ -411,27 +397,27 @@ NA,Nebraska state convention (2/9,Dennis Kucinich,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,Arkansas,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,California,Bill Richardson,0,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Bill Richardson,0,FALSE,FALSE,caucus
+2008-02-05,Colorado,Bill Richardson,0,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,Delaware,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,Georgia,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-05,Idaho county,Bill Richardson,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,Bill Richardson,0,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Bill Richardson,1,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Bill Richardson,1,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Bill Richardson,30,FALSE,FALSE,primary
 2008-02-05,Minnesota,Bill Richardson,17,FALSE,FALSE,caucus
 2008-02-05,Missouri,Bill Richardson,4,FALSE,FALSE,primary
 2008-02-05,New Jersey,Bill Richardson,18,FALSE,FALSE,primary
 2008-02-05,New Mexico,Bill Richardson,14,FALSE,FALSE,caucus
 2008-02-05,New York,Bill Richardson,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,Bill Richardson,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Bill Richardson,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Bill Richardson,2,FALSE,FALSE,primary
 2008-02-05,Tennessee,Bill Richardson,4,FALSE,FALSE,primary
 2008-02-05,Utah,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-09,Louisiana,Bill Richardson,0,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Bill Richardson,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Bill Richardson,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Bill Richardson,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Bill Richardson,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Bill Richardson,0,FALSE,FALSE,primary
+2008-02-09,Washington,Bill Richardson,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Bill Richardson,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,Bill Richardson,0,FALSE,FALSE,primary
 2008-02-12,District of Columbia,Bill Richardson,2,FALSE,FALSE,primary
@@ -442,47 +428,47 @@ NA,Democrats Abroad,Bill Richardson,0,FALSE,FALSE,primary
 2008-03-04,Ohio,Bill Richardson,0,FALSE,FALSE,primary
 2008-03-04,Rhode Island,Bill Richardson,0,FALSE,FALSE,primary
 2008-03-04,Texas,Bill Richardson,10,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Bill Richardson,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,Bill Richardson,0,FALSE,FALSE,primary
 2008-03-04,Vermont,Bill Richardson,0,FALSE,FALSE,primary
 2008-03-08,Wyoming county,Bill Richardson,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,Bill Richardson,1,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Bill Richardson,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Bill Richardson,0,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Bill Richardson,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Bill Richardson,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Bill Richardson,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Bill Richardson,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,Bill Richardson,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Bill Richardson,0,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Bill Richardson,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Bill Richardson,0,FALSE,FALSE,primary
+NA,North Dakota state convention,Bill Richardson,0,FALSE,FALSE,primary
+NA,Nevada county conventions,Bill Richardson,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,Bill Richardson,0,FALSE,FALSE,primary
 NA,Washington legislative district,Bill Richardson,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Bill Richardson,0,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Bill Richardson,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,Bill Richardson,0,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-06,Indiana,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,Bill Richardson,0,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Bill Richardson,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Bill Richardson,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Bill Richardson,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Bill Richardson,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,Bill Richardson,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,Bill Richardson,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,Bill Richardson,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,Bill Richardson,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-20,Oregon,Bill Richardson,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Bill Richardson,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Bill Richardson,0,FALSE,FALSE,primary
+2008-05-24,Alaska state convention,Bill Richardson,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,Bill Richardson,0,FALSE,FALSE,primary
 2008-05-31,"Maine state convention,",Bill Richardson,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,Bill Richardson,0,FALSE,FALSE,primary
 2008-06-03,Montana,Bill Richardson,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,Bill Richardson,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Bill Richardson,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Bill Richardson,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Bill Richardson,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Bill Richardson,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Bill Richardson,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Bill Richardson,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Bill Richardson,0,FALSE,TRUE,caucus
+NA,Texas state convention,Bill Richardson,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,Bill Richardson,0,FALSE,TRUE,primary
+NA,Idaho state convention,Bill Richardson,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,Bill Richardson,0,FALSE,TRUE,primary
+NA,Washington state convention,Bill Richardson,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,Bill Richardson,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Bill Richardson,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,Joe Biden,0,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Joe Biden,0,FALSE,FALSE,primary
 2008-01-15,Michigan,Joe Biden,0,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,Joe Biden,0,FALSE,FALSE,caucus
+2008-01-19,Nevada,Joe Biden,0,FALSE,FALSE,caucus
 2008-01-26,South Carolina,Joe Biden,0,FALSE,FALSE,primary
 2008-01-29,Florida,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Alabama,Joe Biden,0,FALSE,FALSE,primary
@@ -491,27 +477,27 @@ NA,Nebraska state convention (2/9,Bill Richardson,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Arkansas,Joe Biden,2,FALSE,FALSE,primary
 2008-02-05,California,Joe Biden,5,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Joe Biden,0,FALSE,FALSE,caucus
+2008-02-05,Colorado,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Joe Biden,1,FALSE,FALSE,primary
 2008-02-05,Delaware,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Georgia,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Idaho county,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,Joe Biden,0,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Joe Biden,0,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Minnesota,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-05,Missouri,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,New Jersey,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,New Mexico,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-05,New York,Joe Biden,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,Joe Biden,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Joe Biden,0,FALSE,FALSE,primary
 2008-02-05,Tennessee,Joe Biden,1,FALSE,FALSE,primary
 2008-02-05,Utah,Joe Biden,2,FALSE,FALSE,primary
 2008-02-09,Louisiana,Joe Biden,0,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Joe Biden,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Joe Biden,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Joe Biden,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Joe Biden,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Joe Biden,0,FALSE,FALSE,primary
+2008-02-09,Washington,Joe Biden,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Joe Biden,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,Joe Biden,0,FALSE,FALSE,primary
 2008-02-12,District of Columbia,Joe Biden,0,FALSE,FALSE,primary
@@ -522,47 +508,47 @@ NA,Democrats Abroad,Joe Biden,0,FALSE,FALSE,primary
 2008-03-04,Ohio,Joe Biden,0,FALSE,FALSE,primary
 2008-03-04,Rhode Island,Joe Biden,0,FALSE,FALSE,primary
 2008-03-04,Texas,Joe Biden,0,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Joe Biden,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,Joe Biden,0,FALSE,FALSE,primary
 2008-03-04,Vermont,Joe Biden,0,FALSE,FALSE,primary
 2008-03-08,Wyoming county,Joe Biden,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,Joe Biden,0,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Joe Biden,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Joe Biden,0,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Joe Biden,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Joe Biden,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Joe Biden,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Joe Biden,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,Joe Biden,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Joe Biden,0,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Joe Biden,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Joe Biden,0,FALSE,FALSE,primary
+NA,North Dakota state convention,Joe Biden,0,FALSE,FALSE,primary
+NA,Nevada county conventions,Joe Biden,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,Joe Biden,0,FALSE,FALSE,primary
 NA,Washington legislative district,Joe Biden,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Joe Biden,0,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Joe Biden,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,Joe Biden,0,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Joe Biden,0,FALSE,FALSE,primary
 2008-05-06,Indiana,Joe Biden,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,Joe Biden,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,Joe Biden,0,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Joe Biden,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Joe Biden,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Joe Biden,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Joe Biden,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,Joe Biden,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,Joe Biden,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,Joe Biden,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Joe Biden,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,Joe Biden,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,Joe Biden,0,FALSE,FALSE,primary
 2008-05-20,Oregon,Joe Biden,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Joe Biden,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Joe Biden,0,FALSE,FALSE,primary
+2008-05-24,Alaska state convention,Joe Biden,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,Joe Biden,0,FALSE,FALSE,primary
 2008-05-31,"Maine state convention,",Joe Biden,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,Joe Biden,0,FALSE,FALSE,primary
 2008-06-03,Montana,Joe Biden,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,Joe Biden,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Joe Biden,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Joe Biden,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Joe Biden,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Joe Biden,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Joe Biden,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Joe Biden,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Joe Biden,0,FALSE,TRUE,caucus
+NA,Texas state convention,Joe Biden,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,Joe Biden,0,FALSE,TRUE,primary
+NA,Idaho state convention,Joe Biden,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,Joe Biden,0,FALSE,TRUE,primary
+NA,Washington state convention,Joe Biden,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,Joe Biden,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Joe Biden,0,FALSE,TRUE,caucus
 2008-01-03,Iowa,Chris Dodd,0,FALSE,FALSE,caucus
 2008-01-08,New Hampshire,Chris Dodd,0,FALSE,FALSE,primary
 2008-01-15,Michigan,Chris Dodd,1,FALSE,FALSE,primary
-2008-01-19,Nevada precinct,Chris Dodd,0,FALSE,FALSE,caucus
+2008-01-19,Nevada,Chris Dodd,0,FALSE,FALSE,caucus
 2008-01-26,South Carolina,Chris Dodd,0,FALSE,FALSE,primary
 2008-01-29,Florida,Chris Dodd,1,FALSE,FALSE,primary
 2008-02-05,Alabama,Chris Dodd,0,FALSE,FALSE,primary
@@ -571,27 +557,27 @@ NA,Nebraska state convention (2/9,Joe Biden,0,FALSE,TRUE,caucus
 2008-02-05,Arizona,Chris Dodd,0,FALSE,FALSE,primary
 2008-02-05,Arkansas,Chris Dodd,29,FALSE,FALSE,primary
 2008-02-05,California,Chris Dodd,39,FALSE,FALSE,primary
-2008-02-05,Colorado precinct,Chris Dodd,55,FALSE,FALSE,caucus
+2008-02-05,Colorado,Chris Dodd,55,FALSE,FALSE,caucus
 2008-02-05,Connecticut,Chris Dodd,51,FALSE,FALSE,primary
 2008-02-05,Delaware,Chris Dodd,27,FALSE,FALSE,primary
 2008-02-05,Georgia,Chris Dodd,50,FALSE,FALSE,primary
 2008-02-05,Idaho county,Chris Dodd,0,FALSE,FALSE,caucus
 2008-02-05,Illinois,Chris Dodd,25,FALSE,FALSE,primary
-2008-02-05,Kansas local unit conventions Pledged delegates: 21 (of 32)[A][B],Chris Dodd,0,FALSE,FALSE,primary
+2008-02-05,Kansas local unit conventions,Chris Dodd,0,FALSE,FALSE,primary
 2008-02-05,Massachusetts,Chris Dodd,50,FALSE,FALSE,primary
 2008-02-05,Minnesota,Chris Dodd,70,FALSE,TRUE,caucus
 2008-02-05,Missouri,Chris Dodd,51,FALSE,FALSE,primary
 2008-02-05,New Jersey,Chris Dodd,0,FALSE,FALSE,primary
 2008-02-05,New Mexico,Chris Dodd,47,FALSE,FALSE,caucus
 2008-02-05,New York,Chris Dodd,0,FALSE,FALSE,primary
-2008-02-05,North Dakota precinct,Chris Dodd,0,FALSE,FALSE,caucus
+2008-02-05,North Dakota,Chris Dodd,0,FALSE,FALSE,caucus
 2008-02-05,Oklahoma,Chris Dodd,17,FALSE,FALSE,primary
 2008-02-05,Tennessee,Chris Dodd,33,FALSE,FALSE,primary
 2008-02-05,Utah,Chris Dodd,26,FALSE,FALSE,primary
 2008-02-09,Louisiana,Chris Dodd,56,FALSE,FALSE,primary
-2008-02-09,Nebraska precinct,Chris Dodd,0,FALSE,FALSE,caucus
-2008-02-09,U.S. Virgin Islands territorial convention Pledged delegate votes: 3,Chris Dodd,0,FALSE,FALSE,primary
-2008-02-09,Washington precinct,Chris Dodd,0,FALSE,FALSE,caucus
+2008-02-09,Nebraska,Chris Dodd,0,FALSE,FALSE,caucus
+2008-02-09,U.S. Virgin Islands territorial convention,Chris Dodd,0,FALSE,FALSE,primary
+2008-02-09,Washington,Chris Dodd,0,FALSE,FALSE,caucus
 2008-02-10,Maine municipal,Chris Dodd,0,FALSE,FALSE,caucus
 NA,Democrats Abroad,Chris Dodd,0,FALSE,FALSE,primary
 2008-02-12,District of Columbia,Chris Dodd,0,FALSE,FALSE,primary
@@ -602,40 +588,40 @@ NA,Democrats Abroad,Chris Dodd,0,FALSE,FALSE,primary
 2008-03-04,Ohio,Chris Dodd,0,FALSE,FALSE,primary
 2008-03-04,Rhode Island,Chris Dodd,0,FALSE,FALSE,primary
 2008-03-04,Texas,Chris Dodd,31,FALSE,FALSE,primary
-2008-03-04,Texas precinct conventions Pledged delegates: 0 (of 193)[A][B],Chris Dodd,0,FALSE,FALSE,primary
+2008-03-04,Texas conventions,Chris Dodd,0,FALSE,FALSE,primary
 2008-03-04,Vermont,Chris Dodd,0,FALSE,FALSE,primary
 2008-03-08,Wyoming county,Chris Dodd,0,FALSE,FALSE,caucus
 2008-03-11,Mississippi,Chris Dodd,36,FALSE,FALSE,primary
-NA,North Dakota legislative district conventions Pledged delegates: 0 (of 13)[A][B],Chris Dodd,0,FALSE,TRUE,primary
-2008-03-15,Iowa county conventions Pledged delegates: 0 (of 45)[A][B],Chris Dodd,0,FALSE,FALSE,primary
-NA,Colorado county assemblies/conventions Pledged delegates: 0 (of 55)[A][B],Chris Dodd,0,FALSE,FALSE,primary
-2008-03-29,Texas county and senatorial district conventions (see 6/6-7) Pledged delegates: 0 (of 193)[A][B],Chris Dodd,0,FALSE,FALSE,primary
-NA,North Dakota state convention Pledged delegates: 13 (of 13)[B],Chris Dodd,0,FALSE,FALSE,primary
-NA,Nevada county conventions Pledged delegates: 0 (of 25)[A][B],Chris Dodd,0,FALSE,FALSE,primary
+NA,North Dakota legislative district conventions,Chris Dodd,0,FALSE,TRUE,primary
+2008-03-15,Iowa county conventions,Chris Dodd,0,FALSE,FALSE,primary
+NA,Colorado county assemblies/conventions,Chris Dodd,0,FALSE,FALSE,primary
+2008-03-29,Texas county and senatorial district conventions,Chris Dodd,0,FALSE,FALSE,primary
+NA,North Dakota state convention,Chris Dodd,0,FALSE,FALSE,primary
+NA,Nevada county conventions,Chris Dodd,0,FALSE,FALSE,primary
 2008-04-22,Pennsylvania,Chris Dodd,0,FALSE,FALSE,primary
 NA,Washington legislative district,Chris Dodd,0,FALSE,TRUE,caucus
-2008-04-26,Iowa district conventions (see 6/14) Pledged delegates: 29 (of 45)[B],Chris Dodd,0,FALSE,FALSE,primary
-2008-05-03,Guam territorial convention Pledged delegate votes: 4,Chris Dodd,0,FALSE,FALSE,primary
+2008-04-26,Iowa district conventions,Chris Dodd,0,FALSE,FALSE,primary
+2008-05-03,Guam territorial convention,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-06,Indiana,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-06,North Carolina,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-13,West Virginia,Chris Dodd,0,FALSE,FALSE,primary
-NA,Colorado congressional district conventions Pledged delegates: 36 (of 55)[B],Chris Dodd,0,FALSE,FALSE,primary
-2008-05-17,Colorado state convention Pledged delegates: 19 (of 55)[B],Chris Dodd,0,FALSE,FALSE,primary
-2008-05-17,Kansas state convention Pledged delegates: 11 (of 32)[B],Chris Dodd,0,FALSE,TRUE,primary
-2008-05-17,Nevada state convention Pledged delegates: 25 (of 25)[B],Chris Dodd,0,FALSE,FALSE,primary
+NA,Colorado congressional district conventions,Chris Dodd,0,FALSE,FALSE,primary
+2008-05-17,Colorado state convention,Chris Dodd,0,FALSE,FALSE,primary
+2008-05-17,Kansas state convention,Chris Dodd,0,FALSE,TRUE,primary
+2008-05-17,Nevada state convention,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-17,Washington congressional district,Chris Dodd,0,FALSE,FALSE,caucus
 2008-05-20,Kentucky,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-20,Oregon,Chris Dodd,0,FALSE,FALSE,primary
-2008-05-24,Alaska state convention Pledged delegates: 13 (of 13)[B],Chris Dodd,0,FALSE,FALSE,primary
-2008-05-24,Wyoming state convention Pledged delegates: 5 (of 12)[B],Chris Dodd,0,FALSE,FALSE,primary
+2008-05-24,Alaska state convention,Chris Dodd,0,FALSE,FALSE,primary
+2008-05-24,Wyoming state convention,Chris Dodd,0,FALSE,FALSE,primary
 2008-05-31,"Maine state convention,",Chris Dodd,0,FALSE,FALSE,caucus
 2008-06-01,Puerto Rico,Chris Dodd,0,FALSE,FALSE,primary
 2008-06-03,Montana,Chris Dodd,0,FALSE,FALSE,primary
 2008-06-03,South Dakota,Chris Dodd,0,FALSE,FALSE,primary
-NA,Texas state convention (see 3/29) Pledged delegates: 67 (of 193)[B],Chris Dodd,0,FALSE,FALSE,primary
-NA,Nebraska county conventions Pledged delegates: 0 (of 24)[A][B],Chris Dodd,0,FALSE,TRUE,primary
-NA,Idaho state convention (2/5,Chris Dodd,0,FALSE,TRUE,caucus
-2008-06-14,Iowa state convention (4/26 conv.) Pledged delegates: 16 (of 45)[B],Chris Dodd,0,FALSE,TRUE,primary
-NA,Washington state convention (5/17,Chris Dodd,0,FALSE,TRUE,caucus
-2008-06-21,Puerto Rico commonwealth convention Pledged delegates: 0 (of 55)[B],Chris Dodd,0,FALSE,TRUE,primary
-NA,Nebraska state convention (2/9,Chris Dodd,0,FALSE,TRUE,caucus
+NA,Texas state convention,Chris Dodd,0,FALSE,FALSE,primary
+NA,Nebraska county conventions,Chris Dodd,0,FALSE,TRUE,primary
+NA,Idaho state convention,Chris Dodd,0,FALSE,TRUE,caucus
+2008-06-14,Iowa state convention,Chris Dodd,0,FALSE,TRUE,primary
+NA,Washington state convention,Chris Dodd,0,FALSE,TRUE,caucus
+2008-06-21,Puerto Rico commonwealth convention,Chris Dodd,0,FALSE,TRUE,primary
+NA,Nebraska state convention,Chris Dodd,0,FALSE,TRUE,caucus
