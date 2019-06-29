@@ -1,0 +1,203 @@
+---
+title: "Most Surprising Counties"
+author: "Alex Nelson"
+date: "6/28/2019"
+output: 
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(LaplacesDemon)
+library(tidyverse)
+library(rmarkdown)
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, include=FALSE}
+source("../R/states.R")
+source("../R/presidential_elections.R")
+```
+
+
+We can measure surprise using the Kullback–Leibler divergence, niftily provided by the `LaplacesDemon::KLD()` function. This quantifies how surprising the 2016 election results were, given we were assuming a result more closely resembling 2012.
+
+```{r}
+county_results <- make_party_into_factor(load_obj(county_path))
+election_2004 <- filter(county_results, year == 2004)
+election_2008 <- filter(county_results, year == 2008)
+election_2012 <- filter(county_results, year == 2012)
+election_2016 <- filter(county_results, year == 2016)
+```
+
+Now, we treat each county like a three-sided coin, with the proportion of the vote as a proxy for probability.
+
+```{r}
+conj_prob <- function(election) {
+  prop <- election %>%
+  group_by(year,state,county,party,FIPS) %>%
+  transmute(probability = candidatevotes/totalvotes) %>%
+  ungroup()
+  prop$probability[is.na(prop$probability)] <- 0
+  prop
+}
+
+prop_2004 <- conj_prob(election_2004)
+prop_2008 <- conj_prob(election_2008)
+prop_2012 <- conj_prob(election_2012)
+prop_2016 <- conj_prob(election_2016)
+
+probabilities2008 <- inner_join(select(prop_2004, -year),
+                                select(prop_2008, -year),
+                                by = c("state", "county", "party"))
+
+probabilities2012 <- inner_join(select(prop_2008, -year),
+                                select(prop_2012, -year),
+                                by = c("state", "county", "party"))
+
+probabilities2016 <- inner_join(select(prop_2012, -year),
+                                select(prop_2016, -year),
+                                by = c("state", "county", "party"))
+```
+
+We will now try to assign to each county the measure of surprise.
+
+```{r}
+compute_surprise <- function(data) {
+  KLD(data$probability.x, data$probability.y)$sum.KLD.py.px
+}
+
+election_surprise <- function(probs) {
+  probs %>%
+    filter(party != "NA") %>%
+    group_by(state,county) %>%
+    nest() %>%
+    mutate(surprise = map(data, compute_surprise)) %>%
+    unnest(surprise, .drop = TRUE) %>%
+    arrange(-surprise)
+}
+
+results08 <- election_surprise(probabilities2008)
+results12 <- election_surprise(probabilities2012)
+results16 <- election_surprise(probabilities2016)
+```
+
+## Statistically Significant Surprises
+
+Note that Blair County, PA has a surprise of 0.01; did it vote differently than 2012 with any statistical significance (with alpha = 0.05, say):
+
+```{r}
+blair_pa_2012 <- election_2012 %>%
+  filter(state == "Pennsylvania", county == "Blair", party == "republican")  %>%
+  transmute(p = candidatevotes/totalvotes)
+
+blair_pa_2016 <- election_2016 %>%
+  filter(state == "Pennsylvania", county == "Blair", party == "republican")  %>%
+  transmute(x = candidatevotes,
+            n = totalvotes)
+
+prop.test(blair_pa_2016$x, blair_pa_2016$n, blair_pa_2012$p)
+```
+The `p-value < 2.2e-16`, which tells us, yes, Blair county behaved differently in 2016 with statistical significance.
+
+We could try generalizing this. Going county-by-county will be no good. We will instead work with state-level results, then examine each state for statistically different voting patterns among specifically Republicans.
+
+```{r}
+state_results <- make_party_into_factor(load_obj(state_path))
+election_2012 <- filter(state_results, year == 2012)
+election_2016 <- filter(state_results, year == 2016)
+prop_2012 <- election_2012 %>%
+  group_by(year,state,party) %>%
+  transmute(probability = candidatevotes/totalvotes) %>%
+  ungroup()
+# prop_2012$probability[is.na(prop_2012$probability)] <- 0
+```
+
+We are interested in the situation where Trump did better than Republicans historically perform, as compared to the past race in 2012. This can be approximated using the p-value from the Binomial test.
+
+```{r}
+data <- inner_join(filter(election_2016, party == "republican", writein == F),
+                   filter(prop_2012, party == "republican"),
+                   by = c("state","party")) %>%
+  filter(!is.na(totalvotes), is.state(state)) %>%
+  select(state,candidatevotes,totalvotes,probability) %>%
+  group_by(state) %>%
+  mutate(trump_2016 = candidatevotes/totalvotes,
+         p.value = binom.test(x = candidatevotes, n = totalvotes, p = probability, alternative = "greater")$p.value) %>%
+  ungroup() %>%
+  rename(republican_2012 = probability) %>%
+  arrange(p.value)
+
+kable(data)
+```
+
+There are onl 28 states where this p-value is smaller than units (of which 24 are really the interesting states). So we've narrowed down our attention to 24 states where Trump over-performed (compared to 2012). Really, there are only about a half dozen states worth investigating since they were won by Trump:
+
+```{r}
+kable(filter(data, trump_2016 > republican_2012, trump_2016 > 0.45))
+```
+
+## Picking Out the Relevant States
+
+We can pick out the relevant states, but the criteria we have is exceedingly generous. We end up with 25 states, with genuine surprises like Michigan, but with false-positives like Alabama.
+
+```{r}
+relevant_states <- data %>%
+  filter(p.value < 0.1) %>% 
+  select(state) %>%
+  `[[`("state") %>%
+  sort
+```
+
+We could then compute the surprise for each of these states:
+
+```{r}
+relevant_surprise <- results16 %>%
+  filter(state %in% relevant_states) %>%
+  group_by(state) %>%
+  summarize(total_surprise = sum(surprise))
+```
+
+Now we can filter out the states less surprising than Alabama:
+
+```{r}
+relevant_surprise <- filter(relevant_surprise,
+                            total_surprise > relevant_surprise[which(relevant_surprise$state=="Alabama"),]$total_surprise) %>%
+  arrange(-total_surprise)
+```
+
+This eliminates 10 false-positives. Lets try also weighing these states by electoral delegates:
+
+```{r}
+relevant_surprise %>%
+  group_by(state) %>%
+  mutate(ec = electoral_delegates[[state]],
+         weighted_surprise = ec*total_surprise) %>%
+  arrange(-weighted_surprise)
+```
+We shouldn't be surprised Nebraska was won by Trump, it's a red state... as are all the others with a small `weighted_surprise` value. So we can drop these as false-positives as well:
+
+```{r}
+true_surprises <- relevant_surprise %>%
+  group_by(state) %>%
+  mutate(electoral_delegates = electoral_delegates[[state]],
+         weighted_surprise = electoral_delegates*total_surprise) %>%
+  arrange(-weighted_surprise) %>%
+  filter(weighted_surprise > 10)
+```
+
+The true surprises, where Trump overperformed, appears to be:
+
+```{r}
+kable(true_surprises)
+```
+
+
+## Overperformed...compared to what?
+
+We should take the time here to note we should be a little careful upon further analysis to take, e.g., the running mean of the percentages for Republican candidates rather than just the last election's results.
+
+
