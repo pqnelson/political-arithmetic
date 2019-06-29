@@ -12,9 +12,11 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(kableExtra)
-library(LaplacesDemon)
+library(LaplacesDemon) # KLD()
+library(zoo) # for rollmean()
 library(tidyverse)
 library(rmarkdown)
+library(ggthemes)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r, include=FALSE}
@@ -38,9 +40,13 @@ Now, we treat each county like a three-sided coin, with the proportion of the vo
 ```{r}
 conj_prob <- function(election) {
   prop <- election %>%
-  group_by(year,state,county,party,FIPS) %>%
-  transmute(probability = candidatevotes/totalvotes) %>%
-  ungroup()
+    mutate(party = ifelse(party == "democrat", party,
+                          ifelse(party == "republican", party,
+                                 "$third-party"))) %>%
+    group_by(year,state,county,party,FIPS) %>%
+    transmute(probability = candidatevotes/totalvotes) %>%
+    ungroup() %>%
+    unique
   prop$probability[is.na(prop$probability)] <- 0
   prop
 }
@@ -67,7 +73,7 @@ We will now try to assign to each county the measure of surprise.
 
 ```{r}
 compute_surprise <- function(data) {
-  KLD(data$probability.x, data$probability.y)$sum.KLD.py.px
+  KLD(data$probability.x, data$probability.y, base=2)$sum.KLD.py.px
 }
 
 election_surprise <- function(probs) {
@@ -158,13 +164,15 @@ We could then compute the surprise for each of these states:
 relevant_surprise <- results16 %>%
   filter(state %in% relevant_states) %>%
   group_by(state) %>%
-  summarize(total_surprise = sum(surprise))
+  summarize(total_surprise = sum(surprise)) %>%
+  arrange(-total_surprise)
+relevant_surprise
 ```
 
 Now we can filter out the states less surprising than Alabama:
 
 ```{r}
-relevant_surprise <- filter(relevant_surprise,
+relevant_surprise2 <- filter(relevant_surprise,
                             total_surprise > relevant_surprise[which(relevant_surprise$state=="Alabama"),]$total_surprise) %>%
   arrange(-total_surprise)
 ```
@@ -172,7 +180,7 @@ relevant_surprise <- filter(relevant_surprise,
 This eliminates 10 false-positives. Lets try also weighing these states by electoral delegates:
 
 ```{r}
-relevant_surprise %>%
+relevant_surprise2 %>%
   group_by(state) %>%
   mutate(ec = electoral_delegates[[state]],
          weighted_surprise = ec*total_surprise) %>%
@@ -181,7 +189,7 @@ relevant_surprise %>%
 We shouldn't be surprised Nebraska was won by Trump, it's a red state... as are all the others with a small `weighted_surprise` value. So we can drop these as false-positives as well:
 
 ```{r}
-true_surprises <- relevant_surprise %>%
+true_surprises <- relevant_surprise2 %>%
   group_by(state) %>%
   mutate(electoral_delegates = electoral_delegates[[state]],
          weighted_surprise = electoral_delegates*total_surprise) %>%
@@ -195,9 +203,200 @@ The true surprises, where Trump overperformed, appears to be:
 kable(true_surprises)
 ```
 
+## Surprising Counties
+
+Lets examine the counties in these genuinely surprising states.
+
+```{r}
+surprising_counties <- results16 %>%
+  filter(state %in% true_surprises$state) %>%
+  arrange(-surprise)
+surprising_counties$state <- as.factor(surprising_counties$state)
+```
+
+Lets draw a box-plot for the data.
+
+```{r surprise-boxplots}
+ggplot(filter(surprising_counties, state!="Nebraska", state!="North Dakota"), aes(x=fct_reorder(state, -surprise), y=surprise)) +
+  geom_boxplot() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+
+
+```{r random-rustbelt-states}
+ggplot(filter(surprising_counties, state %in% c("Iowa", "Ohio", "Michigan", "Kentucky", "Wisconsin")), aes(x = surprise, fill = state)) +
+  geom_histogram() +
+  geom_density(alpha=.2, fill="#FF6666") +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+
+```{r non-random-rustbelt-states}
+ggplot(filter(surprising_counties, !(state %in% c("Iowa", "Ohio", "Michigan", "Kentucky", "Wisconsin"))), aes(x = surprise, fill = state)) +
+  geom_histogram() +
+  geom_density(alpha=.2, fill="#FF6666") +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+This looks like a log-normal distribution, lets see what happens if we exponentiate the surprise:
+
+```{r log-normal-guess}
+ggplot(surprising_counties %>%
+         filter(surprise > exp(-6)) %>%
+         mutate(exp_surprise = log(surprise)), aes(x = exp_surprise, fill = state)) +
+  geom_histogram() +
+  geom_density(alpha=.2, fill="#FF6666") +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+```{r}
+Mode <- function(x, na.rm = FALSE) {
+  if (na.rm) {
+    x = x[!is.na(x)]
+  }
+
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+surprising_counties %>%
+  group_by(state) %>%
+  summarize(mode = Mode(surprise, na.rm = T),
+            avg = mean(surprise),
+            median = median(surprise),
+            sd = sd(surprise),
+            sum = sum(surprise)) %>%
+  arrange(-mode)
+```
+Considering we are effectively looking at a 3-sided die (which would have for a given state's results), which has its entropy be maximized for a "fair die" with entropy `r log(3, base=2)`. There are 17 such states, but only 12 were really surprising:
+
+```{r}
+results16 %>%
+  group_by(state) %>%
+  summarize(sum = sum(surprise)) %>%
+  filter(sum > log(3, base = 2)) %>%
+  arrange(-sum)
+```
+In biological systems, the "sum" column would measure how far we are from equilibrium (c.f., [arXiv:1512.02742](https://arxiv.org/abs/1512.02742)). Intuitively, it's a measure of "surprise" --- how far off we'd be supposing 2016 would unfold like 2012. These states in particular are where we were just dead wrong in our suppositions. 
+
+```{r}
+surprise_for_state <- function(p_states, y) {
+  inner_join(filter(p_states, year == y - 4),
+             filter(p_states, year == y),
+             by = c("state", "party")) %>%
+    group_by(state) %>%
+    nest() %>%
+    mutate(surprise = map(data, compute_surprise)) %>%
+    unnest(surprise, .drop = TRUE) %>%
+    arrange(-surprise)
+}
+```
+
+
+```{r}
+prop_states <- state_results %>%
+  mutate(party = ifelse(party == "democrat", "democrat",
+                        ifelse(party == "republican", "republican",
+                               "$third-party"))) %>%
+  group_by(year,state,party) %>%
+  transmute(probability = sum(candidatevotes)/totalvotes) %>%
+  ungroup() %>%
+  unique
+prop_states$party <- as.factor(prop_states$party)
+
+surprise_1988 <- surprise_for_state(prop_states, 1988)
+surprise_1992 <- surprise_for_state(prop_states, 1992)
+surprise_1996 <- surprise_for_state(prop_states, 1996)
+surprise_2000 <- surprise_for_state(prop_states, 2000)
+surprise_2004 <- surprise_for_state(prop_states, 2004)
+surprise_2008 <- surprise_for_state(prop_states, 2008)
+surprise_2012 <- surprise_for_state(prop_states, 2012)
+surprise_2016 <- surprise_for_state(prop_states, 2016)
+```
+
+How much surprise was there, overall, compared to 2012? We plot a histogram of the states's "surprise value" by year:
+
+```{r historic-surprises}
+surprise_1988$year <- 1988
+surprise_1992$year <- 1992
+surprise_1996$year <- 1996
+surprise_2000$year <- 2000
+surprise_2004$year <- 2004
+surprise_2008$year <- 2008
+surprise_2016$year <- 2016
+surprise_2012$year <- 2012
+surprise_elections <- rbind(surprise_1988, rbind(surprise_1992, rbind(surprise_1996, rbind(surprise_2000, rbind(surprise_2004, rbind(surprise_2008, rbind(surprise_2012, surprise_2016)))))))
+surprise_elections$year <- as.factor(surprise_elections$year)
+
+ggplot(surprise_elections, aes(x=surprise, fill=year)) +
+  geom_histogram() +
+  theme_fivethirtyeight(base_size = 8)
+```
+Why is the 1992 election so surprising? Well, Ross Perot did **surprisingly** well in the popular vote, receiving about 20% of the popular vote. He _literally_ did **surprisingly** well.
+
+```{r}
+surprise_elections %>%
+  group_by(year) %>%
+  summarize(surprise = sum(surprise))
+```
+
+
 
 ## Overperformed...compared to what?
 
-We should take the time here to note we should be a little careful upon further analysis to take, e.g., the running mean of the percentages for Republican candidates rather than just the last election's results.
+We should take the time here to note we should be a little careful upon further analysis to take, e.g., the running mean of the percentages for Republican candidates rather than just the last election's results. Well, we would take the running average for the Republican candidate, the Democratic candidate, and "Third Party candidate", then renormalize to make certain the weighted means are transformed into proportions.
 
+```{r}
+```
 
+```{r}
+prop_states %>%
+  arrange(state,party,year) %>%
+  group_by(state,party) %>%
+  summarize(moving_prob = last(rollmean(probability, k = 4))) %>%
+  group_by(state) %>%
+  mutate(moving_prob = moving_prob/sum(moving_prob)) %>%
+  ungroup()
+```
+
+Now we can answer the question more directly, how well did Trump do compared to an "average Republican"?
+
+```{r}
+priors_2016 <- prop_states %>%
+  arrange(state,party,year) %>%
+  group_by(state,party) %>%
+  summarize(moving_prob = last(rollmean(probability, k = 4))) %>%
+  mutate(year = 2012) %>%
+  rename(probability = moving_prob)
+
+comp_2016 <- inner_join(priors_2016,
+                        filter(prop_states, year==2016),
+                        by=c("state", "party")) %>%
+  group_by(state) %>%
+  nest() %>%
+  mutate(surprise = map(data, compute_surprise)) %>%
+  unnest(surprise, .drop = TRUE) %>%
+  arrange(-surprise) %>%
+  mutate(year = 2016)
+```
+
+Lets see everything more surprising than Alabama:
+
+```{r}
+kable(select(filter(comp_2016, surprise > comp_2016[which(comp_2016$state=="Alabama"),]$surprise), -year))
+```
+
+The low surprise for Michigan and Ohio suggests that...we shouldn't be surprised by the outcome. The counterfactual situation where we consider a "replacement candidate" in both parties may be worth plotting, against the real competitors's results.
+
+```{r counterfactual}
+surprise_2016$counterfactual <- F
+comp_2016$counterfactual <- T
+conterfact_2016 <- select(rbind(surprise_2016, comp_2016), -year)
+
+ggplot(conterfact_2016, aes(x=surprise, fill=counterfactual)) +
+  geom_histogram(binwidth = 0.005) +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+Did Trump overperform or Clinton underperform? Or did third party candidates surge unexpectedly? The histogram can't tell, because that's not being measured. All that's measured is the "surprise distribution" across the states, comparing "replacement candidates" to the actual ones. The actual candidates produced more surprising results.
