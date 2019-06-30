@@ -3779,6 +3779,7 @@ ggplot(surprise_elections, aes(x=surprise, fill=year)) +
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/historic-surprises-1.png)<!-- -->
+
 Why is the 1992 election so surprising? Well, Ross Perot did
 **surprisingly** well in the popular vote, receiving about 20% of the
 popular vote. He *literally* did **surprisingly** well.
@@ -4602,3 +4603,105 @@ candidates surge unexpectedly? The histogram can’t tell, because that’s
 not being measured. All that’s measured is the “surprise distribution”
 across the states, comparing “replacement candidates” to the actual
 ones. The actual candidates produced more surprising results.
+
+We can sum the differences between *expected* vote proportions and
+*actual* vote
+proportions.
+
+``` r
+diffs_2016 <- inner_join(select(filter(prop_states, year==2016), -year), select(priors_2016, -year), by=c("state", "party")) %>%
+  group_by(state,party) %>%
+  transmute(delta = probability.x - probability.y) %>%
+  ungroup()
+```
+
+Now we should weigh this by the electoral delegates in each state
+(honestly, it should be the difference in voters in each state, but this
+is approximated by the electoral delegate count)
+
+``` r
+kable(diffs_2016 %>%
+        group_by(state,party) %>%
+        mutate(expected_ed = delta*electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        group_by(party) %>%
+        summarize(actual_minus_expected = sum(expected_ed)))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+party
+
+</th>
+
+<th style="text-align:right;">
+
+actual\_minus\_expected
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+$third-party
+
+</td>
+
+<td style="text-align:right;">
+
+17.893970
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+democrat
+
+</td>
+
+<td style="text-align:right;">
+
+\-11.112706
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+republican
+
+</td>
+
+<td style="text-align:right;">
+
+\-7.409328
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+So, yes, the third party candidates did better than expected.
