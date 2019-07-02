@@ -424,3 +424,159 @@ kable(diffs_2016 %>%
 ```
 
 So, yes, the third party candidates did better than expected.
+
+# Third Party Performance: 2016 vs 2012
+
+It just so happens Jill Stein ran in 2012 on the Green party ticket, and Gary Johnson ran in 2012 on the Libertarian ticket. We can compare their respective performances to see if either one improved noticeably. What's the game plan? Well, we should measure how surprising the results were in 2016 compared to 2012, as usual. We partition the election results into "Voted for Johnson" and "Voted for Someone Else" (we repeat this analysis for "Stein" instead of Johnson later), and measure how surprising the result is.
+
+## Johnson's Performance
+
+We first will look at how well Johnson did in each state, for both elections. Unfortunately, our data source's information at the county level is insufficient. So we will be forced to work at the state level.
+
+```{r}
+johnson_2012 <- filter(state_results, year == 2012, candidate == "Johnson, Gary")
+johnson_2016 <- filter(state_results, year == 2016, candidate == "Johnson, Gary")
+```
+
+Lets see...in 2012, Johnson ran in 46 states, but in 2016 he ran in all 50 states. Lets see what states were missing in 2012.
+
+```{r}
+johnson_2016 %>%
+  filter(!(state %in% johnson_2012$state)) %>%
+  select(state) %>%
+  unique
+```
+
+Some of these states (Michigan, Wisconsin) are critical to the 2016 election outcome.
+
+```{r}
+johnson_2012 %>%
+  group_by(state) %>%
+  transmute(p = sum(candidatevotes)/totalvotes,
+            p_other = 1 - p) %>%
+  ungroup()
+```
+
+We can now examine the (electoral delegate weighted) surprise for each state, to see how well Johnson performed compared to our 2012 expectations.
+
+```{r}
+johnson_surprise <- inner_join(johnson_2012 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           johnson_2016 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  transmute(surprise = KLD(px = c(p.x, p_other.x), py = c(p.y, p_other.y), base = 2)$sum.KLD.py.px*electoral_delegates[[first(state)]]) %>%
+  arrange(-surprise)
+
+johnson_surprise
+```
+
+Johnson did surprisingly well compared to his 2012 performance. At this rate, he could be president in a century.
+
+```{r johnson-scatterplot}
+johnson_surprise$state <- as.factor(johnson_surprise$state)
+
+ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+
+## Stein's Performance
+
+We can do likewise for Stein, finding the state-level data.
+
+```{r}
+Stein_2012 <- filter(state_results, year == 2012, candidate == "Stein, Jill")
+Stein_2016 <- filter(state_results, year == 2016, candidate == "Stein, Jill")
+```
+
+We find the (electoral delegate weighted) surprise for Stein:
+
+```{r}
+stein_surprise <- inner_join(Stein_2012 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           Stein_2016 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  transmute(surprise = KLD(px = c(p.x, p_other.x), py = c(p.y, p_other.y), base = 2)$sum.KLD.py.px*electoral_delegates[[first(state)]]) %>%
+  arrange(-surprise)
+
+stein_surprise
+```
+
+This is seemingly smaller than Johnson's improvement. But that's misleading, because of the use of scientific notation. If we plot out Stein's performance, things clear up quickly:
+
+```{r stein-scatterplot}
+stein_surprise$state <- as.factor(stein_surprise$state)
+
+ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+Lets try to plot these together.
+
+```{r joint-scatterplot}
+stein_surprise$state <- as.factor(stein_surprise$state)
+stein_surprise$candidate <- "stein"
+johnson_surprise$candidate <- "johnson"
+
+third_party_surprise <- rbind(stein_surprise,
+                              johnson_surprise)
+third_party_surprise$candidate <- as.factor(third_party_surprise$candidate)
+
+ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+Lets restrict focus to states we're really interested in, the surprising ones.
+
+```{r joint-swing-scatterplot}
+swing_states <- c("Florida", "Michigan", "Pennsylvania", "Wisconsin", "Iowa", "Indiana", "North Carolina", "Ohio", "Nebraska")
+ggplot(filter(third_party_surprise, state %in% swing_states), 
+       aes(x=fct_reorder(state, -surprise), 
+           y=surprise, 
+           shape=candidate, 
+           color=candidate)) +
+  geom_point() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+With the exception of Flordia, Jill Stein really didn't improve that much compared to Johnson.
+
+```{r}
+johnson_2012 %>%
+  filter(state %in% swing_states) %>%
+  select(state, candidatevotes, totalvotes) %>%
+  group_by(state) %>%
+  mutate(p = candidatevotes/totalvotes) %>%
+  ungroup()
+```
+
+```{r}
+johnson_2016 %>%
+  filter(state %in% swing_states) %>%
+  select(state, candidatevotes, totalvotes) %>%
+  group_by(state) %>%
+  mutate(p = candidatevotes/totalvotes) %>%
+  ungroup()
+```

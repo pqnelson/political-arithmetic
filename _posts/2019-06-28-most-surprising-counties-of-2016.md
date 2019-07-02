@@ -3,6 +3,10 @@
   - [Picking Out the Relevant States](#picking-out-the-relevant-states)
   - [Surprising Counties](#surprising-counties)
   - [Overperformed…compared to what?](#overperformedcompared-to-what)
+  - [Third Party Performance: 2016 vs
+    2012](#third-party-performance-2016-vs-2012)
+      - [Johnson’s Performance](#johnsons-performance)
+      - [Stein’s Performance](#steins-performance)
 
 We can measure surprise using the Kullback–Leibler divergence, niftily
 provided by the `LaplacesDemon::KLD()` function. This quantifies how
@@ -3128,7 +3132,7 @@ relevant_surprise2 %>%
     ##  4 Wisconsin               6.36    10             63.6 
     ##  5 Missouri                6.15    10             61.5 
     ##  6 Iowa                    9.83     6             59.0 
-    ##  7 Pennsylvania            2.70    20             54.1 
+    ##  7 Pennsylvania            2.68    20             53.5 
     ##  8 Indiana                 4.84    11             53.3 
     ##  9 Tennessee               4.06    11             44.7 
     ## 10 Kentucky                5.31     8             42.5 
@@ -3371,7 +3375,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-2.704040
+2.675596
 
 </td>
 
@@ -3383,7 +3387,7 @@ Pennsylvania
 
 <td style="text-align:right;">
 
-54.08080
+53.51192
 
 </td>
 
@@ -3685,7 +3689,7 @@ surprising_counties %>%
     ## 11 Tennessee     0.116  0.0427 0.0381 0.0195  4.06
     ## 12 Indiana       0.103  0.0526 0.0485 0.0169  4.84
     ## 13 New York      0.0950 0.0385 0.0375 0.0221  2.39
-    ## 14 Pennsylvania  0.0863 0.0404 0.0352 0.0159  2.70
+    ## 14 Pennsylvania  0.0837 0.0399 0.0352 0.0150  2.68
 
 Considering we are effectively looking at a 3-sided die (which would
 have for a given state’s results), which has its entropy be maximized
@@ -3700,7 +3704,7 @@ results16 %>%
   arrange(-sum)
 ```
 
-    ## # A tibble: 37 x 2
+    ## # A tibble: 36 x 2
     ##    state       sum
     ##    <I<chr>>  <dbl>
     ##  1 Oklahoma  23.2 
@@ -3713,7 +3717,7 @@ results16 %>%
     ##  8 Michigan   7.20
     ##  9 Nebraska   6.45
     ## 10 Wisconsin  6.36
-    ## # ... with 27 more rows
+    ## # ... with 26 more rows
 
 In biological systems, the “sum” column would measure how far we are
 from equilibrium (c.f.,
@@ -4705,3 +4709,273 @@ republican
 </table>
 
 So, yes, the third party candidates did better than expected.
+
+# Third Party Performance: 2016 vs 2012
+
+It just so happens Jill Stein ran in 2012 on the Green party ticket, and
+Gary Johnson ran in 2012 on the Libertarian ticket. We can compare their
+respective performances to see if either one improved noticeably. What’s
+the game plan? Well, we should measure how surprising the results were
+in 2016 compared to 2012, as usual. We partition the election results
+into “Voted for Johnson” and “Voted for Someone Else” (we repeat this
+analysis for “Stein” instead of Johnson later), and measure how
+surprising the result is.
+
+## Johnson’s Performance
+
+We first will look at how well Johnson did in each state, for both
+elections. Unfortunately, our data source’s information at the county
+level is insufficient. So we will be forced to work at the state
+level.
+
+``` r
+johnson_2012 <- filter(state_results, year == 2012, candidate == "Johnson, Gary")
+johnson_2016 <- filter(state_results, year == 2016, candidate == "Johnson, Gary")
+```
+
+Lets see…in 2012, Johnson ran in 46 states, but in 2016 he ran in all 50
+states. Lets see what states were missing in 2012.
+
+``` r
+johnson_2016 %>%
+  filter(!(state %in% johnson_2012$state)) %>%
+  select(state) %>%
+  unique
+```
+
+    ##       state
+    ## 1   Alabama
+    ## 2  Michigan
+    ## 3  Oklahoma
+    ## 4 Wisconsin
+
+Some of these states (Michigan, Wisconsin) are critical to the 2016
+election outcome.
+
+``` r
+johnson_2012 %>%
+  group_by(state) %>%
+  transmute(p = sum(candidatevotes)/totalvotes,
+            p_other = 1 - p) %>%
+  ungroup()
+```
+
+    ## # A tibble: 46 x 3
+    ##    state                      p p_other
+    ##    <I<chr>>               <dbl>   <dbl>
+    ##  1 Alaska               0.0246    0.975
+    ##  2 Arizona              0.0140    0.986
+    ##  3 Arkansas             0.0152    0.985
+    ##  4 California           0.0110    0.989
+    ##  5 Colorado             0.0138    0.986
+    ##  6 Connecticut          0.00792   0.992
+    ##  7 Delaware             0.00938   0.991
+    ##  8 District of Columbia 0.00709   0.993
+    ##  9 Florida              0.00528   0.995
+    ## 10 Georgia              0.0116    0.988
+    ## # ... with 36 more rows
+
+We can now examine the (electoral delegate weighted) surprise for each
+state, to see how well Johnson performed compared to our 2012
+expectations.
+
+``` r
+johnson_surprise <- inner_join(johnson_2012 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           johnson_2016 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  transmute(surprise = KLD(px = c(p.x, p_other.x), py = c(p.y, p_other.y), base = 2)$sum.KLD.py.px*electoral_delegates[[first(state)]]) %>%
+  arrange(-surprise)
+
+johnson_surprise
+```
+
+    ## # A tibble: 46 x 2
+    ## # Groups:   state [45]
+    ##    state         surprise
+    ##    <I<chr>>         <dbl>
+    ##  1 California       1.22 
+    ##  2 Texas            0.703
+    ##  3 Florida          0.619
+    ##  4 Illinois         0.606
+    ##  5 New York         0.500
+    ##  6 New York         0.500
+    ##  7 Washington       0.479
+    ##  8 Massachusetts    0.445
+    ##  9 Colorado         0.405
+    ## 10 Virginia         0.323
+    ## # ... with 36 more rows
+
+Johnson did surprisingly well compared to his 2012 performance. At this
+rate, he could be president in a century.
+
+``` r
+johnson_surprise$state <- as.factor(johnson_surprise$state)
+
+ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/johnson-scatterplot-1.png)<!-- -->
+
+## Stein’s Performance
+
+We can do likewise for Stein, finding the state-level
+data.
+
+``` r
+Stein_2012 <- filter(state_results, year == 2012, candidate == "Stein, Jill")
+Stein_2016 <- filter(state_results, year == 2016, candidate == "Stein, Jill")
+```
+
+We find the (electoral delegate weighted) surprise for Stein:
+
+``` r
+stein_surprise <- inner_join(Stein_2012 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           Stein_2016 %>%
+             group_by(state) %>%
+             transmute(p = sum(candidatevotes)/totalvotes,
+                       p_other = 1 - p) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  transmute(surprise = KLD(px = c(p.x, p_other.x), py = c(p.y, p_other.y), base = 2)$sum.KLD.py.px*electoral_delegates[[first(state)]]) %>%
+  arrange(-surprise)
+
+stein_surprise
+```
+
+    ## # A tibble: 32 x 2
+    ## # Groups:   state [32]
+    ##    state      surprise
+    ##    <I<chr>>      <dbl>
+    ##  1 California    0.677
+    ##  2 Florida       0.293
+    ##  3 New York      0.180
+    ##  4 Texas         0.148
+    ##  5 Colorado      0.138
+    ##  6 Arizona       0.133
+    ##  7 Illinois      0.118
+    ##  8 New Jersey    0.110
+    ##  9 Hawaii        0.108
+    ## 10 Washington    0.107
+    ## # ... with 22 more rows
+
+This is seemingly smaller than Johnson’s improvement. But that’s
+misleading, because of the use of scientific notation. If we plot out
+Stein’s performance, things clear up quickly:
+
+``` r
+stein_surprise$state <- as.factor(stein_surprise$state)
+
+ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/stein-scatterplot-1.png)<!-- -->
+
+Lets try to plot these together.
+
+``` r
+stein_surprise$state <- as.factor(stein_surprise$state)
+stein_surprise$candidate <- "stein"
+johnson_surprise$candidate <- "johnson"
+
+third_party_surprise <- rbind(stein_surprise,
+                              johnson_surprise)
+```
+
+    ## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+    ## Warning in bind_rows_(x, .id): binding character and factor vector,
+    ## coercing into character vector
+    
+    ## Warning in bind_rows_(x, .id): binding character and factor vector,
+    ## coercing into character vector
+
+``` r
+third_party_surprise$candidate <- as.factor(third_party_surprise$candidate)
+
+ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
+  geom_point() +
+  coord_flip() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/joint-scatterplot-1.png)<!-- -->
+
+Lets restrict focus to states we’re really interested in, the surprising
+ones.
+
+``` r
+swing_states <- c("Florida", "Michigan", "Pennsylvania", "Wisconsin", "Iowa", "Indiana", "North Carolina", "Ohio", "Nebraska")
+ggplot(filter(third_party_surprise, state %in% swing_states), 
+       aes(x=fct_reorder(state, -surprise), 
+           y=surprise, 
+           shape=candidate, 
+           color=candidate)) +
+  geom_point() +
+  theme_fivethirtyeight(base_size = 8)
+```
+
+![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/joint-swing-scatterplot-1.png)<!-- -->
+
+With the exception of Flordia, Jill Stein really didn’t improve that
+much compared to Johnson.
+
+``` r
+johnson_2012 %>%
+  filter(state %in% swing_states) %>%
+  select(state, candidatevotes, totalvotes) %>%
+  group_by(state) %>%
+  mutate(p = candidatevotes/totalvotes) %>%
+  ungroup()
+```
+
+    ## # A tibble: 7 x 4
+    ##   state          candidatevotes totalvotes       p
+    ##   <I<chr>>                <int>      <int>   <dbl>
+    ## 1 Florida                 44726    8474179 0.00528
+    ## 2 Indiana                 50111    2624534 0.0191 
+    ## 3 Iowa                    12926    1582180 0.00817
+    ## 4 Nebraska                11109     794379 0.0140 
+    ## 5 North Carolina          44515    4505372 0.00988
+    ## 6 Ohio                    49493    5580822 0.00887
+    ## 7 Pennsylvania            49991    5742040 0.00871
+
+``` r
+johnson_2016 %>%
+  filter(state %in% swing_states) %>%
+  select(state, candidatevotes, totalvotes) %>%
+  group_by(state) %>%
+  mutate(p = candidatevotes/totalvotes) %>%
+  ungroup()
+```
+
+    ## # A tibble: 8 x 4
+    ##   state          candidatevotes totalvotes      p
+    ##   <I<chr>>                <int>      <int>  <dbl>
+    ## 1 Florida                207043    9420039 0.0220
+    ## 2 Indiana                133993    2734958 0.0490
+    ## 3 Iowa                    59186    1565580 0.0378
+    ## 4 Michigan               172136    4799284 0.0359
+    ## 5 Nebraska                38946     844227 0.0461
+    ## 6 North Carolina         130126    4741564 0.0274
+    ## 7 Pennsylvania           146715    6115402 0.0240
+    ## 8 Wisconsin              106674    2976150 0.0358
