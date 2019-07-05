@@ -3848,8 +3848,11 @@ priors_2016 <- prop_states %>%
   arrange(state,party,year) %>%
   group_by(state,party) %>%
   summarize(moving_prob = last(rollmean(probability, k = 4))) %>%
+  ungroup() %>%
   mutate(year = 2012) %>%
-  rename(probability = moving_prob)
+  group_by(state) %>%
+  mutate(probability = moving_prob/sum(moving_prob)) %>%
+  ungroup()
 
 comp_2016 <- inner_join(priors_2016,
                         filter(prop_states, year==2016),
@@ -4666,7 +4669,7 @@ $third-party
 
 <td style="text-align:right;">
 
-17.893970
+17.953961
 
 </td>
 
@@ -4682,7 +4685,7 @@ democrat
 
 <td style="text-align:right;">
 
-\-11.112706
+\-10.924031
 
 </td>
 
@@ -4698,7 +4701,7 @@ republican
 
 <td style="text-align:right;">
 
-\-7.409328
+\-7.029929
 
 </td>
 
@@ -4708,7 +4711,45 @@ republican
 
 </table>
 
-So, yes, the third party candidates did better than expected.
+So, yes, the third party candidates did better than expected. We could
+even plot the expected outcome:
+
+``` r
+plot_usmap(data = priors_2016 %>%
+             select(-moving_prob) %>%
+             spread(party, probability) %>%
+             mutate(winning_margin = republican - democrat - `$third-party`,
+                    winning_party = ifelse(winning_margin < 0, -1, 1)),
+           values = "winning_party") + 
+  scale_fill_continuous(
+    low = "blue", high = "red", name = "Margin of Victory"
+  ) + theme(legend.position = "right")
+```
+
+![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/expected-map-1.png)<!-- -->
+
+This would have produced the following results:
+
+``` r
+priors_2016 %>%
+  select(-moving_prob) %>%
+  spread(party, probability) %>%
+  mutate(winning_margin = republican - democrat - `$third-party`,
+         winning_party = ifelse(winning_margin < 0, -1, 1)) %>%
+  ungroup() %>%
+  group_by(state) %>%
+  mutate(dem_ed = electoral_delegates[[first(state)]]*ifelse(winning_party==-1, 1, 0),
+         rep_ed = electoral_delegates[[first(state)]]*ifelse(winning_party==1, 1, 0)) %>%
+  ungroup() %>%
+  summarize(democratic_electoral_delegates = sum(dem_ed),
+            republican_electoral_delegates = sum(rep_ed)
+            )
+```
+
+    ## # A tibble: 1 x 2
+    ##   democratic_electoral_delegates republican_electoral_delegates
+    ##                            <dbl>                          <dbl>
+    ## 1                            332                            206
 
 # Third Party Performance: 2016 vs 2012
 
@@ -4777,7 +4818,7 @@ johnson_2012 %>%
 
 We can now examine the (electoral delegate weighted) surprise for each
 state, to see how well Johnson performed compared to our 2012
-expectations.
+expectations. The weighted surprise is:
 
 ``` r
 johnson_surprise <- inner_join(johnson_2012 %>%
@@ -4815,10 +4856,11 @@ johnson_surprise
     ## # ... with 36 more rows
 
 Johnson did surprisingly well compared to his 2012 performance. At this
-rate, he could be president in a century.
+rate, he could be president in a
+century.
 
 ``` r
-johnson_surprise$state <- as.factor(johnson_surprise$state)
+johnson_surprise$state <- factor(johnson_surprise$state, levels=states_and_dc())
 
 ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
@@ -4877,10 +4919,11 @@ stein_surprise
 
 This is seemingly smaller than Johnson’s improvement. But that’s
 misleading, because of the use of scientific notation. If we plot out
-Stein’s performance, things clear up quickly:
+Stein’s performance, things clear up
+quickly:
 
 ``` r
-stein_surprise$state <- as.factor(stein_surprise$state)
+stein_surprise$state <- factor(stein_surprise$state, levels=states_and_dc())
 
 ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
@@ -4893,24 +4936,12 @@ ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
 Lets try to plot these together.
 
 ``` r
-stein_surprise$state <- as.factor(stein_surprise$state)
 stein_surprise$candidate <- "stein"
 johnson_surprise$candidate <- "johnson"
 
 third_party_surprise <- rbind(stein_surprise,
                               johnson_surprise)
-```
-
-    ## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
-
-    ## Warning in bind_rows_(x, .id): binding character and factor vector,
-    ## coercing into character vector
-    
-    ## Warning in bind_rows_(x, .id): binding character and factor vector,
-    ## coercing into character vector
-
-``` r
-third_party_surprise$candidate <- as.factor(third_party_surprise$candidate)
+# third_party_surprise$candidate <- factor(third_party_surprise$candidate, levels=states)
 
 ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
   geom_point() +
@@ -4919,6 +4950,21 @@ ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, sha
 ```
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/joint-scatterplot-1.png)<!-- -->
+
+Just curious, what was the average ratio of Johnson’s improvement to
+Stein’s
+improvement?
+
+``` r
+efficiency <- inner_join(stein_surprise, johnson_surprise, by="state") %>% group_by(state) %>% transmute(rat = surprise.y/surprise.x) %>% arrange(-rat)
+
+mean(efficiency$rat)
+```
+
+    ## [1] 22.88781
+
+**Observe:** Johnson’s improvement from 2012 to 2016 was 22.8878053
+times that of Stein’s improvement (an order of magnitude better\!).
 
 Lets restrict focus to states we’re really interested in, the surprising
 ones.
@@ -4979,3 +5025,34 @@ johnson_2016 %>%
     ## 6 North Carolina         130126    4741564 0.0274
     ## 7 Pennsylvania           146715    6115402 0.0240
     ## 8 Wisconsin              106674    2976150 0.0358
+
+``` r
+right_join(johnson_2012 %>%
+             filter(state %in% swing_states) %>%
+             select(state, candidatevotes, totalvotes) %>%
+             group_by(state) %>%
+             transmute(p_2012 = candidatevotes/totalvotes) %>%
+             ungroup(),
+           johnson_2016 %>%
+             filter(state %in% swing_states) %>%
+             select(state, candidatevotes, totalvotes) %>%
+             group_by(state) %>%
+             transmute(p_2016 = candidatevotes/totalvotes) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  mutate(improvement = ifelse(is.na(p_2012), NA, p_2016/p_2012)) %>%
+  ungroup()
+```
+
+    ## # A tibble: 8 x 4
+    ##   state            p_2012 p_2016 improvement
+    ##   <I<chr>>          <dbl>  <dbl>       <dbl>
+    ## 1 Florida         0.00528 0.0220        4.16
+    ## 2 Indiana         0.0191  0.0490        2.57
+    ## 3 Iowa            0.00817 0.0378        4.63
+    ## 4 Michigan       NA       0.0359       NA   
+    ## 5 Nebraska        0.0140  0.0461        3.30
+    ## 6 North Carolina  0.00988 0.0274        2.78
+    ## 7 Pennsylvania    0.00871 0.0240        2.76
+    ## 8 Wisconsin      NA       0.0358       NA

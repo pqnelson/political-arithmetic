@@ -49,6 +49,10 @@ states <- function() c("Alabama",
                        "Wisconsin",
                        "Wyoming")
 
+states_and_dc <- function() {
+  c(states(), "District of Columbia")
+}
+
 electoral_delegates <- list("Alabama" = 9,
                             "Alaska" = 3,
                             "Arizona" = 11,

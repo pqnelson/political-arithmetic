@@ -17,6 +17,9 @@ library(zoo) # for rollmean()
 library(tidyverse)
 library(rmarkdown)
 library(ggthemes)
+
+library(usmap)
+
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r, include=FALSE}
@@ -368,8 +371,11 @@ priors_2016 <- prop_states %>%
   arrange(state,party,year) %>%
   group_by(state,party) %>%
   summarize(moving_prob = last(rollmean(probability, k = 4))) %>%
+  ungroup() %>%
   mutate(year = 2012) %>%
-  rename(probability = moving_prob)
+  group_by(state) %>%
+  mutate(probability = moving_prob/sum(moving_prob)) %>%
+  ungroup()
 
 comp_2016 <- inner_join(priors_2016,
                         filter(prop_states, year==2016),
@@ -423,7 +429,39 @@ kable(diffs_2016 %>%
         summarize(actual_minus_expected = sum(expected_ed)))
 ```
 
-So, yes, the third party candidates did better than expected.
+So, yes, the third party candidates did better than expected. We could even plot the expected outcome:
+
+```{r expected-map}
+plot_usmap(data = priors_2016 %>%
+             select(-moving_prob) %>%
+             spread(party, probability) %>%
+             mutate(winning_margin = republican - democrat - `$third-party`,
+                    winning_party = ifelse(winning_margin < 0, -1, 1)),
+           values = "winning_party") + 
+  scale_fill_continuous(
+    low = "blue", high = "red", name = "Margin of Victory"
+  ) + theme(legend.position = "right")
+```
+
+This would have produced the following results:
+
+```{r}
+priors_2016 %>%
+  select(-moving_prob) %>%
+  spread(party, probability) %>%
+  mutate(winning_margin = republican - democrat - `$third-party`,
+         winning_party = ifelse(winning_margin < 0, -1, 1)) %>%
+  ungroup() %>%
+  group_by(state) %>%
+  mutate(dem_ed = electoral_delegates[[first(state)]]*ifelse(winning_party==-1, 1, 0),
+         rep_ed = electoral_delegates[[first(state)]]*ifelse(winning_party==1, 1, 0)) %>%
+  ungroup() %>%
+  summarize(democratic_electoral_delegates = sum(dem_ed),
+            republican_electoral_delegates = sum(rep_ed)
+            )
+```
+
+
 
 # Third Party Performance: 2016 vs 2012
 
@@ -457,7 +495,7 @@ johnson_2012 %>%
   ungroup()
 ```
 
-We can now examine the (electoral delegate weighted) surprise for each state, to see how well Johnson performed compared to our 2012 expectations.
+We can now examine the (electoral delegate weighted) surprise for each state, to see how well Johnson performed compared to our 2012 expectations. The weighted surprise is:
 
 ```{r}
 johnson_surprise <- inner_join(johnson_2012 %>%
@@ -481,7 +519,7 @@ johnson_surprise
 Johnson did surprisingly well compared to his 2012 performance. At this rate, he could be president in a century.
 
 ```{r johnson-scatterplot}
-johnson_surprise$state <- as.factor(johnson_surprise$state)
+johnson_surprise$state <- factor(johnson_surprise$state, levels=states_and_dc())
 
 ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
@@ -498,6 +536,7 @@ We can do likewise for Stein, finding the state-level data.
 Stein_2012 <- filter(state_results, year == 2012, candidate == "Stein, Jill")
 Stein_2016 <- filter(state_results, year == 2016, candidate == "Stein, Jill")
 ```
+
 
 We find the (electoral delegate weighted) surprise for Stein:
 
@@ -523,7 +562,7 @@ stein_surprise
 This is seemingly smaller than Johnson's improvement. But that's misleading, because of the use of scientific notation. If we plot out Stein's performance, things clear up quickly:
 
 ```{r stein-scatterplot}
-stein_surprise$state <- as.factor(stein_surprise$state)
+stein_surprise$state <- factor(stein_surprise$state, levels=states_and_dc())
 
 ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
@@ -534,19 +573,28 @@ ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
 Lets try to plot these together.
 
 ```{r joint-scatterplot}
-stein_surprise$state <- as.factor(stein_surprise$state)
 stein_surprise$candidate <- "stein"
 johnson_surprise$candidate <- "johnson"
 
 third_party_surprise <- rbind(stein_surprise,
                               johnson_surprise)
-third_party_surprise$candidate <- as.factor(third_party_surprise$candidate)
+# third_party_surprise$candidate <- factor(third_party_surprise$candidate, levels=states)
 
 ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
   geom_point() +
   coord_flip() +
   theme_fivethirtyeight(base_size = 8)
 ```
+
+Just curious, what was the average ratio of Johnson's improvement to Stein's improvement?
+
+```{r}
+efficiency <- inner_join(stein_surprise, johnson_surprise, by="state") %>% group_by(state) %>% transmute(rat = surprise.y/surprise.x) %>% arrange(-rat)
+
+mean(efficiency$rat)
+```
+
+**Observe:** Johnson's improvement from 2012 to 2016 was `r mean(efficiency$rat)` times that of Stein's improvement (an order of magnitude better!).
 
 Lets restrict focus to states we're really interested in, the surprising ones.
 
@@ -580,3 +628,25 @@ johnson_2016 %>%
   mutate(p = candidatevotes/totalvotes) %>%
   ungroup()
 ```
+
+```{r}
+right_join(johnson_2012 %>%
+             filter(state %in% swing_states) %>%
+             select(state, candidatevotes, totalvotes) %>%
+             group_by(state) %>%
+             transmute(p_2012 = candidatevotes/totalvotes) %>%
+             ungroup(),
+           johnson_2016 %>%
+             filter(state %in% swing_states) %>%
+             select(state, candidatevotes, totalvotes) %>%
+             group_by(state) %>%
+             transmute(p_2016 = candidatevotes/totalvotes) %>%
+             ungroup(),
+           by = "state") %>%
+  group_by(state) %>%
+  mutate(improvement = ifelse(is.na(p_2012), NA, p_2016/p_2012)) %>%
+  ungroup()
+```
+
+
+
