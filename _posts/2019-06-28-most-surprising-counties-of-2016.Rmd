@@ -340,9 +340,9 @@ ggplot(surprise_elections, aes(x=surprise, fill=year)) +
 Why is the 1992 election so surprising? Well, Ross Perot did **surprisingly** well in the popular vote, receiving about 20% of the popular vote. He _literally_ did **surprisingly** well.
 
 ```{r}
-surprise_elections %>%
+kable(surprise_elections %>%
   group_by(year) %>%
-  summarize(surprise = sum(surprise))
+  summarize(surprise = sum(surprise)))
 ```
 
 
@@ -350,9 +350,6 @@ surprise_elections %>%
 ## Overperformed...compared to what?
 
 We should take the time here to note we should be a little careful upon further analysis to take, e.g., the running mean of the percentages for Republican candidates rather than just the last election's results. Well, we would take the running average for the Republican candidate, the Democratic candidate, and "Third Party candidate", then renormalize to make certain the weighted means are transformed into proportions.
-
-```{r}
-```
 
 ```{r}
 prop_states %>%
@@ -388,6 +385,8 @@ comp_2016 <- inner_join(priors_2016,
   mutate(year = 2016)
 ```
 
+The total surprise was
+
 Lets see everything more surprising than Alabama:
 
 ```{r}
@@ -412,21 +411,29 @@ Did Trump overperform or Clinton underperform? Or did third party candidates sur
 We can sum the differences between _expected_ vote proportions and _actual_ vote proportions.
 
 ```{r}
-diffs_2016 <- inner_join(select(filter(prop_states, year==2016), -year), select(priors_2016, -year), by=c("state", "party")) %>%
+diffs_2016 <- inner_join(select(filter(prop_states, year==2016), -year), 
+                         select(priors_2016, -year),
+                         by=c("state", "party")) %>%
   group_by(state,party) %>%
   transmute(delta = probability.x - probability.y) %>%
   ungroup()
 ```
 
-Now we should weigh this by the electoral delegates in each state (honestly, it should be the difference in voters in each state, but this is approximated by the electoral delegate count)
+Now we should weigh this by the total votes in each state:
 
 ```{r}
+total_votes_2016 <- election_2016 %>%
+  select(state,totalvotes) %>%
+  unique()
+
 kable(diffs_2016 %>%
+        inner_join(total_votes_2016, by="state") %>%
         group_by(state,party) %>%
-        mutate(expected_ed = delta*electoral_delegates[[first(state)]]) %>%
+        mutate(expected_ed = delta*totalvotes) %>%
         ungroup() %>%
         group_by(party) %>%
-        summarize(actual_minus_expected = sum(expected_ed)))
+        summarize(actual_votes_minus_expected_votes = sum(expected_ed),
+                  percentages = actual_votes_minus_expected_votes/sum(total_votes_2016$totalvotes)))
 ```
 
 So, yes, the third party candidates did better than expected. We could even plot the expected outcome:
@@ -438,9 +445,21 @@ plot_usmap(data = priors_2016 %>%
              mutate(winning_margin = republican - democrat - `$third-party`,
                     winning_party = ifelse(winning_margin < 0, -1, 1)),
            values = "winning_party") + 
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Expected 2016 Election Results", 
+       subtitle="Hypothetical results based on historic averages from 1976-2012") +
   scale_fill_continuous(
     low = "blue", high = "red", name = "Margin of Victory"
-  ) + theme(legend.position = "right")
+  ) +
+  theme(legend.position = "none",
+        text = element_text(face = "plain", family = "",
+                            colour = "#656565", size = 11,
+                            hjust = 0.5, 
+                            vjust = 0.5, angle = 0, 
+                            lineheight = 0.9),
+        plot.title = element_text(size = rel(1.5), family = '' , 
+                                  face = 'bold', # hjust = -0.05, 
+                                  vjust = 1.5, colour = '#3B3B3B'))
 ```
 
 This would have produced the following results:
@@ -524,7 +543,11 @@ johnson_surprise$state <- factor(johnson_surprise$state, levels=states_and_dc())
 ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Johnson's Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 
@@ -567,7 +590,11 @@ stein_surprise$state <- factor(stein_surprise$state, levels=states_and_dc())
 ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Stein's Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 Lets try to plot these together.
@@ -578,12 +605,18 @@ johnson_surprise$candidate <- "johnson"
 
 third_party_surprise <- rbind(stein_surprise,
                               johnson_surprise)
-# third_party_surprise$candidate <- factor(third_party_surprise$candidate, levels=states)
 
-ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
+ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise),
+                                 y=surprise,
+                                 shape=candidate,
+                                 color=candidate)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Third Party Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 Just curious, what was the average ratio of Johnson's improvement to Stein's improvement?
@@ -649,4 +682,55 @@ right_join(johnson_2012 %>%
 ```
 
 
+# Could Clinton have Won?
 
+Consider now how the third party preferences must have been for Clinton to have won in 2016.
+
+```{r}
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        mutate(delta = republican - democrat))
+```
+First, where is this even possible?
+
+```{r}
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(delta = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(delta < `$third-party`)
+      )
+```
+This sums to 90 delegates, which would have changed the outcome of the election. North Carolina is too tight, almost all third party voters would have to vote for Clinton. If `x` is the ratio of the margin of victory (Republican over Democrat) to the third party vote, then the third party voters need to prefer Clinton to Trump by `x + 0.5*(1 - x) = 0.5 + 0.5*x`.
+
+```{r}
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(delta = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(delta < `$third-party`) %>%
+        mutate(prop = 0.5 + 0.5*delta/`$third-party`)
+      )
+```
+
+FiveThirtyEight noted that when third parties are involved, Clinton's edge decreases by exactly 1%. We can use this to estimate how the third party voters may break:
+
+```{r}
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(trump_margin = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(trump_margin < `$third-party`) %>%
+        mutate(shift_to_clinton = 0.01 + 0.5*(`$third-party` - 0.01)) %>%
+        filter(trump_margin < shift_to_clinton) %>%
+        select(-democrat, -republican, -`$third-party`, -year)
+      )
+```
+
+We see that 38% of third-party voters, in Florida,

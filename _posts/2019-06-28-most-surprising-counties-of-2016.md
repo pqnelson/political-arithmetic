@@ -7,6 +7,7 @@
     2012](#third-party-performance-2016-vs-2012)
       - [Johnson’s Performance](#johnsons-performance)
       - [Stein’s Performance](#steins-performance)
+  - [Could Clinton have Won?](#could-clinton-have-won)
 
 We can measure surprise using the Kullback–Leibler divergence, niftily
 provided by the `LaplacesDemon::KLD()` function. This quantifies how
@@ -3789,22 +3790,166 @@ Why is the 1992 election so surprising? Well, Ross Perot did
 popular vote. He *literally* did **surprisingly** well.
 
 ``` r
-surprise_elections %>%
+kable(surprise_elections %>%
   group_by(year) %>%
-  summarize(surprise = sum(surprise))
+  summarize(surprise = sum(surprise)))
 ```
 
-    ## # A tibble: 8 x 2
-    ##   year  surprise
-    ##   <fct>    <dbl>
-    ## 1 1988     0.850
-    ## 2 1992    33.3  
-    ## 3 1996     2.81 
-    ## 4 2000     2.88 
-    ## 5 2004     1.40 
-    ## 6 2008     0.725
-    ## 7 2012     0.341
-    ## 8 2016     3.52
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+year
+
+</th>
+
+<th style="text-align:right;">
+
+surprise
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+1988
+
+</td>
+
+<td style="text-align:right;">
+
+0.8504352
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+1992
+
+</td>
+
+<td style="text-align:right;">
+
+33.3329646
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+1996
+
+</td>
+
+<td style="text-align:right;">
+
+2.8056336
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2000
+
+</td>
+
+<td style="text-align:right;">
+
+2.8825127
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2004
+
+</td>
+
+<td style="text-align:right;">
+
+1.3989161
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2008
+
+</td>
+
+<td style="text-align:right;">
+
+0.7251642
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2012
+
+</td>
+
+<td style="text-align:right;">
+
+0.3414356
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+2016
+
+</td>
+
+<td style="text-align:right;">
+
+3.5202876
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 ## Overperformed…compared to what?
 
@@ -3864,6 +4009,8 @@ comp_2016 <- inner_join(priors_2016,
   arrange(-surprise) %>%
   mutate(year = 2016)
 ```
+
+The total surprise was
 
 Lets see everything more surprising than
 Alabama:
@@ -4616,23 +4763,29 @@ We can sum the differences between *expected* vote proportions and
 proportions.
 
 ``` r
-diffs_2016 <- inner_join(select(filter(prop_states, year==2016), -year), select(priors_2016, -year), by=c("state", "party")) %>%
+diffs_2016 <- inner_join(select(filter(prop_states, year==2016), -year), 
+                         select(priors_2016, -year),
+                         by=c("state", "party")) %>%
   group_by(state,party) %>%
   transmute(delta = probability.x - probability.y) %>%
   ungroup()
 ```
 
-Now we should weigh this by the electoral delegates in each state
-(honestly, it should be the difference in voters in each state, but this
-is approximated by the electoral delegate count)
+Now we should weigh this by the total votes in each state:
 
 ``` r
+total_votes_2016 <- election_2016 %>%
+  select(state,totalvotes) %>%
+  unique()
+
 kable(diffs_2016 %>%
+        inner_join(total_votes_2016, by="state") %>%
         group_by(state,party) %>%
-        mutate(expected_ed = delta*electoral_delegates[[first(state)]]) %>%
+        mutate(expected_ed = delta*totalvotes) %>%
         ungroup() %>%
         group_by(party) %>%
-        summarize(actual_minus_expected = sum(expected_ed)))
+        summarize(actual_votes_minus_expected_votes = sum(expected_ed),
+                  percentages = actual_votes_minus_expected_votes/sum(total_votes_2016$totalvotes)))
 ```
 
 <table>
@@ -4649,7 +4802,13 @@ party
 
 <th style="text-align:right;">
 
-actual\_minus\_expected
+actual\_votes\_minus\_expected\_votes
+
+</th>
+
+<th style="text-align:right;">
+
+percentages
 
 </th>
 
@@ -4669,7 +4828,13 @@ $third-party
 
 <td style="text-align:right;">
 
-17.953961
+4397608
+
+</td>
+
+<td style="text-align:right;">
+
+0.0321493
 
 </td>
 
@@ -4685,7 +4850,13 @@ democrat
 
 <td style="text-align:right;">
 
-\-10.924031
+\-2605576
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0190484
 
 </td>
 
@@ -4701,7 +4872,13 @@ republican
 
 <td style="text-align:right;">
 
-\-7.029929
+\-1792032
+
+</td>
+
+<td style="text-align:right;">
+
+\-0.0131009
 
 </td>
 
@@ -4721,9 +4898,21 @@ plot_usmap(data = priors_2016 %>%
              mutate(winning_margin = republican - democrat - `$third-party`,
                     winning_party = ifelse(winning_margin < 0, -1, 1)),
            values = "winning_party") + 
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Expected 2016 Election Results", 
+       subtitle="Hypothetical results based on historic averages from 1976-2012") +
   scale_fill_continuous(
     low = "blue", high = "red", name = "Margin of Victory"
-  ) + theme(legend.position = "right")
+  ) +
+  theme(legend.position = "none",
+        text = element_text(face = "plain", family = "",
+                            colour = "#656565", size = 11,
+                            hjust = 0.5, 
+                            vjust = 0.5, angle = 0, 
+                            lineheight = 0.9),
+        plot.title = element_text(size = rel(1.5), family = '' , 
+                                  face = 'bold', # hjust = -0.05, 
+                                  vjust = 1.5, colour = '#3B3B3B'))
 ```
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/expected-map-1.png)<!-- -->
@@ -4865,7 +5054,11 @@ johnson_surprise$state <- factor(johnson_surprise$state, levels=states_and_dc())
 ggplot(johnson_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Johnson's Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/johnson-scatterplot-1.png)<!-- -->
@@ -4928,7 +5121,11 @@ stein_surprise$state <- factor(stein_surprise$state, levels=states_and_dc())
 ggplot(stein_surprise, aes(x=fct_reorder(state, surprise), y=surprise)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Stein's Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight(base_size = 8) +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/stein-scatterplot-1.png)<!-- -->
@@ -4941,12 +5138,18 @@ johnson_surprise$candidate <- "johnson"
 
 third_party_surprise <- rbind(stein_surprise,
                               johnson_surprise)
-# third_party_surprise$candidate <- factor(third_party_surprise$candidate, levels=states)
 
-ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise), y=surprise, shape=candidate, color=candidate)) +
+ggplot(third_party_surprise, aes(x=fct_reorder(state, surprise),
+                                 y=surprise,
+                                 shape=candidate,
+                                 color=candidate)) +
   geom_point() +
   coord_flip() +
-  theme_fivethirtyeight(base_size = 8)
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "Third Party Improvement", 
+       subtitle="in the 2016 election, compared to 2012 election") +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text()) + xlab("State") + ylab("Surprise (bits)")
 ```
 
 ![](2019-06-28-most-surprising-counties-of-2016_files/figure-gfm/joint-scatterplot-1.png)<!-- -->
@@ -5056,3 +5259,1242 @@ right_join(johnson_2012 %>%
     ## 6 North Carolina  0.00988 0.0274        2.78
     ## 7 Pennsylvania    0.00871 0.0240        2.76
     ## 8 Wisconsin      NA       0.0358       NA
+
+# Could Clinton have Won?
+
+Consider now how the third party preferences must have been for Clinton
+to have won in 2016.
+
+``` r
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        mutate(delta = republican - democrat))
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:right;">
+
+year
+
+</th>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+$third-party
+
+</th>
+
+<th style="text-align:right;">
+
+democrat
+
+</th>
+
+<th style="text-align:right;">
+
+republican
+
+</th>
+
+<th style="text-align:right;">
+
+delta
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.0315474
+
+</td>
+
+<td style="text-align:right;">
+
+0.4782332
+
+</td>
+
+<td style="text-align:right;">
+
+0.4902194
+
+</td>
+
+<td style="text-align:right;">
+
+0.0119863
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Indiana
+
+</td>
+
+<td style="text-align:right;">
+
+0.0528513
+
+</td>
+
+<td style="text-align:right;">
+
+0.3777484
+
+</td>
+
+<td style="text-align:right;">
+
+0.5694003
+
+</td>
+
+<td style="text-align:right;">
+
+0.1916519
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Iowa
+
+</td>
+
+<td style="text-align:right;">
+
+0.0708543
+
+</td>
+
+<td style="text-align:right;">
+
+0.4175251
+
+</td>
+
+<td style="text-align:right;">
+
+0.5116206
+
+</td>
+
+<td style="text-align:right;">
+
+0.0940955
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.0522790
+
+</td>
+
+<td style="text-align:right;">
+
+0.4727453
+
+</td>
+
+<td style="text-align:right;">
+
+0.4749756
+
+</td>
+
+<td style="text-align:right;">
+
+0.0022303
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Nebraska
+
+</td>
+
+<td style="text-align:right;">
+
+0.0755389
+
+</td>
+
+<td style="text-align:right;">
+
+0.3369876
+
+</td>
+
+<td style="text-align:right;">
+
+0.5874735
+
+</td>
+
+<td style="text-align:right;">
+
+0.2504859
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.0399904
+
+</td>
+
+<td style="text-align:right;">
+
+0.4617287
+
+</td>
+
+<td style="text-align:right;">
+
+0.4982809
+
+</td>
+
+<td style="text-align:right;">
+
+0.0365523
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Ohio
+
+</td>
+
+<td style="text-align:right;">
+
+0.0475427
+
+</td>
+
+<td style="text-align:right;">
+
+0.4355808
+
+</td>
+
+<td style="text-align:right;">
+
+0.5168765
+
+</td>
+
+<td style="text-align:right;">
+
+0.0812957
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.0356850
+
+</td>
+
+<td style="text-align:right;">
+
+0.4785362
+
+</td>
+
+<td style="text-align:right;">
+
+0.4857789
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072427
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.0632797
+
+</td>
+
+<td style="text-align:right;">
+
+0.4645384
+
+</td>
+
+<td style="text-align:right;">
+
+0.4721818
+
+</td>
+
+<td style="text-align:right;">
+
+0.0076434
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+First, where is this even possible?
+
+``` r
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(delta = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(delta < `$third-party`)
+      )
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:right;">
+
+year
+
+</th>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+$third-party
+
+</th>
+
+<th style="text-align:right;">
+
+democrat
+
+</th>
+
+<th style="text-align:right;">
+
+republican
+
+</th>
+
+<th style="text-align:right;">
+
+delta
+
+</th>
+
+<th style="text-align:right;">
+
+delegates
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.0315474
+
+</td>
+
+<td style="text-align:right;">
+
+0.4782332
+
+</td>
+
+<td style="text-align:right;">
+
+0.4902194
+
+</td>
+
+<td style="text-align:right;">
+
+0.0119863
+
+</td>
+
+<td style="text-align:right;">
+
+29
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.0522790
+
+</td>
+
+<td style="text-align:right;">
+
+0.4727453
+
+</td>
+
+<td style="text-align:right;">
+
+0.4749756
+
+</td>
+
+<td style="text-align:right;">
+
+0.0022303
+
+</td>
+
+<td style="text-align:right;">
+
+16
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.0399904
+
+</td>
+
+<td style="text-align:right;">
+
+0.4617287
+
+</td>
+
+<td style="text-align:right;">
+
+0.4982809
+
+</td>
+
+<td style="text-align:right;">
+
+0.0365523
+
+</td>
+
+<td style="text-align:right;">
+
+15
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.0356850
+
+</td>
+
+<td style="text-align:right;">
+
+0.4785362
+
+</td>
+
+<td style="text-align:right;">
+
+0.4857789
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072427
+
+</td>
+
+<td style="text-align:right;">
+
+20
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.0632797
+
+</td>
+
+<td style="text-align:right;">
+
+0.4645384
+
+</td>
+
+<td style="text-align:right;">
+
+0.4721818
+
+</td>
+
+<td style="text-align:right;">
+
+0.0076434
+
+</td>
+
+<td style="text-align:right;">
+
+10
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+This sums to 90 delegates, which would have changed the outcome of the
+election. North Carolina is too tight, almost all third party voters
+would have to vote for Clinton. If `x` is the ratio of the margin of
+victory (Republican over Democrat) to the third party vote, then the
+third party voters need to prefer Clinton to Trump by `x + 0.5*(1 - x)
+= 0.5 + 0.5*x`.
+
+``` r
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(delta = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(delta < `$third-party`) %>%
+        mutate(prop = 0.5 + 0.5*delta/`$third-party`)
+      )
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:right;">
+
+year
+
+</th>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+$third-party
+
+</th>
+
+<th style="text-align:right;">
+
+democrat
+
+</th>
+
+<th style="text-align:right;">
+
+republican
+
+</th>
+
+<th style="text-align:right;">
+
+delta
+
+</th>
+
+<th style="text-align:right;">
+
+delegates
+
+</th>
+
+<th style="text-align:right;">
+
+prop
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.0315474
+
+</td>
+
+<td style="text-align:right;">
+
+0.4782332
+
+</td>
+
+<td style="text-align:right;">
+
+0.4902194
+
+</td>
+
+<td style="text-align:right;">
+
+0.0119863
+
+</td>
+
+<td style="text-align:right;">
+
+29
+
+</td>
+
+<td style="text-align:right;">
+
+0.6899720
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.0522790
+
+</td>
+
+<td style="text-align:right;">
+
+0.4727453
+
+</td>
+
+<td style="text-align:right;">
+
+0.4749756
+
+</td>
+
+<td style="text-align:right;">
+
+0.0022303
+
+</td>
+
+<td style="text-align:right;">
+
+16
+
+</td>
+
+<td style="text-align:right;">
+
+0.5213310
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+North Carolina
+
+</td>
+
+<td style="text-align:right;">
+
+0.0399904
+
+</td>
+
+<td style="text-align:right;">
+
+0.4617287
+
+</td>
+
+<td style="text-align:right;">
+
+0.4982809
+
+</td>
+
+<td style="text-align:right;">
+
+0.0365523
+
+</td>
+
+<td style="text-align:right;">
+
+15
+
+</td>
+
+<td style="text-align:right;">
+
+0.9570133
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.0356850
+
+</td>
+
+<td style="text-align:right;">
+
+0.4785362
+
+</td>
+
+<td style="text-align:right;">
+
+0.4857789
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072427
+
+</td>
+
+<td style="text-align:right;">
+
+20
+
+</td>
+
+<td style="text-align:right;">
+
+0.6014810
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2016
+
+</td>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.0632797
+
+</td>
+
+<td style="text-align:right;">
+
+0.4645384
+
+</td>
+
+<td style="text-align:right;">
+
+0.4721818
+
+</td>
+
+<td style="text-align:right;">
+
+0.0076434
+
+</td>
+
+<td style="text-align:right;">
+
+10
+
+</td>
+
+<td style="text-align:right;">
+
+0.5603940
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+FiveThirtyEight noted that when third parties are involved, Clinton’s
+edge decreases by exactly 1%. We can use this to estimate how the third
+party voters may break:
+
+``` r
+kable(filter(prop_states, state %in% swing_states, year==2016) %>%
+        spread(party, probability) %>%
+        group_by(state) %>%
+        mutate(trump_margin = republican - democrat,
+               delegates = electoral_delegates[[first(state)]]) %>%
+        ungroup() %>%
+        filter(trump_margin < `$third-party`) %>%
+        mutate(shift_to_clinton = 0.01 + 0.5*(`$third-party` - 0.01)) %>%
+        filter(trump_margin < shift_to_clinton) %>%
+        select(-democrat, -republican, -`$third-party`, -year)
+      )
+```
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+state
+
+</th>
+
+<th style="text-align:right;">
+
+trump\_margin
+
+</th>
+
+<th style="text-align:right;">
+
+delegates
+
+</th>
+
+<th style="text-align:right;">
+
+shift\_to\_clinton
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+Florida
+
+</td>
+
+<td style="text-align:right;">
+
+0.0119863
+
+</td>
+
+<td style="text-align:right;">
+
+29
+
+</td>
+
+<td style="text-align:right;">
+
+0.0207737
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Michigan
+
+</td>
+
+<td style="text-align:right;">
+
+0.0022303
+
+</td>
+
+<td style="text-align:right;">
+
+16
+
+</td>
+
+<td style="text-align:right;">
+
+0.0311395
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Pennsylvania
+
+</td>
+
+<td style="text-align:right;">
+
+0.0072427
+
+</td>
+
+<td style="text-align:right;">
+
+20
+
+</td>
+
+<td style="text-align:right;">
+
+0.0228425
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Wisconsin
+
+</td>
+
+<td style="text-align:right;">
+
+0.0076434
+
+</td>
+
+<td style="text-align:right;">
+
+10
+
+</td>
+
+<td style="text-align:right;">
+
+0.0366399
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+We see that 38% of third-party voters, in Florida,
