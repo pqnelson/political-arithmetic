@@ -135,19 +135,20 @@ ggplot(cor_mat, aes(x=val)) +
 
 ``` r
 mat <- matrix(0, 51, 51)
-edges <- filter(cor_mat, val > quantile(cor_mat$val, probs = c(0.9))[1])
+edges <- filter(cor_mat, val > quantile(cor_mat$val, probs = c(0.925))[1])
 for (i in 1:51) {
-  relevant_edges <- filter(edges, from == states[i], to %in% neighboring_states[[states[i]]])
-  if (nrow(relevant_edges) == 0 & length(neighboring_states[[states[i]]]) > 0 & F) {
-    to <- factor((filter(cor_mat, from == states[i], to %in% neighboring_states[[states[i]]]) %>% arrange(-val))$to[1], states)
+  relevant_edges <- rbind(filter(edges, from == states[i], to %in% neighboring_states[[states[i]]]),
+                          filter(edges, to == states[i], from %in% neighboring_states[[states[i]]]))
+  
+  for (j in relevant_edges$from) {
+    to <- factor(j, states)
     mat[i, as.integer(to)] <- 1
     mat[as.integer(to), i] <- 1
-  } else {
-    for (j in relevant_edges$to) {
-      to <- factor(j, states)
-      mat[i, as.integer(to)] <- 1
-      mat[as.integer(to), i] <- 1
-    }
+  }
+  for (j in relevant_edges$to) {
+    to <- factor(j, states)
+    mat[i, as.integer(to)] <- 1
+    mat[as.integer(to), i] <- 1
   }
 }
 rownames(mat) <- states
@@ -156,10 +157,10 @@ colnames(mat) <- states
 tr_ad <- transitiveClosure(mat)
 rownames(tr_ad) <- states
 colnames(tr_ad) <- states
-
+tr_ad0 <- tr_ad
 
 for (i in 1:51) {
-  if (all(tr_ad[i,] == 0 & length(neighboring_states[[states[i]]]) > 0)) {
+  if (all(tr_ad[i,] == 0) & length(neighboring_states[[states[i]]]) > 0) {
     print(i)
     choices <- rbind(filter(cor_mat, from == states[i], to %in% neighboring_states[[states[i]]]),
                      filter(cor_mat, to == states[i], from %in% neighboring_states[[states[i]]]))
@@ -183,6 +184,11 @@ for (i in 1:51) {
     ## 3 Arizona New Mexico 0.9560578
     ## 4 Arizona California 0.9066506
     ## 5 Arizona       Utah 0.8905851
+    ## [1] 5
+    ##         from         to       val
+    ## 1 California     Oregon 0.9841654
+    ## 2 California     Nevada 0.9486876
+    ## 3    Arizona California 0.9066506
     ## [1] 7
     ##          from            to       val
     ## 1 Connecticut      New York 0.9652274
@@ -259,9 +265,7 @@ for (i in 1:51) {
 tr_ad <- transitiveClosure(tr_ad)
 rownames(tr_ad) <- states
 colnames(tr_ad) <- states
-```
 
-``` r
 ci <- 1
 clusters <- data.frame(region = c(),
                        cluster = c())
@@ -276,15 +280,7 @@ for (i in 1:51) {
   }
 }
 clusters$cluster <- factor(clusters$cluster)
-```
 
-``` r
-party_colors <- c("#008FD5", "#ff7400","#77AB43",
-                  "#008FD5", "#77AB43", "#FF2700",
-                  "#008FD5", # "#FF2700", 
-                  "#ff7400", # "#FF2700", 
-                  "#77AB43",
-                   "#FF2700", "#FF2700", "#77AB43")
 us_states <- map_data("state")
 clustered_states <- us_states %>%
   inner_join(clusters, by = "region")
@@ -294,10 +290,27 @@ clustered_states <- us_states %>%
     ## character vector
 
 ``` r
-p <- ggplot(data = clustered_states,
+red <- "#FF2700"
+orange <- "#ff7400"
+green <- "#77AB43"
+blue <- "#008FD5"
+party_colors <- c(blue, # 1
+                  orange, # 2
+                  green, # 3
+                  blue, # 4
+                  green, # 5
+                  red, # 6
+                  blue, # 7 
+                  orange, # 8
+                  green, # 9
+                  red, # 10
+                  red, # 11
+                  blue) # 12
+
+ggplot(data = clustered_states,
             mapping = aes(x = long, y = lat, 
-                          fill = cluster, group = group))
-p + geom_polygon(color = "gray90", size = 0.1) + 
+                          fill = cluster, group = group)) +
+  geom_polygon(color = "gray90", size = 0.1) + 
   coord_fixed(1.3) +
   scale_fill_manual(values = party_colors) +
   guides(fill = FALSE) + # no legend!
@@ -307,9 +320,3 @@ p + geom_polygon(color = "gray90", size = 0.1) +
 ```
 
 ![](2019-07-25-political-geography_files/figure-gfm/clustered_map-1.png)<!-- -->
-
-``` r
-p
-```
-
-![](2019-07-25-political-geography_files/figure-gfm/clustered_map-2.png)<!-- -->
