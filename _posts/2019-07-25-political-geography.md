@@ -20,7 +20,7 @@ house_data <- x %>%
   mutate(party = ifelse((party == "democrat" | party == "democratic-farmer-labor") & writein == F, "democrat",
                         ifelse(party == "republican" & writein == F, party, "$third")))
 
-load("../data/elections/presidential/state/1976-2016-president.RData")
+load("../data/elections/presidential/state/1976_2016_president.RData")
 president_data <- x %>%
   mutate(party = ifelse((party == "democrat" | party == "democratic-farmer-labor") & writein == F, "democrat",
                         ifelse(party == "republican" & writein == F, party, "$third"))) %>%
@@ -213,6 +213,14 @@ for (i in 1:51) {
     ## 4 Arkansas  Missouri 0.9684993
     ## 5   Kansas  Missouri 0.9543109
     ## 6 Illinois  Missouri 0.9415298
+    ## [1] 28
+    ##       from           to       val
+    ## 1   Kansas     Nebraska 0.9592088
+    ## 2 Nebraska South Dakota 0.9520224
+    ## 3 Colorado     Nebraska 0.9331155
+    ## 4 Nebraska      Wyoming 0.9299419
+    ## 5 Missouri     Nebraska 0.9015656
+    ## 6     Iowa     Nebraska 0.8801388
     ## [1] 29
     ##         from     to       val
     ## 1    Arizona Nevada 0.9819895
@@ -292,7 +300,10 @@ p <- ggplot(data = clustered_states,
 p + geom_polygon(color = "gray90", size = 0.1) + 
   coord_fixed(1.3) +
   scale_fill_manual(values = party_colors) +
-  guides(fill = FALSE)  # do this to leave off the color legend
+  guides(fill = FALSE) + # no legend!
+  labs(caption="http://political-arithmetic.blogspot.com",
+       title= "State Clusters", 
+       subtitle="Clustering states based on Presidential voting behavior 1976-2016")
 ```
 
 ![](2019-07-25-political-geography_files/figure-gfm/clustered_map-1.png)<!-- -->
