@@ -10,10 +10,12 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(ape)
 library(tidyverse)
 library(ggplot2)
 library(ggthemes)
 library(maps)
+library(usmap)
 
 library(MXM) # for transitiveClosure()
 library(zoo)
@@ -249,4 +251,330 @@ ggplot(data = clustered_states,
        title= "State Clusters", 
        subtitle="Clustering states based on Presidential voting behavior 1976-2016")
 ```
+
+
+# Using Spatial Autocorrelation, Within a State
+
+Within a given state, we want to cluster adjacent counties together based on presidential voting patterns.
+
+```{r}
+source("../R/presidential_elections.R")
+
+county_data <- make_party_into_factor(load_obj(county_path)) %>%
+  group_by(year, FIPS, party, candidate) %>%
+  mutate(percent = sum(candidatevotes)/sum(totalvotes)) %>%
+  ungroup()
+```
+
+## Neighboring Counties Data
+
+We can download a CSV from [NBER](https://www.nber.org/data/county-adjacency.html)
+to track neighboring counties.
+
+```{r}
+neighboring_counties <- read_csv("../data/census/county_adjacency2010.csv",
+                                 col_types = cols(countyname   = col_character(),
+                                                  fipscounty   = col_integer(),
+                                                  neighborname = col_character(),
+                                                  fipsneighbor = col_integer())) %>%
+  select(fipscounty, fipsneighbor) %>%
+  filter(fipscounty != fipsneighbor) %>%
+  rename(from = fipscounty,
+         to = fipsneighbor)
+```
+
+## Test Case: Iowa
+
+Lets try seeing what happens for Iowa based on 2012.
+
+```{r}
+ia_votes <- (county_data %>%
+               filter(state == "Iowa",
+                      year == 2016,
+                      party == "republican") %>%
+               select(FIPS, percent) %>%
+               arrange(FIPS))$percent
+```
+
+We need to compute the adjacency matrix.
+
+```{r}
+ia_fips <- sort(unique((county_data %>%
+               filter(state == "Iowa",
+                      year == 2016,
+                      party == "republican") %>%
+               select(FIPS, percent))$FIPS))
+
+ia_neighboring_counties <- neighboring_counties %>%
+  filter(from %in% ia_fips, to %in% ia_fips)
+
+ia_adj_mat <- matrix(0, nrow = length(ia_fips), ncol = length(ia_fips))
+for (i in 1:length(ia_fips)) {
+  county_i <- ia_fips[[i]]
+  neighbors <- filter(ia_neighboring_counties, from == county_i)
+  for (j in 1:length(ia_fips)) {
+    county_j <- ia_fips[[j]]
+    if (county_j %in% neighbors$to && !(i == j)) {
+      ia_adj_mat[i,j] <- 1
+    }
+  }
+}
+```
+
+Then we compute Moran's I matrix:
+
+```{r}
+ia_moran <- rep(0, length(ia_votes))
+
+m2 <- sd(ia_votes)
+mu <- mean(ia_votes)
+for (i in 1:length(ia_moran)) {
+  ia_moran[[i]] <- ((ia_votes[[i]] - mu)/m2)*sum(ia_votes[[i]] * (ia_adj_mat %*% ia_votes)[[i]])
+}
+
+ia_results <- data.frame(fips = ia_fips,
+                         i = ia_moran)
+```
+
+We plot it out:
+
+```{r, ia-test1}
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "blue", high = "red", name = "Vote Homogeneity", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+## Wrap this in a function
+
+We first have a helper function to construct the adjacency matrix for counties within a given state:
+
+```{r}
+make_county_fips <- function(state_fullname) {
+  sort(unique((county_data %>%
+                 filter(state == state_fullname,
+                        party == "republican") %>%
+                 select(FIPS, percent))$FIPS))
+}
+
+make_county_adj_mat <- function(state_fullname) {
+  county_fips <- make_county_fips(state_fullname)
+  
+  state_neighboring_counties <- neighboring_counties %>%
+    filter(from %in% county_fips, to %in% county_fips)
+  
+  county_adj_mat <- matrix(0, nrow = length(county_fips), ncol = length(county_fips))
+  for (i in 1:length(county_fips)) {
+    county_i <- county_fips[[i]]
+    neighbors <- filter(state_neighboring_counties, from == county_i)
+    for (j in 1:length(county_fips)) {
+      county_j <- county_fips[[j]]
+      
+      if ((county_j %in% neighbors$to) && !(i == j)) {
+        county_adj_mat[i, j] <- 1
+      }
+    }
+  }
+  diag(county_adj_mat) <- 0
+  return(county_adj_mat)
+}
+```
+
+
+We can now wrap this in a function, asking for a year and state to plot out. We have two versions: one for using a weighted average (weighing recent elections heavier), and one for a "vanilla" average.
+
+Moran's I will tell us the "local variance" relative to the "global variance" ratio, for each county.
+
+```{r}
+plot_moran_i <- function(state_fullname, use_weighted_avg = F) {
+  if (use_weighted_avg) {
+    print("In the 'use weighted avg' branch...")
+    state_votes <- (county_data  %>%
+                       filter(state == state_fullname,
+                              party == "republican") %>%
+                       # group_by(year) %>%
+                       mutate(w_cv = ((year - 1996)/4)*candidatevotes,
+                              w_tv = ((year - 1996)/4)*totalvotes) %>%
+                       # ungroup() %>%
+                       group_by(FIPS) %>%
+                       summarize(percent = sum(w_cv)/sum(w_tv)) %>%
+                       arrange(FIPS))$percent
+    mu <- (county_data %>%
+             filter(state == state_fullname,
+                    party == "republican") %>%
+             group_by(year) %>%
+             mutate(w_cv = ((year - 1996)/4)*candidatevotes,
+                    w_tv = ((year - 1996)/4)*totalvotes) %>%
+             ungroup() %>%
+             summarize(mu = sum(w_cv)/sum(w_tv)))$mu
+  } else {
+    state_votes <- (county_data  %>%
+                       filter(state == state_fullname,
+                              party == "republican") %>%
+                       group_by(FIPS) %>%
+                       summarize(percent = sum(candidatevotes)/sum(totalvotes)) %>%
+                       arrange(FIPS))$percent
+    mu <- (county_data %>%
+             filter(state == state_fullname,
+                    party == "republican") %>%
+             summarize(mu = sum(candidatevotes)/sum(totalvotes)))$mu
+  }
+  print(paste0("mu = ", mu))
+  
+  county_adj_mat <- make_county_adj_mat(state_fullname)
+  
+  print("Computing Moran's I vector")
+  state_moran <- rep(0, length(state_votes))
+
+  S0 <- sum(unlist(county_adj_mat))
+  z <- state_votes - mu
+  m2 <- sum(z**2)/(length(z))
+  v <- (county_adj_mat %*% z)
+  
+  state_moran <- (z*v)/(m2)
+  
+  county_fips <- make_county_fips(state_fullname)
+  results <<- data.frame(fips = county_fips,
+                         i = state_moran)
+  
+  plot_usmap(data = results,
+             regions = "counties",
+             include = state_fullname,
+             values = "i") + 
+    scale_fill_continuous(
+      low = "white", high = "red", name = "Vote Homogeneity") + theme(legend.position = "right")
+}
+```
+462
+```{r, ia-moran-unweighted}
+plot_moran_i("Iowa", F)
+```
+
+```{r, ia-moran-weighted}
+plot_moran_i("Iowa", T)
+```
+## Local Geary
+
+The local Geary's C tells us how similar a county is to its neighbors, intuitively the off-diagonal rows of the cross-covariance matrix.
+
+```{r}
+plot_geary <- function(state_fullname) {
+  state_votes <- (county_data %>%
+                    filter(state == state_fullname,
+                           party == "republican") %>%
+                    group_by(FIPS) %>%
+                    summarize(percent = sum(candidatevotes)/sum(totalvotes)) %>%
+                    arrange(FIPS))$percent
+  
+  county_adj_mat <- make_county_adj_mat(state_fullname)
+  
+  mu <- (county_data %>%
+           filter(state == state_fullname,
+                  party == "republican") %>%
+           summarize(mu = sum(candidatevotes)/sum(totalvotes)))$mu
+
+  S0 <- sum(unlist(county_adj_mat))
+  # m2 <- sum((state_votes - mu)**2)/(length(state_votes))
+  z <- state_votes - mu
+  m2 <- sum(z**2)/(length(z) - 1)
+
+  geary <- rep(0, length(z))
+  for (i in 1:length(geary)) {
+    u <- (z[[i]] - z)**2
+    geary[[i]] <- (county_adj_mat[i,] %*% u)[[1]]
+  }
+  geary <<- geary/(2*sum(unlist(county_adj_mat))*m2)
+  
+  county_fips <- sort(unique((county_data %>%
+                                filter(state == state_fullname,
+                                       party == "republican") %>%
+                                select(FIPS, percent))$FIPS))
+  results <<- data.frame(fips = county_fips,
+                         i = geary)
+  
+  plot_usmap(data = results,
+             regions = "counties",
+             include = state_fullname,
+             values = "i") + 
+    scale_fill_continuous(
+      low = "white", high = "red", name = "Vote Homogeneity") + theme(legend.position = "right")
+}
+```
+
+For example, Ohio highlights major cluster centers.
+
+```{r, ia-geary}
+plot_geary("Ohio")
+```
+
+
+## Local Lags
+
+We can plot the percent a county voted for the Republican versus the average percent of its neighbors.
+
+```{r}
+plot_lag <- function(state_fullname) {
+  state_votes <- (county_data %>%
+                    filter(state == state_fullname,
+                           party == "republican") %>%
+                    group_by(year) %>%
+                    mutate(w_cv = (((year - 1996)/4))*candidatevotes,
+                           w_tv = (((year - 1996)/4))*totalvotes) %>%
+                    ungroup() %>%
+                    group_by(FIPS) %>%
+                    summarize(percent = sum(w_cv)/sum(w_tv)) %>%
+                    arrange(FIPS))$percent
+  
+  county_fips <- sort(unique((county_data %>%
+                                filter(state == state_fullname,
+                                       party == "republican") %>%
+                                select(FIPS, percent))$FIPS))
+  
+  county_adj_mat <- make_county_adj_mat(state_fullname)
+  for(i in 1:nrow(county_adj_mat)) {
+    county_adj_mat[i, ] <- county_adj_mat[i, ]/sum(county_adj_mat[i, ])
+  }
+
+  mu <- (county_data %>%
+           filter(state == state_fullname,
+                  party == "republican") %>%
+           mutate(w_cv = (((year - 1996)/4))*candidatevotes,
+                  w_tv = (((year - 1996)/4))*totalvotes) %>%
+           summarize(mu = sum(w_cv)/sum(w_tv)))$mu
+  z <- state_votes
+  neighbor_lag <- (county_adj_mat %*% z)
+  results <- data.frame(county = z,
+                        neighbor = neighbor_lag)
+  ggplot(results, aes(x = county, y = neighbor)) + 
+    geom_point(shape = 18, color = "blue") +
+    geom_smooth(method = lm,  linetype = "dashed",
+                color = "darkred", fill = "blue") +
+    geom_abline(intercept = 0, slope = 1) +
+    labs(title = paste0("County Presidential Voting in ", state_fullname),
+         subtitle = "Compared to average neighboring counties") +
+    ylab("Average neighbor's vote for Republican (%)") +
+    xlab("County Republican Vote (%)")
+}
+```
+
+Example:
+
+```{r, lag-ia}
+plot_lag("Iowa")
+```
+
+
+```{r, lag-pa}
+plot_lag("Pennsylvania")
+```
+
+```{r, lag-oh}
+plot_lag("Ohio")
+```
+
+```{r, lag-mi}
+plot_lag("Michigan")
+```
+
+
 
