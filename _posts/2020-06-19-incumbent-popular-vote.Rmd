@@ -1,0 +1,287 @@
+---
+title: "Incumbent Presidential approval and popular vote percentage in re-election"
+author: "Alex Nelson"
+date: "06/19/2020"
+output:
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+# install.package("tidyverse", dependencies=T)
+# library(knitr)
+library(tidyverse)
+# library(rmarkdown)
+```
+
+```{r}
+source("./R/presidential_elections.R")
+```
+
+# Introduction
+
+Today I'd like to see whether the presidential approval rating for the
+incumbent running for re-election has any correlation at all with the
+popular vote received by the incumbent. (This cropped up recently
+because a FOX poll had Trump receiving 38% of the vote, but 44% job
+approval. Confusion surrounded how to interpret this.)
+
+What data do we need to do this analysis? Well, the popular vote
+received by the incumbent president seeking re-election, and the
+presidential approval rating. Both of these seem quite feasibly
+available.
+
+One problem is, if we have multiple approval rating polls released in
+October, how do we combine them into a single statistic? A running mean
+seems fine as a first pass, there might be a better way.
+
+Now, we have two proportions `popular_vote` and `approval_rating`, how
+do we compare them? We form the difference `popular_vote - approval_rating`
+and our prior assumption is that this should be a normally distributed
+random variable with zero mean. In other words: approval rating
+forecasts popular vote, modulo some random noise (modeled as a Gaussian
+random variable). We can estimate the Gaussian using Bayesian analysis
+(since we stipulate its mean is zero). 
+
+## Aside: Discussion on Priors for Variance
+
+Gelman et al.'s 'Prior distributions for
+variance parameters in hierarchical models" suggests using a half-t
+distribution for weakly-informative prior distribution of the variance
+parameter in such situations, and that seems as good a choice as
+anything.
+
+(They characterize a "prior distribution as _weakly informative_ if it
+is proper by is set up so that the information it does provide is
+intentionally weaker than whatever actual prior knowledge is
+available.")
+
+Another popular choice is to use a half-Cauchy distribution, which is
+similar to a half-t distribution. This distribution doesn't have a
+defined expected value. Its CDF is $\Pr(Y\leq y|\sigma) =
+(\sigma/\pi)\log(1 + y^{2}/\sigma^{2})$.
+Its median is the $y$ when this is 0.5, so $y_{0} = \sigma\sqrt{\exp(\pi/(2\sigma))-1}$
+is the median.
+
+## Loading the Data
+
+Before getting ahead of ourselves, lets load the data:
+
+```{r}
+# nixon <- read_csv("data/presidential_approval/gallup_nixon.csv")
+ford <- read_csv("./data/presidential_approval/gallup_ford.csv",
+                 col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                  `End Date` = col_date("%m/%d/%Y")))
+carter <- read_csv("data/presidential_approval/gallup_carter.csv",
+                   col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                    `End Date` = col_date("%m/%d/%Y")))
+reagan <- read_csv("data/presidential_approval/gallup_reagan.csv",
+                   col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                    `End Date` = col_date("%m/%d/%Y")))
+bush_sr <- read_csv("data/presidential_approval/gallup_bush.csv",
+                    col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                     `End Date` = col_date("%m/%d/%Y")))
+clinton <- read_csv("data/presidential_approval/gallup_clinton.csv",
+                    col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                     `End Date` = col_date("%m/%d/%Y")))
+w_bush <- read_csv("data/presidential_approval/gallup_w_bush.csv",
+                   col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                    `End Date` = col_date("%m/%d/%Y")))
+obama <- read_csv("data/presidential_approval/gallup_obama.csv",
+                  col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                   `End Date` = col_date("%m/%d/%Y")))
+```
+
+Then we filter out the polls that occur _after_ the election:
+
+```{r}
+ford_pre <- ford %>%
+    filter(`End Date` < parse_date("1977-01-01")) %>%
+    mutate(dt = parse_date("1976-11-02") - `End Date`)
+carter_pre <- carter %>%
+    filter(`End Date` < parse_date("1981-01-01")) %>%
+    mutate(dt = parse_date("1980-11-04") - `End Date`)
+reagan_pre <- reagan %>%
+    filter(`End Date` < parse_date("1985-01-01")) %>%
+    mutate(dt = parse_date("1984-11-06") - `End Date`)
+bush_sr_pre <- bush_sr %>%
+    filter(`End Date` < parse_date("1993-01-01")) %>%
+    mutate(dt = parse_date("1992-11-03") - `End Date`)
+clinton_pre <- clinton %>%
+    filter(`End Date` < parse_date("1997-01-01")) %>%
+    mutate(dt = parse_date("1996-11-05") - `End Date`)
+w_bush_pre <- w_bush %>%
+    filter(`End Date` < parse_date("2005-01-01")) %>%
+    mutate(dt = parse_date("2004-11-02") - `End Date`)
+obama_pre <- obama %>%
+    filter(`End Date` < parse_date("2013-01-01")) %>%
+    mutate(dt = parse_date("2012-11-06") - `End Date`)
+```
+
+We then can run a LOESS regression to estimate the approval rating:
+
+```{r}
+deg <- 2
+span <- 0.75
+ford_loess <- loess(Approving ~ as.numeric(dt), data=ford_pre,
+                    span=span, degree=deg)
+carter_loess <- loess(Approving ~ as.numeric(dt), data=carter_pre,
+                      span=span, degree=deg)
+reagan_loess <- loess(Approving ~ as.numeric(dt), data=reagan_pre,
+                      span=span, degree=deg) 
+bush_sr_loess <- loess(Approving ~ as.numeric(dt), data=bush_sr_pre,
+                       span=span, degree=deg) 
+clinton_loess <- loess(Approving ~ as.numeric(dt), data=clinton_pre,
+                       span=span, degree=deg)
+w_bush_loess <- loess(Approving ~ as.numeric(dt), data=w_bush_pre,
+                      span=span, degree=deg)
+obama_loess <- loess(Approving ~ as.numeric(dt), data=obama_pre,
+                     span=span, degree=deg)
+```
+
+Now we can forecast the approval rating on election day:
+```{r}
+ford_approval <- predict(ford_loess, newdata=data.frame(dt=c(0)))
+carter_approval <- predict(carter_loess, newdata=data.frame(dt=c(0)))
+reagan_approval <- predict(reagan_loess, newdata=data.frame(dt=c(0)))
+bush_sr_approval <- predict(bush_sr_loess, newdata=data.frame(dt=c(0)))
+clinton_approval <- predict(clinton_loess, newdata=data.frame(dt=c(0)))
+w_bush_approval <- predict(w_bush_loess, newdata=data.frame(dt=c(0)))
+obama_approval <- predict(obama_loess, newdata=data.frame(dt=c(0)))
+approval <- data.frame(year = c(1976, 1980, 1984, 1992, 1996, 2004,
+                                2012),
+                       approval = c(ford_approval, carter_approval,
+                                    reagan_approval, bush_sr_approval,
+                                    clinton_approval, w_bush_approval,
+                                    obama_approval)/100)
+```
+
+We can now assemble the popular vote percentage for each candidate.
+
+```{r}
+vote <- load_obj(state_path) %>%
+    group_by(year,party,candidate) %>%
+    summarize(cvotes = sum(candidatevotes),
+              votes = sum(totalvotes)) %>%
+    filter(party %in% c("democrat", "republican"),
+           candidate != "Romney, Mitt") %>%
+    mutate(percent = cvotes/votes,
+           is_incumbent = ifelse(party=="democrat",
+                                 year %in% c(1980, 1996, 2012),
+                                 (year %in% c(1976, 1984, 1992, 2004))))
+```
+
+Then we can merge the data frames together:
+
+```{r}
+df  <- merge(vote, approval, by="year") %>%
+    filter(is_incumbent == T) %>%
+    select(year, percent, approval) %>%
+    mutate(diff = percent - approval)
+```
+
+# Statistical Analysis
+
+We can look at `df$diff` to see how it behaves. A naive Student t-test,
+with the null hypothesis that the approval rating equals the popular
+vote, with a significance level of `alpha=0.05`, tells us:
+
+```{r}
+t.test(df$percent, df$approval)
+
+## 	  Welch Two Sample t-test
+##
+## data:  df$percent and df$approval
+## t = -0.060237, df = 11.193, p-value = 0.953
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -0.09864175  0.09337556
+## sample estimates:
+## mean of x mean of y 
+## 0.4782888 0.4809219 
+```
+We fail to reject the null hypothesis, the data fails to provide
+sufficient evidence that there is a significant difference between an
+incumbent's approval rating and the popular vote received during his bid
+for re-election.
+
+
+## Bayesian Analysis
+
+Now we have to make a choice of priors.
+
+For half-t distibution, the expected value would be:
+
+```{r}
+half_t_expected_val <- function(nu, s)
+    2*s*sqrt(nu/pi)*gamma(0.5*(nu+1))/((nu-1)*gamma(0.5*nu))
+## half_t_expected_val(nrow(df), sd(df$diff))
+## => 0.04024914
+```
+
+For the inverse-Chi squared distribution
+
+```{r}
+inv_chi_sq_est  <- function(nu, s, prior_nu, prior_s)
+    ((nu-1)*s*s + prior_nu*prior_s*prior_s)/(nu + prior_nu)
+```
+
+We can now combine these estimates, with the prior expectation that
+could vary depending on our confidence. A cautious pessimist might say
+the standard deviation would be 10%, but with the confidence of 1
+pseudo-observation. Such an analyst would expect:
+
+```{r}
+half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), 1, 0.1)))
+## [1] 0.04715616
+```
+
+A more precise, yet still cautious, analyst would suppose the worst
+estimate observed is the standard deviation:
+
+```{r}
+# less confidence, but still cautious
+half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), 1, max(abs(df$diff)))))
+## [1] 0.04408525
+
+# paranoid and cautious
+half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), nrow(df), max(abs(df$diff)))))
+## [1] 0.06006945
+```
+
+Curiously, if we look at what to expect with Gaussian noise, we could
+look at the absolute value of the noise, then take its mean to estimate
+the magnitude of variation:
+
+```{r}
+# The mean for 1000 trials of the total variation of a sample of 7 trials
+mean(replicate(10000, sum(abs(rnorm(7)))))
+## [1] 5.587983
+```
+
+The total noise for our situation:
+
+```{r}
+# uninformed, cautious analyst
+sigma0 <- half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), 1, max(abs(df$diff)))))
+# sigma0 = 0.04408525
+sum(abs((df$diff-mean(df$diff))/sigma0))
+## [1] 5.413403
+
+# depressed, cautious analyst
+sigma1 <- half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), nrow(df), max(abs(df$diff)))))
+# sigma1 = 0.06006945
+sum(abs((df$diff-mean(df$diff))/sigma1))
+## [1] 3.972922
+```
+
+The perceptive reader will recognize that `sigma1` is approximately
+double the margin-of-error of the standard poll, and `sigma0` is
+1.5-times the margin-of-error. These are useful rule-of-thumbs: the
+cautious analyst should take the _approval rating_ as a proxy for the
+popular vote for the incumbent and the _standard deviation_ of the
+estimate should be between 4% to 6% (or, if available, 1.5 to 2-times
+the margin of error of the approval poll).
+
