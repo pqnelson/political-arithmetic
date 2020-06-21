@@ -17,7 +17,7 @@ library(tidyverse)
 ```
 
 ```{r}
-source("./R/presidential_elections.R")
+source("../R/presidential_elections.R")
 ```
 
 # Introduction
@@ -70,26 +70,28 @@ is the median.
 Before getting ahead of ourselves, lets load the data:
 
 ```{r}
-# nixon <- read_csv("data/presidential_approval/gallup_nixon.csv")
-ford <- read_csv("./data/presidential_approval/gallup_ford.csv",
+nixon <- read_csv("../data/presidential_approval/gallup_nixon.csv",
+                  col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
+                                   `End Date` = col_date("%m/%d/%Y")))
+ford <- read_csv("../data/presidential_approval/gallup_ford.csv",
                  col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                   `End Date` = col_date("%m/%d/%Y")))
-carter <- read_csv("data/presidential_approval/gallup_carter.csv",
+carter <- read_csv("../data/presidential_approval/gallup_carter.csv",
                    col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                     `End Date` = col_date("%m/%d/%Y")))
-reagan <- read_csv("data/presidential_approval/gallup_reagan.csv",
+reagan <- read_csv("../data/presidential_approval/gallup_reagan.csv",
                    col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                     `End Date` = col_date("%m/%d/%Y")))
-bush_sr <- read_csv("data/presidential_approval/gallup_bush.csv",
+bush_sr <- read_csv("../data/presidential_approval/gallup_bush.csv",
                     col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                      `End Date` = col_date("%m/%d/%Y")))
-clinton <- read_csv("data/presidential_approval/gallup_clinton.csv",
+clinton <- read_csv("../data/presidential_approval/gallup_clinton.csv",
                     col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                      `End Date` = col_date("%m/%d/%Y")))
-w_bush <- read_csv("data/presidential_approval/gallup_w_bush.csv",
+w_bush <- read_csv("../data/presidential_approval/gallup_w_bush.csv",
                    col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                     `End Date` = col_date("%m/%d/%Y")))
-obama <- read_csv("data/presidential_approval/gallup_obama.csv",
+obama <- read_csv("../data/presidential_approval/gallup_obama.csv",
                   col_types = cols(`Start Date` = col_date("%m/%d/%Y"),
                                    `End Date` = col_date("%m/%d/%Y")))
 ```
@@ -97,6 +99,9 @@ obama <- read_csv("data/presidential_approval/gallup_obama.csv",
 Then we filter out the polls that occur _after_ the election:
 
 ```{r}
+nixon_pre <- nixon %>%
+    filter(`End Date` < parse_date("1973-01-01")) %>%
+    mutate(dt = parse_date("1972-11-07") - `End Date`)
 ford_pre <- ford %>%
     filter(`End Date` < parse_date("1977-01-01")) %>%
     mutate(dt = parse_date("1976-11-02") - `End Date`)
@@ -124,7 +129,9 @@ We then can run a LOESS regression to estimate the approval rating:
 
 ```{r}
 deg <- 2
-span <- 0.75
+span <- 0.25
+nixon_loess <- loess(Approving ~ as.numeric(dt), data=nixon_pre,
+                     span=span, degree=deg)
 ford_loess <- loess(Approving ~ as.numeric(dt), data=ford_pre,
                     span=span, degree=deg)
 carter_loess <- loess(Approving ~ as.numeric(dt), data=carter_pre,
@@ -143,6 +150,7 @@ obama_loess <- loess(Approving ~ as.numeric(dt), data=obama_pre,
 
 Now we can forecast the approval rating on election day:
 ```{r}
+nixon_approval <- predict(nixon_loess, newdata=data.frame(dt=c(0)))
 ford_approval <- predict(ford_loess, newdata=data.frame(dt=c(0)))
 carter_approval <- predict(carter_loess, newdata=data.frame(dt=c(0)))
 reagan_approval <- predict(reagan_loess, newdata=data.frame(dt=c(0)))
@@ -150,9 +158,9 @@ bush_sr_approval <- predict(bush_sr_loess, newdata=data.frame(dt=c(0)))
 clinton_approval <- predict(clinton_loess, newdata=data.frame(dt=c(0)))
 w_bush_approval <- predict(w_bush_loess, newdata=data.frame(dt=c(0)))
 obama_approval <- predict(obama_loess, newdata=data.frame(dt=c(0)))
-approval <- data.frame(year = c(1976, 1980, 1984, 1992, 1996, 2004,
+approval <- data.frame(year = c(1972, 1976, 1980, 1984, 1992, 1996, 2004,
                                 2012),
-                       approval = c(ford_approval, carter_approval,
+                       approval = c(nixon_approval, ford_approval, carter_approval,
                                     reagan_approval, bush_sr_approval,
                                     clinton_approval, w_bush_approval,
                                     obama_approval)/100)
@@ -166,17 +174,26 @@ vote <- load_obj(state_path) %>%
     summarize(cvotes = sum(candidatevotes),
               votes = sum(totalvotes)) %>%
     filter(party %in% c("democrat", "republican"),
-           candidate != "Romney, Mitt") %>%
+           candidate != "Romney, Mitt")
+
+republican_factor <- filter(vote, party == "republican")$party[[1]]
+
+vote2 <- bind_rows(vote, tibble(year = c(1972),
+                                party = c(republican_factor),
+                                candidate = c("Nixon, Richard"),
+                                cvotes = c(47168710),
+                                votes = c(77744027))) %>%
     mutate(percent = cvotes/votes,
            is_incumbent = ifelse(party=="democrat",
                                  year %in% c(1980, 1996, 2012),
-                                 (year %in% c(1976, 1984, 1992, 2004))))
+           (year %in% c(1972, 1976, 1984, 1992, 2004)))) %>%
+    arrange(year)
 ```
 
 Then we can merge the data frames together:
 
 ```{r}
-df  <- merge(vote, approval, by="year") %>%
+df  <- merge(vote2, approval, by="year") %>%
     filter(is_incumbent == T) %>%
     select(year, percent, approval) %>%
     mutate(diff = percent - approval)
@@ -189,18 +206,18 @@ with the null hypothesis that the approval rating equals the popular
 vote, with a significance level of `alpha=0.05`, tells us:
 
 ```{r}
-t.test(df$percent, df$approval)
+t.test(df$percent - df$approval)
 
-## 	  Welch Two Sample t-test
-##
-## data:  df$percent and df$approval
-## t = -0.060237, df = 11.193, p-value = 0.953
-## alternative hypothesis: true difference in means is not equal to 0
+##  	One Sample t-test
+## 
+## data:  df$percent - df$approval
+## t = -0.075801, df = 7, p-value = 0.9417
+## alternative hypothesis: true mean is not equal to 0
 ## 95 percent confidence interval:
-##  -0.09864175  0.09337556
+##  -0.03827769  0.03589983
 ## sample estimates:
-## mean of x mean of y 
-## 0.4782888 0.4809219 
+##    mean of x 
+## -0.001188932 
 ```
 We fail to reject the null hypothesis, the data fails to provide
 sufficient evidence that there is a significant difference between an
@@ -244,11 +261,11 @@ estimate observed is the standard deviation:
 ```{r}
 # less confidence, but still cautious
 half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), 1, max(abs(df$diff)))))
-## [1] 0.04408525
+## [1] 0.04298499
 
 # paranoid and cautious
 half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), nrow(df), max(abs(df$diff)))))
-## [1] 0.06006945
+## [1] 0.06004851
 ```
 
 Curiously, if we look at what to expect with Gaussian noise, we could
@@ -266,15 +283,15 @@ The total noise for our situation:
 ```{r}
 # uninformed, cautious analyst
 sigma0 <- half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), 1, max(abs(df$diff)))))
-# sigma0 = 0.04408525
+# sigma0 = 0.04298499
 sum(abs((df$diff-mean(df$diff))/sigma0))
-## [1] 5.413403
+## [1] 5.01379
 
 # depressed, cautious analyst
 sigma1 <- half_t_expected_val(nrow(df), sqrt(inv_chi_sq_est(nrow(df), sd(df$diff), nrow(df), max(abs(df$diff)))))
-# sigma1 = 0.06006945
+# sigma1 = 0.06004851
 sum(abs((df$diff-mean(df$diff))/sigma1))
-## [1] 3.972922
+## [1] 3.58906
 ```
 
 The perceptive reader will recognize that `sigma1` is approximately
