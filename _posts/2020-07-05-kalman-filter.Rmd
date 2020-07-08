@@ -10,6 +10,7 @@ library(tidyverse)
 library(lubridate)
 library(truncnorm)
 library(MASS)
+library(kableExtra)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -45,7 +46,7 @@ mi_2016 <- polls_2016 %>%
   filter(state == "MI") %>%
   arrange(entry.date.time..et.)
 
-election_date <- ymd("2016-11-08")
+election_date_2016 <- ymd("2016-11-08")
 ```
 
 We transform this into approximately normal variables
@@ -63,7 +64,7 @@ get_for_state <- function(state_str) {
   polls_2016 %>%
   filter(state == state_str) %>%
   arrange(entry.date.time..et.) %>%
-  filter(partisan != "Pollster") %>%
+  # filter(partisan != "Pollster") %>%
   mutate(clinton_mu = (clinton/100),
          sd = qnorm(0.999)*sqrt(((clinton/100)*(1 - clinton/100) + (1 - (clinton+trump)/100)**2)/number.of.observations),
          clinton_sd = sd,
@@ -88,9 +89,10 @@ pool_polls <- function(df) {
 }
 ```
 
+This is a dummy Kalman filter running on a one-dimensional signal.
 
 ```{r}
-kalman_filter <- function(df, mu, sd, election_dt = election_date, h=1, f=1) {
+kalman_filter <- function(df, mu, sd, election_dt = election_date_2016, h=1, f=1) {
   q = mean(df$sd)
   end_T <- as.integer(election_dt - min(df$end.date))
   x <- c(rnorm(1, 0.5, mean(df$sd)))
@@ -146,12 +148,13 @@ multinomial_covariance_mat <- function(prob_vec, size) {
   mat
 }
 
-norm_approx <- function(poll_df, cutoff_date = election_date) {
+norm_approx <- function(poll_df, rep, dem) {
+  democrat <- enquo(dem)
+  republican <- enquo(rep)
   poll_df %>%
-    filter(end.date < cutoff_date) %>%
-    transmute(p_clinton = clinton/100,
-              p_trump = trump/100,
-              p_third = 1 - p_clinton - p_trump,
+    transmute(p_dem = !!democrat/100,
+              p_rep = !!republican/100,
+              p_third = 1 - p_dem - p_rep,
               precision = (qnorm(0.975)*0.5/sqrt(number.of.observations))**-2,
               start_date = start.date,
               end_date = end.date,
@@ -161,13 +164,13 @@ norm_approx <- function(poll_df, cutoff_date = election_date) {
               population = population
               ) %>%
     group_by(state,end_date) %>%
-    summarize(p_clinton = weighted.mean(p_clinton, precision),
-              p_trump = weighted.mean(p_trump, precision),
-              p_third = weighted.mean(p_third, precision),
+    summarize(p_dem = max(0, weighted.mean(p_dem, precision)),
+              p_rep = max(0, weighted.mean(p_rep, precision)),
+              p_third = max(0, weighted.mean(p_third, precision)),
               precision = sum(precision),
               size = sum(size),
-              mu_clinton = size*p_clinton,
-              mu_trump = size*p_trump,
+              mu_dem = size*p_dem,
+              mu_rep = size*p_rep,
               mu_third = size*p_third,
               .groups = "drop")
 }
@@ -183,7 +186,7 @@ make_h <- function(new_size, existing_size) {
 
 
 ```{r}
-full_kalman <- function(df) {
+full_kalman <- function(df, election_date) {
   end_T <- as.integer(election_date - min(df$end_date))
   xs <- list()
   xs[[1]] <- (matrix(data=c(1600,1400,600), ncol=1))
@@ -200,15 +203,15 @@ full_kalman <- function(df) {
     x_est <- last(xs)
     Q_mat <- diag((qnorm(0.975)**2)*0.5*df$size[i], 3);
     if (i > 1) {
-      Q_mat <- Q_mat + multinomial_covariance_mat(c(df$p_clinton[i],
-                                          df$p_trump[i],
+      Q_mat <- Q_mat + multinomial_covariance_mat(c(df$p_dem[i],
+                                          df$p_rep[i],
                                           df$p_third[i]),
                                         size  = df$size[i])
     }
     P_est <- last(covariance_matrices) + Q_mat
     
     # predict
-    z <- matrix(data=c(df$mu_clinton[i], df$mu_trump[i], df$mu_third[i]), ncol=1)
+    z <- matrix(data=c(df$mu_dem[i], df$mu_rep[i], df$mu_third[i]), ncol=1)
     
     h <- diag(1, nrow=3)
     if (i>1) {
@@ -218,8 +221,8 @@ full_kalman <- function(df) {
     
     y <- z - (h %*% x_est)
     
-    R_mat <- multinomial_covariance_mat(c(df$p_clinton[i],
-                                          df$p_trump[i],
+    R_mat <- multinomial_covariance_mat(c(df$p_dem[i],
+                                          df$p_rep[i],
                                           df$p_third[i]),
                                         size  = df$size[i]) +
       diag((qnorm(0.975)**2)*0.5*df$size[i], 3);
@@ -237,11 +240,6 @@ full_kalman <- function(df) {
     
     residuals[[length(residuals)+1]] <- (z - (h %*% x_hat))
   }
-  #days_since_last_poll <- as.integer(election_date - last(df$end_date))
-  #if (days_since_last_poll > 0 && abs(det(last(covariance_matrices))) > 1e-4) {
-  #  x_hat <- MASS::mvrnorm(n=1, last(xs), last(covariance_matrices)*sqrt(days_since_last_poll))
-  #  xs[[length(xs)+1]] <- matrix(data=x_hat, ncol=1)
-  #}
   
   list(x = xs,
        p_mat = covariance_matrices,
@@ -278,17 +276,136 @@ mean_sd <- function(results) {
 }
 ```
 
+Iterate through the states with polls available "this far out" from election day back in 2016, and save the probability the Democrat would win for each state.
+
 ```{r}
-run_2016 <- function() {
+run_2016 <- function(end_date = today() - years(4)) {
   results <- list();
   for (state in unique(polls_2016$state)) {
     if (state != "--") {
-      polls <- norm_approx(get_for_state(state));
+      polls <- norm_approx2(get_for_state(state) %>% 
+                              filter(end.date <= end_date),
+                            dem=clinton, rep=trump);
       if (nrow(polls) > 1) {
-        results[[state]] <- prob_dem_win(full_kalman(polls))
+        results[[state]] <- prob_dem_win(full_kalman(polls, election_date))
       }
     }
   }
   results;
+}
+```
+
+Now we save the electoral delegates to the most likely winner for each state.
+
+```{r}
+expected_ev <- function(forecast) {
+  acc <- list(dem = 0, rep = 0);
+  for (state in names(forecast)) {
+    if (is.na(forecast[[state]])) {
+      
+    } else {
+      party <- ifelse(forecast[[state]] < 0.5, "rep", "dem")
+      acc[[party]] <- acc[[party]] + electoral_delegates.abbrev[[state]];
+    }
+  }
+  acc;
+}
+```
+
+# Projecting for 2020
+
+Now, we can move forward and start projecting for 2020.
+
+```{r}
+polls_2020 <- read_csv("../data/polling/all_polls_2020.csv",
+                       col_types = cols(
+                           .default = col_character(),
+  start.date = col_date(format = "%m/%d/%Y"),
+  end.date = col_date(format = "%m/%d/%Y"),
+  entry.date.time..et. = col_datetime(format = "%m/%d/%Y %H:%M:%S"),
+  number.of.observations = col_double(),
+  trump = col_double(),
+  biden = col_double(),
+  other = col_double(),
+  undecided = col_double()
+                       ))
+```
+
+Lets examine the frequencies
+
+```{r}
+kable(polls_2020 %>% group_by(state) %>% summarize(count = n()) %>% arrange(-count))
+```
+
+
+
+We can now automate running the Kalman filter for the states:
+
+
+```{r}
+election_date_2020 <- ymd("2020-11-03")
+run_2020 <- function() {
+  results <- list();
+  for (state_name in unique(polls_2020$state)) {
+    if (state_name != "--") {
+      polls <- norm_approx2(polls_2020 %>% filter(state == state_name),
+                            dem=biden, rep=trump);
+      if (nrow(polls) > 1) {
+        results[[state_name]] <- prob_dem_win(full_kalman(polls, election_date_2020))
+      }
+    }
+  }
+  results;
+}
+```
+
+## Words of Estimative Probability
+
+The ratings may be estimated qualitatively as "Safe", "Likely", "Lean", "Toss up" (and sometimes "Tilt"). Based off of G. Elliott Morris' [article](http://centerforpolitics.org/crystalball/articles/two-ways-of-thinking-about-election-predictions-and-what-they-tell-us-about-2018/):
+
+> Each of these categories also has a corresponding Democratic probability of victory for the seats placed within. In Lean Democratic seats, Democrats win the elections 78% of the time; Lean Republican: 18%; Likely D: 95%; Likely R: 3%; Safe D: 99%; Safe R 0%, and Toss-up districts: 59%. These values are plotted on the right of the preceding figure, with the size of each point showing the number of seats earning that designation over the years.
+
+
+
+```{r}
+qualitative_label <- function(prob_dem_win) {
+  # original ratings estimate
+  # ratings <- list(lean_dem = 0.78,
+  #                 lean_rep = 0.18,
+  #                 likely_dem = 0.95,
+  #                 likely_rep = 0.03,
+  #                 safe_dem = 0.99,
+  #                 safe_rep = 0,
+  #                 toss_up = 0.59)
+  ratings <- list(lean_dem = 0.8,
+                  lean_rep = 0.2,
+                  likely_dem = 0.95,
+                  likely_rep = 0.05,
+                  safe_dem = 0.99,
+                  safe_rep = 0.01,
+                  toss_up = 0.5,
+                  # interpolated using geometric mean
+                  tilt_dem = 0.65,
+                  tilt_rep = 0.35)
+  delta <- 1
+  label <- NA
+  for (rating in names(ratings)) {
+    tmp <- abs(prob_dem_win - ratings[[rating]])
+    if (tmp < delta) {
+      delta <- tmp
+      label <- rating
+    }
+  }
+  label  
+}
+```
+
+We can then print out the qualitative estimates for an election as:
+
+```{r}
+dump_forecast <- function(prediction) {
+  for (state in sort(names(prediction))) {
+    print(paste0(state, " = ", qualitative_label(prediction[[state]])))
+  }
 }
 ```
