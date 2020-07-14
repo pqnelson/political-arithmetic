@@ -131,7 +131,11 @@ We need to get the runner up by year, then use that and the state's winner (by y
 
 ```{r}
 runner_up_by_state_and_year <- function(results) {
-  return(results %>% group_by(state,year) %>% filter(votepercentage < max(votepercentage)) %>% filter(votepercentage==max(votepercentage)) %>% arrange(party));
+  results %>%
+    group_by(state,year) %>%
+    filter(votepercentage < max(votepercentage)) %>%
+    filter(votepercentage==max(votepercentage)) %>%
+    arrange(party)
 }
 
 runner_up_data = runner_up_by_state_and_year(results)
@@ -359,14 +363,14 @@ data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 37
 new_train_data <- data[which(data$state %in% c("Colorado", 'Florida', 'Iowa', 'Michigan', "Nevada", 'New Hampshire', "New Mexico", 'Ohio', 'Oregon', 'Pennsylvania', "Wisconsin") & data$year == 2008),] %>% dplyr::select(-events)
 new_train_data$is_swing <- 1
 new_train_data <- inner_join(new_train_data, 
-                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2004)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
                              by="state")
 train_data <- new_train_data;
 
 new_train_data <- data[which(data$state %in% c("Arizona", 'Arkansas', "California", "Georgia", "Indiana", "Kentucky", "Maine", 'Missouri', "New York", "North Carolina", "Tennessee", "Washington", "West Virginia", "Virginia") & data$year == 2008),] %>% dplyr::select(-events)
 new_train_data$is_swing <- 0
 new_train_data <- inner_join(new_train_data, 
-                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2004)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
                              by="state")
 
 train_data <- rbind(train_data,new_train_data);
@@ -413,12 +417,13 @@ df_2012 <- inner_join(filter(data, year==2012) %>% dplyr::select(-events),
                         rename(previous_margin = margin),
                       by="state")
 
-predicted <- predict(logit_mod, df_2012, type="response")
-df_2012$bayes_predict <- predicted
-predicted <- predict(lm0, df_2012, type="response")
-df_2012$predict <- predicted
+df_2012$bayes_predict <- predict(logit_mod, df_2012, type="response")
+df_2012$predict <- predict(lm0, df_2012, type="response")
 
-kable(df_2012[order(-df_2012$predict),c('state','predict', 'bayes_predict')], row.names = FALSE)
+df_2012$weighted_bayes_predict <- predict(weighted_logit_mod, df_2012, type="response")
+df_2012$weighted_predict <- predict(weighted_lm0, df_2012, type="response")
+
+kable(df_2012 %>% dplyr::select(state,predict, bayes_predict, weighted_predict, weighted_bayes_predict) %>% arrange(-predict), row.names = FALSE)
 ```
 
 
@@ -434,11 +439,11 @@ df_2016 <- inner_join(filter(data, year==2016) %>% dplyr::select(-events),
                         rename(previous_margin = margin),
                       by="state")
 
-predicted <- predict(logit_mod, df_2016, type="response")
-df_2016$bayes_predict <- predicted
-predicted <- predict(lm0, df_2016, type="response")
-df_2016$predict <- predicted
-kable(df_2016[order(-df_2016$predict),c('state','predict', 'bayes_predict')], row.names = FALSE)
+df_2016$bayes_predict <- predict(logit_mod, df_2016, type="response")
+df_2016$predict <- predict(lm0, df_2016, type="response")
+df_2016$weighted_bayes_predict <- predict(weighted_logit_mod, df_2016, type="response")
+df_2016$weighted_predict <- predict(weighted_lm0, df_2016, type="response")
+kable(df_2016 %>% dplyr::select(state,predict, bayes_predict, weighted_predict, weighted_bayes_predict) %>% arrange(-predict), row.names = FALSE)
 ```
 ## Predicting 2020
 
