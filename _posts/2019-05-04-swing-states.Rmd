@@ -10,6 +10,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
 library(knitr)
 library(kableExtra)
 library(dplyr)
@@ -93,8 +94,29 @@ number_of_swings_since <- function(results, election_year, state_name, number_of
   if (!has_data || !is_election_year) {
     return(0);
   } else {
-    parties<-results[which(results$state==state_name & start_year <= results$year & results$year <= election_year),c("party")];
-    return(count_alternates(parties[["party"]]));
+    parties <- results %>%
+      filter(state == state_name,
+             year >= start_year,
+             year <= election_year) %>%
+      pull(party)
+#    parties<-results[which(results$state==state_name & start_year <= results$year & results$year <= election_year),c("party")];
+    return(count_alternates(parties));
+  }
+}
+
+weighted_number_of_swings_since <- function(results, election_year, state_name, number_of_elections=7) {
+  start_year <- election_year - (number_of_elections - 1)*4;
+  has_data <- (1976 <= start_year);
+  is_election_year <- ((election_year - 1976)%%4 == 0);
+  if (!has_data || !is_election_year) {
+    return(0);
+  } else {
+    parties <<- results %>%
+      filter(state == state_name,
+             year >= start_year,
+             year <= election_year) %>%
+      pull(party)
+    return(sum((diff(parties=="republican")!=0)/(1:(number_of_elections-1))));
   }
 }
 
@@ -154,10 +176,12 @@ data$bellwether <- with(data, ifelse(as.character(state_winner)==as.character(wi
 # data$swings <- with(data, number_of_swings_since(winner_data, year, state))
 swing_data <- winner_data[which(winner_data$year >= 2000),c("state","year")]
 
+
 for (i in 1:nrow(swing_data)) {
   row <- swing_data[i,];
   year <- row[['year']];
   state <- row[['state']];
+  swing_data[which(swing_data$state == state & swing_data$year == year),c('weighted_swings')] <- weighted_number_of_swings_since(winner_data,year,state);
   swing_data[which(swing_data$state == state & swing_data$year == year),c('swings')] <- number_of_swings_since(winner_data,year,state);
 }
 data <- merge(data,swing_data,by=c("year","state"));
@@ -183,57 +207,253 @@ But non-examples include the Mountain and Plains states (which are solidly Repub
 
 California has been solidly Democratic.
 
+## Campaign events
+
+In 2012, NV had 13, CO 23, FL 40, NC 3, VA 36, OH 73, PA 5, MI 1, WI 18, IA 27, MN 1, NH 13
+```{r}
+data$events <- 0
+election <- 2012
+data[which(data$state=="Nevada" & data$year==election),c("events")] <- 13
+data[which(data$state=="Colorado" & data$year==election),c("events")] <- 23
+data[which(data$state=="Florida" & data$year==election),c("events")] <- 40
+data[which(data$state=="North Carolina" & data$year==election),c("events")] <- 3
+data[which(data$state=="Virginia" & data$year==election),c("events")] <- 36
+data[which(data$state=="Ohio" & data$year==election),c("events")] <- 73
+data[which(data$state=="Pennsylvania" & data$year==election),c("events")] <- 5
+data[which(data$state=="Michigan" & data$year==election),c("events")] <- 1
+data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 18
+data[which(data$state=="Iowa" & data$year==election),c("events")] <- 27
+data[which(data$state=="Minnesota" & data$year==election),c("events")] <- 1
+data[which(data$state=="New Hampshire" & data$year==election),c("events")] <- 13
+```
+
+In 2016, we have: CA 1, NV 17, AZ 10, UT 1, CO 19, NM 3, TX 1, MS 1, FL 71,
+GA 3, NC 55, VA 23, MN 2, IA 21, MO 2, NE 2, WI 14, MI 22, IL 1, IN 2, OH 48, PA 54, NH 21, CT 1, ME 3
+
+```{r}
+election <- 2016
+data[which(data$state=="California" & data$year==election),c("events")] <- 1
+data[which(data$state=="Nevada" & data$year==election),c("events")] <- 17
+data[which(data$state=="Arizona" & year==election),c("events")] <- 10
+data[which(data$state=="Utah" & data$year==election),c("events")] <- 1
+data[which(data$state=="Colorado" & data$year==election),c("events")] <- 19
+data[which(data$state=="New Mexico" & data$year==election),c("events")] <- 3
+data[which(data$state=="Texas" & data$year==election),c("events")] <- 1
+data[which(data$state=="Mississippi" & data$year==election),c("events")] <- 1
+data[which(data$state=="Florida" & data$year==election),c("events")] <- 71
+data[which(data$state=="Georgia" & data$year==election),c("events")] <- 3
+data[which(data$state=="North Carolina" & data$year==election),c("events")] <- 55
+data[which(data$state=="Virginia" & data$year==election),c("events")] <- 23
+data[which(data$state=="Minnesota" & data$year==election),c("events")] <- 2
+data[which(data$state=="Iowa" & data$year==election),c("events")] <- 21
+data[which(data$state=="Missouri" & data$year==election),c("events")] <- 2
+data[which(data$state=="Nebraska" & data$year==election),c("events")] <- 2
+data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 14
+data[which(data$state=="Michigan" & data$year==election),c("events")] <- 22
+data[which(data$state=="Illinois" & data$year==election),c("events")] <- 1
+data[which(data$state=="Indiana" & data$year==election),c("events")] <- 2
+data[which(data$state=="Ohio" & data$year==election),c("events")] <- 48
+data[which(data$state=="Pennsylvania" & data$year==election),c("events")] <- 54
+data[which(data$state=="New Hampshire" & data$year==election),c("events")] <- 21
+data[which(data$state=="Connecticut" & data$year==election),c("events")] <- 1
+data[which(data$state=="Maine" & data$year==election),c("events")] <- 3
+```
+
+In [2008](http://archive.fairvote.org/tracker/): AZ 2. CO 17, DC 1, FL 30, IL 1, IN 10, IA 8, ME 1, MD 1, MI 12, MN 1, MO 16, NV 9, NH 9, NM 9, NY 10, NC 13, OH 35, PA 29, TN 1, TX 1, VA 21, WV 1, WI 11
+
+```{r}
+election <- 2008
+data[which(data$state=="Arizona" & data$year==election),c("events")] <- 2
+data[which(data$state=="Colorado" & data$year==election),c("events")] <- 17
+data[which(data$state=="District of Columbia" & data$year==election),c("events")] <- 1
+data[which(data$state=="Florida" & data$year==election),c("events")] <- 30
+data[which(data$state=="Illinois" & data$year==election),c("events")] <- 1
+data[which(data$state=="Indiana" & data$year==election),c("events")] <- 10
+data[which(data$state=="Iowa" & data$year==election),c("events")] <- 8
+data[which(data$state=="Maine" & data$year==election),c("events")] <- 1
+data[which(data$state=="Maryland" & data$year==election),c("events")] <- 1
+data[which(data$state=="Michigan" & data$year==election),c("events")] <- 12
+data[which(data$state=="Minnesota" & data$year==election),c("events")] <- 1
+data[which(data$state=="Missouri" & data$year==election),c("events")] <- 16
+data[which(data$state=="Nevada" & data$year==election),c("events")] <- 9
+data[which(data$state=="New Hampshire" & data$year==election),c("events")] <- 9
+data[which(data$state=="New Mexico" & data$year==election),c("events")] <- 9
+data[which(data$state=="New York" & data$year==election),c("events")] <- 10
+data[which(data$state=="North Carolina" & data$year==election),c("events")] <- 13
+data[which(data$state=="Ohio" & data$year==election),c("events")] <- 35
+data[which(data$state=="Pennsylvania" & data$year==election),c("events")] <- 29
+data[which(data$state=="Tennessee" & data$year==election),c("events")] <- 1
+data[which(data$state=="Texas" & data$year==election),c("events")] <- 1
+data[which(data$state=="Virginia" & data$year==election),c("events")] <- 21
+data[which(data$state=="West Virginia" & data$year==election),c("events")] <- 1
+data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 1
+```
+
+From Hill, Rodriguez, and Wooden's "Stump Speeches and Road Trips: The Impact of State Campaign Appearances in Presidential Elections" we get the following data for 2004 and 2000: In 2004, AZ 11, AR 5, CA 10, CO 17, FL 97, GA 3, IA 55, ME 6, MI 37, MN 31, MO 28, NJ 5, NV 17, NH 15, NM 23, OH 112, OR 17, PA 61, SC 3, TN 5, VA 3, WA 5, WV 17, WI 73
+
+
+```{r}
+election <- 2004
+data[which(data$state=="Arizona" & data$year==election),c("events")] <- 11
+data[which(data$state=="Arkansas" & data$year==election),c("events")] <- 11
+data[which(data$state=="California" & data$year==election),c("events")] <- 10
+data[which(data$state=="Colorado" & data$year==election),c("events")] <- 17
+data[which(data$state=="Florida" & data$year==election),c("events")] <- 97
+data[which(data$state=="Georgia" & data$year==election),c("events")] <- 3
+data[which(data$state=="Iowa" & data$year==election),c("events")] <- 55
+data[which(data$state=="Maine" & data$year==election),c("events")] <- 6
+data[which(data$state=="Michigan" & data$year==election),c("events")] <- 37
+data[which(data$state=="Minnesota" & data$year==election),c("events")] <- 31
+data[which(data$state=="Missouri" & data$year==election),c("events")] <- 28
+data[which(data$state=="Nevada" & data$year==election),c("events")] <- 17
+data[which(data$state=="New Hampshire" & data$year==election),c("events")] <- 15
+data[which(data$state=="New Jersey" & data$year==election),c("events")] <- 5
+data[which(data$state=="New Mexico" & data$year==election),c("events")] <- 23
+data[which(data$state=="Ohio" & data$year==election),c("events")] <- 112
+data[which(data$state=="Oregon" & data$year==election),c("events")] <- 17
+data[which(data$state=="Pennsylvania" & data$year==election),c("events")] <- 61
+data[which(data$state=="South Carolina" & data$year==election),c("events")] <- 3
+data[which(data$state=="Tennessee" & data$year==election),c("events")] <- 5
+data[which(data$state=="Virginia" & data$year==election),c("events")] <- 3
+data[which(data$state=="Washington" & data$year==election),c("events")] <- 5
+data[which(data$state=="West Virginia" & data$year==election),c("events")] <- 17
+data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 73
+```
+
+In 2000 AZ 1, AR 15, CA 54, CO 6, FL 82, GA 6, IA 35, IL 35, KY 9, LA 12, ME 9, MI 56, MN 9, MO 29, NV 7, NH 9, NJ 10, NM 17, NY 25, NC 6, OH 35, OR 17, PA 56, TN 29, WA 18, WV 4, WI 37
+
+
+```{r}
+election <- 2000
+data[which(data$state=="Arizona" & data$year==election),c("events")] <- 1
+data[which(data$state=="Arkansas" & data$year==election),c("events")] <- 15
+data[which(data$state=="California" & data$year==election),c("events")] <- 54
+data[which(data$state=="Colorado" & data$year==election),c("events")] <- 6
+data[which(data$state=="Florida" & data$year==election),c("events")] <- 82
+data[which(data$state=="Georgia" & data$year==election),c("events")] <- 6
+data[which(data$state=="Iowa" & data$year==election),c("events")] <- 35
+data[which(data$state=="Kentucky" & data$year==election),c("events")] <- 9
+data[which(data$state=="Louisiana" & data$year==election),c("events")] <- 12
+data[which(data$state=="Maine" & data$year==election),c("events")] <- 9
+data[which(data$state=="Michigan" & data$year==election),c("events")] <- 56
+data[which(data$state=="Minnesota" & data$year==election),c("events")] <- 9
+data[which(data$state=="Missouri" & data$year==election),c("events")] <- 29
+data[which(data$state=="Nevada" & data$year==election),c("events")] <- 7
+data[which(data$state=="New Hampshire" & data$year==election),c("events")] <- 9
+data[which(data$state=="New Jersey" & data$year==election),c("events")] <- 10
+data[which(data$state=="New Mexico" & data$year==election),c("events")] <- 17
+data[which(data$state=="New York" & data$year==election),c("events")] <- 25
+data[which(data$state=="North Carolina" & data$year==election),c("events")] <- 6
+data[which(data$state=="Ohio" & data$year==election),c("events")] <- 35
+data[which(data$state=="Oregon" & data$year==election),c("events")] <- 17
+data[which(data$state=="Pennsylvania" & data$year==election),c("events")] <- 56
+data[which(data$state=="Tennessee" & data$year==election),c("events")] <- 29
+data[which(data$state=="Washington" & data$year==election),c("events")] <- 18
+data[which(data$state=="West Virginia" & data$year==election),c("events")] <- 4
+data[which(data$state=="Wisconsin" & data$year==election),c("events")] <- 37
+```
+
 ## Logisic Regression
 
 ```{r}
-new_train_data <- data[which(data$state == 'California'),]
+new_train_data <- data[which(data$state %in% c("Colorado", 'Florida', 'Iowa', 'Michigan', "Nevada", 'New Hampshire', "New Mexico", 'Ohio', 'Oregon', 'Pennsylvania', "Wisconsin") & data$year == 2008),] %>% dplyr::select(-events)
+new_train_data$is_swing <- 1
+new_train_data <- inner_join(new_train_data, 
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             by="state")
 train_data <- new_train_data;
-new_train_data <- data[which(data$state == 'Idaho'),]
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Texas'),]
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Wyoming'),]
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Montana'),]
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Nebraska'),]
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Arizona'),]
-train_data <- rbind(train_data,new_train_data);
-train_data$is_swing <- 0;
-new_train_data <- data[which(data$state == 'Ohio'),]
-new_train_data$is_swing <- 1
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Florida'),]
-new_train_data$is_swing <- 1
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Virginia' & data$year == 2012),]
-new_train_data$is_swing <- 1
-new_train_data <- data[which(data$state == 'New Hampshire' & data$year >= 2012),]
-new_train_data$is_swing <- 1
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'New Hampshire' & data$year < 2012),]
+
+new_train_data <- data[which(data$state %in% c("Arizona", 'Arkansas', "California", "Georgia", "Indiana", "Kentucky", "Maine", 'Missouri', "New York", "North Carolina", "Tennessee", "Washington", "West Virginia", "Virginia") & data$year == 2008),] %>% dplyr::select(-events)
 new_train_data$is_swing <- 0
+new_train_data <- inner_join(new_train_data, 
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             by="state")
+
 train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Iowa' & data$year >= 2008),]
-new_train_data$is_swing <- 0
-train_data <- rbind(train_data,new_train_data);
-new_train_data <- data[which(data$state == 'Iowa' & data$year < 2008),]
+
+
+
+new_train_data <- data[which(data$state %in% c("Colorado", 'Florida', 'Iowa', 'Michigan', 'Missouri', "Nevada", 'New Hampshire', "New Mexico", 'Ohio', 'Oregon', 'Pennsylvania', "West Virginia", "Wisconsin") & data$year == 2004),] %>% dplyr::select(-events)
 new_train_data$is_swing <- 1
+new_train_data <- inner_join(new_train_data,
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             by="state")
+train_data <- rbind(train_data,new_train_data);
+
+new_train_data <- data[which(data$state %in% c("Arizona", "Arkansas", "California", "Georgia", "Maine", "New Jersey", "New Mexico", "South Carolina", "Tennessee", "Virginia", "Washington") & data$year == 2004),] %>% dplyr::select(-events)
+new_train_data$is_swing <- 0
+
+new_train_data <- inner_join(new_train_data,
+                             data[which((data$state %in% new_train_data$state) & (data$year == 2000)),c("state", "events", "margin")] %>% rename(previous_margin = margin),
+                             by="state")
 train_data <- rbind(train_data,new_train_data);
 
 train_data$mu <- 1/train_data$margin
-logit_mod <- bayesglm(is_swing ~ swings + margin + bellwether + swings*margin + swings*bellwether + bellwether*margin + swings*margin*bellwether, data = train_data, family = binomial(link = "logit"));
 ```
+
+We can then train a Bayesian logistic function
+
+```{r}
+# logit_mod <- step(bayesglm(is_swing ~ swings * margin * bellwether * events + previous_margin, data = train_data, family = binomial(link = "logit")));
+logit_mod <- bayesglm(is_swing ~ swings + bellwether + events + previous_margin, data = train_data, family = binomial(link = "logit"));
+lm0 <- step(glm(is_swing ~ swings + bellwether + events + previous_margin, data = train_data, family = binomial(link = "logit")));
+weighted_logit_mod <- bayesglm(is_swing ~ weighted_swings + bellwether + events + previous_margin, data = train_data, family = binomial(link = "logit"));
+weighted_lm0 <- step(glm(is_swing ~ weighted_swings + bellwether + events + previous_margin, data = train_data, family = binomial(link = "logit")));
+```
+
+## Retrodict 2012
 
 Using just the number of swings, the margin of victory, and if it's a bellwether state, we have the following predictions:
 
 ```{r}
-predicted <- predict(logit_mod, data, type="response")
-data$predicted <- predicted
-kable(data[order(-data$predicted),c('year','state','predicted')], row.names = FALSE)
+df_2012 <- inner_join(filter(data, year==2012) %>% dplyr::select(-events),
+                      data %>%
+                        filter(year == 2008) %>%
+                        dplyr::select(margin, state, events) %>%
+                        rename(previous_margin = margin),
+                      by="state")
+
+predicted <- predict(logit_mod, df_2012, type="response")
+df_2012$bayes_predict <- predicted
+predicted <- predict(lm0, df_2012, type="response")
+df_2012$predict <- predicted
+
+kable(df_2012[order(-df_2012$predict),c('state','predict', 'bayes_predict')], row.names = FALSE)
 ```
 
+
+## Retrodict 2016
+
+Using just the number of swings, the margin of victory, and if it's a bellwether state, we have the following predictions:
+
+```{r}
+df_2016 <- inner_join(filter(data, year==2016) %>% dplyr::select(-events),
+                      data %>%
+                        filter(year == 2012) %>%
+                        dplyr::select(margin, state, events) %>%
+                        rename(previous_margin = margin),
+                      by="state")
+
+predicted <- predict(logit_mod, df_2016, type="response")
+df_2016$bayes_predict <- predicted
+predicted <- predict(lm0, df_2016, type="response")
+df_2016$predict <- predicted
+kable(df_2016[order(-df_2016$predict),c('state','predict', 'bayes_predict')], row.names = FALSE)
+```
+## Predicting 2020
+
+```{r}
+df_2020 <- filter(data, year==2016) %>%
+  rename(previous_margin = margin)
+
+df_2020$bayes_predict <- predict(logit_mod, df_2020, type="response")
+df_2020$predict <- predict(lm0, df_2020, type="response")
+
+df_2020$weighted_bayes_predict <- predict(weighted_logit_mod, df_2020, type="response")
+df_2020$weighted_predict <- predict(weighted_lm0, df_2020, type="response")
+
+kable(df_2020 %>% dplyr::select(state, predict, bayes_predict, weighted_predict, weighted_bayes_predict) %>% arrange(-predict))
+```
 
 # Data Exploration
 
