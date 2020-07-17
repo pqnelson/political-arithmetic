@@ -11,7 +11,10 @@ library(lubridate)
 library(truncnorm)
 library(MASS)
 library(kableExtra)
+library(urbnmapr)
+
 knitr::opts_chunk$set(echo = TRUE)
+source("../R/states.R")
 ```
 
 # Introduction
@@ -215,7 +218,7 @@ full_kalman <- function(df, election_date) {
     
     h <- diag(1, nrow=3)
     if (i>1) {
-      h <- diag(df$size[i]/max(df$size[i-1],sum(x_est)), 3)
+      h <- diag(df$size[i]/sum(x_est), 3)
       # print(df$size[i]/max(df$size[i-1],sum(x_est)))
     }
     
@@ -279,15 +282,15 @@ mean_sd <- function(results) {
 Iterate through the states with polls available "this far out" from election day back in 2016, and save the probability the Democrat would win for each state.
 
 ```{r}
-run_2016 <- function(end_date = today() - years(4)) {
+run_2016 <- function(end_dt = today() - years(4)) {
   results <- list();
   for (state in unique(polls_2016$state)) {
     if (state != "--") {
-      polls <- norm_approx2(get_for_state(state) %>% 
-                              filter(end.date <= end_date),
+      polls <- norm_approx(get_for_state(state) %>% 
+                              filter(end.date <= end_dt),
                             dem=clinton, rep=trump);
       if (nrow(polls) > 1) {
-        results[[state]] <- prob_dem_win(full_kalman(polls, election_date))
+        results[[state]] <- prob_dem_win(full_kalman(polls, election_date_2016))
       }
     }
   }
@@ -314,7 +317,25 @@ expected_ev <- function(forecast) {
 
 # Projecting for 2020
 
-Now, we can move forward and start projecting for 2020.
+Now, we can move forward and start projecting for 2020. First a helper function to download the latest polls.
+
+```{r}
+polls_2020_url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56fySJKLL18Lipu1_i3ID9JE06voJEz2EXm6JW4Vh11zmndyTwejMavuNntzIWLY0RyhA1UsVEen0/pub?gid=0&single=true&output=csv"
+
+
+download_latest_2020_polls <- function() {
+  if(file.exists("./data/polling/all_polls_2020.csv")) {
+    file.rename("./data/polling/all_polls_2020.csv",
+                paste0("./data/polling/all_polls_2020.",
+                       as.numeric(now()),
+                       ".csv"))
+  }
+  download.file(polls_2020_url, 
+              "./data/polling/all_polls_2020.csv", method = "auto")
+  # if the file has data (i.e., we succeeded in downloading it)
+  # then rename it to "all_polls_2020.csv"
+}
+```
 
 ```{r}
 polls_2020 <- read_csv("../data/polling/all_polls_2020.csv",
@@ -344,13 +365,14 @@ We can now automate running the Kalman filter for the states:
 
 ```{r}
 election_date_2020 <- ymd("2020-11-03")
+
 run_2020 <- function() {
   results <- list();
   for (state_name in unique(polls_2020$state)) {
     if (state_name != "--") {
-      polls <- norm_approx2(polls_2020 %>% filter(state == state_name),
-                            dem=biden, rep=trump);
-      if (nrow(polls) > 1) {
+      polls <- norm_approx(polls_2020 %>% filter(state == state_name),
+                           dem=biden, rep=trump);
+      if (nrow(polls) > 0) {
         results[[state_name]] <- prob_dem_win(full_kalman(polls, election_date_2020))
       }
     }
@@ -368,6 +390,19 @@ The ratings may be estimated qualitatively as "Safe", "Likely", "Lean", "Toss up
 
 
 ```{r}
+ratings <- list(
+  lean_dem = 0.8,
+  lean_rep = 0.2,
+  likely_dem = 0.95,
+  likely_rep = 0.05,
+  safe_dem = 0.99,
+  safe_rep = 0.01,
+  toss_up = 0.5,
+  # interpolated using geometric mean
+  tilt_dem = 0.65,
+  tilt_rep = 0.35
+)
+
 qualitative_label <- function(prob_dem_win) {
   # original ratings estimate
   # ratings <- list(lean_dem = 0.78,
@@ -377,16 +412,7 @@ qualitative_label <- function(prob_dem_win) {
   #                 safe_dem = 0.99,
   #                 safe_rep = 0,
   #                 toss_up = 0.59)
-  ratings <- list(lean_dem = 0.8,
-                  lean_rep = 0.2,
-                  likely_dem = 0.95,
-                  likely_rep = 0.05,
-                  safe_dem = 0.99,
-                  safe_rep = 0.01,
-                  toss_up = 0.5,
-                  # interpolated using geometric mean
-                  tilt_dem = 0.65,
-                  tilt_rep = 0.35)
+
   delta <- 1
   label <- NA
   for (rating in names(ratings)) {
@@ -404,8 +430,76 @@ We can then print out the qualitative estimates for an election as:
 
 ```{r}
 dump_forecast <- function(prediction) {
+  states <- c()
+  labels <- c()
   for (state in sort(names(prediction))) {
-    print(paste0(state, " = ", qualitative_label(prediction[[state]])))
+    print(state)
+    if (!is.na(prediction[[state]])) {
+      states <- c(states, state)
+      labels <- c(labels, qualitative_label(prediction[[state]]))
+    }
   }
+  data.frame(state_abbv = states,
+             prediction = labels)
 }
 ```
+
+```{r}
+plot_prediction <- function(df) {
+  spatial_data <- left_join(get_urbn_map(map = "states", sf = TRUE),
+                            df,
+                            by = "state_abbv")
+  spatial_data
+    p <- ggplot() +
+    geom_sf(
+      sdf1,
+      mapping = aes(fill = probability),
+      color = "#ffffff",
+      size = 0.25) +
+    labs(fill = "Homeownership rate")
+  return(spatial_data)
+}
+
+```
+
+
+```{r}
+f1 <- run_2020()
+f0 <- dump_forecast(f1)
+tmp <- rbind(f0,
+             data.frame(state_abbv = names(electoral_delegates.abbrev),
+                        prediction = rep("no_data", 51)) %>%
+               filter(!(state_abbv %in% f0$state_abbv))) %>%
+  mutate(prediction = factor(ifelse(is.na(prediction), "toss_up", prediction),
+                             levels=c("safe_rep",
+                                      "likely_rep",
+                                      "lean_rep",
+                                      "tilt_rep",
+                                      "toss_up",
+                                      "tilt_dem",
+                                      "lean_dem",
+                                      "likely_dem",
+                                      "safe_dem",
+                                      "no_data"),
+                             ordered=T)) %>%
+  arrange(state_abbv)
+
+sdf1 <- inner_join(get_urbn_map(map = "states", sf=T),
+                  tmp,
+                  by="state_abbv")
+
+okabe <- c("#aaa", "#222", "#ccc", "#afa", "#faa", "#aaf", "#fff")
+
+
+# ggthemes::colorblind_pal()(5)
+ggplot() +
+  geom_sf(sdf1, mapping = aes(fill = prediction),
+          color = "#ffffff") +
+  scale_fill_manual("Rating", values = c("#800000", "#ff0000", "#FF6347", "#DB7093",
+                                         "#daa520", # "#a9a9a9",
+                                         "#ADD8E6", "#00BFFF", "#1E90FF", "#00008B", "#DCDCDC"
+                                         )) +
+  labs(fill = "Rating") +
+  coord_sf(datum = NA)
+```
+
