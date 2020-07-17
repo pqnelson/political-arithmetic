@@ -22,11 +22,61 @@ library(zoo)
 
 library(rmarkdown)
 
+library(knitr)
+library(kableExtra)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r, include=FALSE}
 source("../R/states.R")
 ```
+
+```{r}
+foo <- load_obj(precinct_2016_path)
+foo %>% group_by(mode) %>% summarize(count = n())
+```
+
+```{r}
+pres <- load_obj(county_path)
+```
+
+
+```{r}
+bar <- foo %>%
+  rename(FIPS = county_fips) %>%
+  group_by(FIPS, mode, county_name, state) %>%
+  summarize(votes = sum(votes)) %>%
+  inner_join(pres %>%
+              filter(year == 2016) %>%
+              group_by(FIPS) %>%
+              summarize(totalvotes0 = sum(candidatevotes),
+                        tv = max(totalvotes)),
+            by="FIPS") %>%
+  mutate(diff = tv - votes)
+```
+
+```{r}
+missing_votes <- bar %>%
+  filter(votes == tv) %>%
+  group_by(state) %>%
+  summarize(counts = n()) %>%
+  arrange(-counts) %>%
+  inner_join(foo %>%
+               select(state, county_name) %>%
+               unique %>%
+               group_by(state) %>%
+               summarize(num_counties = n()), by="state") %>%
+  mutate(diff = num_counties - counts) %>%
+  arrange(-diff)
+
+```
+
+
+```{r}
+
+kable(missing_votes)
+
+```
+
 
 
 # Introduction
@@ -54,6 +104,34 @@ president_data <- x %>%
   mutate(totalvotes = sum(candidatevotes)) %>%
   ungroup
 ```
+
+```{r}
+max_party <- function(df0) {
+  (df0 %>% arrange(-candidatevotes) %>% head(n=1))[["party"]]
+}
+
+foo_2002 <- house_data %>%
+  filter(year == 2002,
+         # runoff == FALSE,
+         special == FALSE) %>%
+  group_by(state, district) %>%
+  nest() %>%
+  mutate(winner = lapply(data, max_party)) %>%
+  unnest(winner) %>%
+  ungroup() %>%
+  select(-data) %>%
+  group_by(state, winner) %>%
+  summarize(count = n()) %>%
+  spread(winner, count, fill = 0) %>%
+  group_by(state) %>%
+  mutate(electoral = ifelse(republican > democrat,
+                            2 + republican + democrat,
+                            ifelse(republican < democrat,
+                                   -2 - republican - democrat,
+                                   0))) %>%
+  ungroup()
+```
+
 
 We now need to work our way to produce a triple for each state.
 
@@ -309,6 +387,8 @@ ia_neighboring_counties <- neighboring_counties %>%
   filter(from %in% ia_fips, to %in% ia_fips)
 
 ia_adj_mat <- matrix(0, nrow = length(ia_fips), ncol = length(ia_fips))
+ia_laplace <- matrix(0, nrow = length(ia_fips), ncol = length(ia_fips))
+
 for (i in 1:length(ia_fips)) {
   county_i <- ia_fips[[i]]
   neighbors <- filter(ia_neighboring_counties, from == county_i)
@@ -318,7 +398,9 @@ for (i in 1:length(ia_fips)) {
       ia_adj_mat[i,j] <- 1
     }
   }
+  ia_laplace[i,i] <- sum(ia_adj_mat[i, ])
 }
+ia_laplace <- ia_laplace - ia_adj_mat
 ```
 
 Then we compute Moran's I matrix:
@@ -345,6 +427,119 @@ plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i"
   ) + theme(legend.position = "right")
 ```
 
+## Laplacian Graph
+
+For Iowa, I'm just curious what the Laplacian's eigenvectors look like when graphed.
+
+```{r}
+ia_eigen <- eigen(ia_laplace)
+v2 <- ia_eigen$vectors
+v2[which(v2 < round(mean(v2), digits = 2))] <- 0
+```
+
+The Fourier transformed version of the `ia_votes` vector is just the matrix multiplication of the eigenvectors with the `ia_votes`:
+
+```{r, ia-fourier-votes}
+ia_results <- data.frame(fips = ia_fips,
+                         i = ia_eigen$vectors %*% ia_votes)
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "blue", high = "red", name = "Fourier Transformed Votes", label = scales::number
+  ) + theme(legend.position = "right")
+```
+
+
+```{r, ia-eigenvec1}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,1])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+```{r, ia-eigenvec2}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,2])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec3}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,3])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec4}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,4])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+```{r, ia-eigenvec5}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,5])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+```{r, ia-eigenvec6}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,6])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec7}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,7])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec8}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,8])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec9}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,9])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec10}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,10])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+```{r, ia-eigenvec11}
+ia_results <- data.frame(fips = ia_fips,
+                         i = v2[,11])
+plot_usmap(data = ia_results, regions = "counties", include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Eigenvector", label = scales::comma
+  ) + theme(legend.position = "right")
+```
 ## Wrap this in a function
 
 We first have a helper function to construct the adjacency matrix for counties within a given state:
@@ -576,5 +771,81 @@ plot_lag("Ohio")
 plot_lag("Michigan")
 ```
 
+# Using differences between Democrats and Republicans
+
+Consider now using the difference in vote percentage between the democratic candidate and the republican candidate.
+
+```{r}
+delta_data <- county_data %>%
+  filter(party %in% c("democrat", "republican")) %>%
+  select(-candidate) %>%
+  spread(party, candidatevotes, fill = 0) %>%
+  group_by(year) %>%
+  mutate(nation_dem = sum(democrat),
+         nation_rep = sum(republican)) %>%
+  ungroup() %>%
+  group_by(state,county,year,FIPS) %>%
+  summarize(republican = sum(republican),
+            democrat = sum(democrat),
+            nation_dem = max(nation_dem),
+            nation_rep = max(nation_rep),
+            percent = (democrat - republican)/(democrat + republican))
+```
 
 
+
+```{r}
+ia_votes <- (delta_data %>%
+               filter(year == 2016,
+                      state == "Iowa") %>%
+               arrange(FIPS))$percent
+
+ia_moran <- rep(0, length(ia_votes))
+
+mu <- (delta_data %>%
+         filter(year == 2016) %>%
+         mutate(mu = (nation_dem - nation_rep)/(nation_dem + nation_rep)))$mu[[1]]
+m2 <- sum((ia_votes - mu)**2)/(length(ia_votes) - 1)
+
+
+m2 <- sd(ia_votes)
+mu <- mean(ia_votes)
+for (i in 1:length(ia_moran)) {
+  ia_moran[[i]] <- ((ia_votes[[i]] - mu)/m2)*sum(ia_votes[[i]] * (ia_adj_mat %*% ia_votes)[[i]])
+}
+
+ia_results <- data.frame(fips = ia_fips,
+                         i = ia_moran)
+```
+
+```{r, ia-test1}
+plot_usmap(data = ia_results,
+           regions = "counties",
+           include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Vote Homogeneity", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+```{r, ia-test1}
+plot_usmap(data = ia_results,
+           regions = "counties",
+           include = "IA", values = "i") + 
+  scale_fill_continuous(
+    low = "white", high = "blue", name = "Vote Homogeneity", label = scales::comma
+  ) + theme(legend.position = "right")
+```
+
+```{r}
+ia_results <- data.frame(percent = ia_percent,
+                         neighbor = (ia_adj_mat * (ia_neighboring_counties %>% group_by(from) %>% summarize(count = 1/n()) %>% arrange(from))$count) %*% ia_percent)
+ggplot(ia_results, aes(x = percent, y = neighbor)) + 
+  geom_point(shape = 18, color = "blue") +
+  geom_smooth(method = lm,  linetype = "dashed",
+              color = "darkred", fill = "blue") +
+  geom_abline(intercept = 0, slope = 1) +
+  labs(title = "County Presidential Voting in Iowa",
+       subtitle = "Compared to average neighboring counties") +
+  ylab("Average neighbor's vote (%)") +
+  xlab("County Vote (%)")
+```

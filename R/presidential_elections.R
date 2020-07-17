@@ -5,6 +5,7 @@ make_party_into_factor <- function(results) {
   return(results);
 }
 
+precinct_2016_path <- "../data/elections/presidential/precinct/2016_precinct_president.RData"
 state_path <- "../data/elections/presidential/state/1976_2016_president.RData"
 county_path <- "../data/elections/presidential/county/countypres_2000-2016.RData"
 
