@@ -166,6 +166,10 @@ norm_approx <- function(poll_df, rep, dem) {
               published = as.Date(entry.date.time..et.),
               sample_size = number.of.observations,
               state = state,
+              mu_dem = sample_size*p_dem,
+              mu_rep = sample_size*p_rep,
+              mu_undecided = sample_size*p_undecided,
+              mu_third = sample_size*p_third,
               population = population
               ) %>%
     group_by(state,end_date) %>%
@@ -174,11 +178,15 @@ norm_approx <- function(poll_df, rep, dem) {
               p_undecided = max(0, weighted.mean(p_undecided, precision)),
               p_third = max(0, weighted.mean(p_third, precision)),
               precision = sum(precision),
-              size = sum(sample_size),
-              mu_dem = size*p_dem,
-              mu_rep = size*p_rep,
-              mu_undecided = size*p_undecided,
-              mu_third = size*p_third,
+              # mu_dem = size*p_dem,
+              # mu_rep = size*p_rep,
+              # mu_undecided = size*p_undecided,
+              # mu_third = size*p_third,
+              mu_dem = sum(mu_dem),
+              mu_rep = sum(mu_rep),
+              mu_undecided = sum(mu_undecided),
+              mu_third = sum(mu_third),
+              size = mu_dem + mu_rep + mu_undecided + mu_third,
               .groups = "drop")
 }
 ```
@@ -196,12 +204,16 @@ make_h <- function(new_size, existing_size) {
 full_kalman <- function(df, election_date) {
   end_T <- as.integer(election_date - min(df$end_date))
   xs <- list()
-  xs[[1]] <- (matrix(data=c(1600,1400,300,300), ncol=1))
+  xs[[1]] <- (matrix(data=c(1622,1497,315,166), ncol=1))
   covariance_matrices <- list()
-  covariance_matrices[[1]] <- 10000*matrix(data=c(50,-1/10,-1,-1,
-                                            -1/10,50,-1,-1,
-                                            -1,-1,5,1,
-                                            -1,-1,1,5), nrow=4)
+  covariance_matrices[[1]] <- 12*multinomial_covariance_mat(xs[[1]]/sum(xs[[1]]), size=sum(xs[[1]]))
+  diag(covariance_matrices[[1]]) <- 5*diag(covariance_matrices[[1]])
+  covariance_matrices[[1]][3,4] <- abs(covariance_matrices[[1]][3,4])
+  covariance_matrices[[1]][4,3] <- abs(covariance_matrices[[1]][4,3])
+  # covariance_matrices[[1]] <- 10000*matrix(data=c(50,-1/10,-1,-1,
+  #                                           -1/10,50,-1,-1,
+  #                                           -1,-1,5,1,
+  #                                           -1,-1,1,5), nrow=4)
   residuals <- list()
   p <- list()
   
@@ -233,7 +245,7 @@ full_kalman <- function(df, election_date) {
                                           df$p_undecided[i]),
                                         size  = df$size[i]) +
       diag((qnorm(0.975)**2)*0.25*df$size[i], 4);
-    R_mat[4,c(1,2,3)] <- 0; R_mat[c(1,2,3),4] <- 0;
+    # R_mat[4,c(1,2,3)] <- 0; R_mat[c(1,2,3),4] <- 0;
     s <- (h %*% P_est %*% t(h)) + R_mat
     kalman_gain <- P_est %*% t(h) %*% solve(s)
     
@@ -439,9 +451,11 @@ The ratings may be estimated qualitatively as "Safe", "Likely", "Lean", "Toss up
 
 > Each of these categories also has a corresponding Democratic probability of victory for the seats placed within. In Lean Democratic seats, Democrats win the elections 78% of the time; Lean Republican: 18%; Likely D: 95%; Likely R: 3%; Safe D: 99%; Safe R 0%, and Toss-up districts: 59%. These values are plotted on the right of the preceding figure, with the size of each point showing the number of seats earning that designation over the years.
 
+A more [thorough review](https://cookpolitical.com/accuracy) of the Cook political report finds similar assessments, although their "Lean <party>" corresponds to an 85% probability the predicted candidate would win. Curiously, this seems to correspond to approximately to the logit scale of +2 for lean, +3 for likely, and +5 for solid. This would suggest a tilt should have +1 on the logit scale, corresponding to a probability 73% favoring the predicted candidate.
 
 
 ```{r}
+inv_logit <- function(x) 1/(1+exp(-x))
 ratings <- list(
   lean_dem = 0.8,
   lean_rep = 0.2,
@@ -453,6 +467,18 @@ ratings <- list(
   # interpolated using geometric mean
   tilt_dem = 0.65,
   tilt_rep = 0.35
+)
+ratings <- list(
+  lean_dem = inv_logit(2),
+  lean_rep = inv_logit(-2),
+  likely_dem = inv_logit(3),
+  likely_rep = inv_logit(-3),
+  safe_dem = inv_logit(5),
+  safe_rep = inv_logit(-5),
+  toss_up = inv_logit(0),
+  # interpolated using geometric mean
+  tilt_dem = inv_logit(1/2),
+  tilt_rep = inv_logit(-1/2)
 )
 
 qualitative_label <- function(prob_dem_win) {
@@ -485,7 +511,6 @@ dump_forecast <- function(prediction) {
   states <- c()
   labels <- c()
   for (state in sort(names(prediction))) {
-    print(state)
     if (!is.na(prediction[[state]])) {
       states <- c(states, state)
       labels <- c(labels, qualitative_label(prediction[[state]]))
