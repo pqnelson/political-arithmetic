@@ -2,7 +2,11 @@
 title: "Kalman Filtering the Polls"
 author: "Alex Nelson"
 date: "7/5/2020"
-output: html_document
+output: 
+  md_document:
+    variant: gfm
+    toc: true
+    toc_depth: 4
 ---
 
 ```{r setup, include=FALSE}
@@ -12,6 +16,7 @@ library(truncnorm)
 library(MASS)
 library(kableExtra)
 library(urbnmapr)
+library(ggfortify)
 # library(ggthemes)
 
 knitr::opts_chunk$set(echo = TRUE)
@@ -24,7 +29,7 @@ source("../R/presidential_elections.R")
 Despite the name, a "Kalman filter" doesn't _filter_. It's more of a "guess-and-check"-er.
 
 ```{r}
-polls_2016 <- read_csv("../data/polling/all_polls_2016.csv",
+polls_2016_raw <- read_csv("../data/polling/all_polls_2016.csv",
                        col_types = cols(
                            .default = col_character(),
   X1 = col_double(),
@@ -42,100 +47,10 @@ polls_2016 <- read_csv("../data/polling/all_polls_2016.csv",
                        ))
 ```
 
-## Simple filtering
-
-So, the control vector would be the `entry.date.time..et.` date, because it's an external impulse.
+Then we shadow an identifier which we'll use shortly but define later on:
 
 ```{r}
-mi_2016 <- polls_2016 %>%
-  filter(state == "MI") %>%
-  arrange(entry.date.time..et.)
-
-election_date_2016 <- ymd("2016-11-08")
-```
-
-We transform this into approximately normal variables
-
-```{r}
-mi_clinton <- mi_2016 %>%
-  filter(partisan != "Pollster") %>%
-  mutate(clinton_mu = (clinton/100),
-         clinton_sd = qnorm(0.999)*sqrt(((clinton/100)*(1 - clinton/100) + (1 - (clinton+trump)/100)**2)/number.of.observations),
-         t = 1+as.integer(end.date - min(mi_2016$end.date)))
-```
-
-```{r}
-get_for_state <- function(state_str) {
-  polls_2016 %>%
-  filter(state == state_str) %>%
-  arrange(entry.date.time..et.) %>%
-  # filter(partisan != "Pollster") %>%
-  mutate(clinton_mu = (clinton/100),
-         sd = qnorm(0.999)*sqrt(((clinton/100)*(1 - clinton/100) + (1 - (clinton+trump)/100)**2)/number.of.observations),
-         clinton_sd = sd,
-         t = 1+as.integer(end.date - min(mi_2016$end.date)),
-         precision = 1/clinton_sd**2)
-}
-```
-
-```{r}
-pool_polls <- function(df) {
-  df %>%
-    group_by(t) %>%
-    summarize(clinton_pooled = weighted.mean(clinton/100, precision),
-              trump_pooled = weighted.mean(trump/100, precision),
-              trump = 100*trump_pooled,
-              clinton = 100*clinton_pooled,
-              sd = sqrt(1/sum(precision)),
-              number.of.observations = sum(number.of.observations),
-              end.date = first(end.date),
-              number_of_polls = n()) %>%
-    arrange(t)
-}
-```
-
-This is a dummy Kalman filter running on a one-dimensional signal.
-
-```{r}
-kalman_filter <- function(df, mu, sd, election_dt = election_date_2016, h=1, f=1) {
-  q = mean(df$sd)
-  end_T <- as.integer(election_dt - min(df$end.date))
-  x <- c(rnorm(1, 0.5, mean(df$sd)))
-  p <- c(q)
-  residual <- c()
-  z <- rep(NA, end_T)
-  r <- rep(NA, end_T)
-  for (i in 1:nrow(df)) {
-    z[df$t[i]] <- mu[i]
-    r[df$t[i]] <- sd[i]
-  }
-  for (i in 1:end_T) {
-    if (is.na(z[i])) {
-      # random walk
-      x <- c(x, rtruncnorm(1, a=0, b=1, mean=f*last(x), sd=q))
-    } else {
-      # predict
-      x_pred <- f*last(x);
-      p_pred <- f*last(p)*f + q;
-      # correct
-      y <- z[i] - h*x_pred;
-      s <- h*p_pred*h + mean(r[1:i], na.rm=T);
-      k <- p_pred*h/s;
-      x <- c(x, x_pred + k*y)
-      p <- c(p, (1 - k*h)*p_pred)
-      residual <- c(residual, z[i] - h*last(x))
-    }
-  }
-  list(x=x,
-       p=p,
-       residuals=residual)
-}
-```
-
-```{r}
-estimate_win <- function(df, n=100) {
-  mean(replicate(last(kalman_filter(df, df$trump_pooled, df$sd)$x), n=n)  < replicate(last(kalman_filter(df, df$clinton_pooled, df$sd)$x), n=n))
-}
+polls_2016 <- polls_2016_raw # XXX fix this, declaration ahead of time
 ```
 
 # Refined Model
@@ -151,43 +66,114 @@ multinomial_covariance_mat <- function(prob_vec, size) {
   mat
 }
 
+# forward declaration...
+parse_house_effect <- function(house_effect) {
+  if (is.na(house_effect)) { return(matrix(c(0,0,0,0), ncol=1)); }
+  
+  if ("D" == substring(house_effect, 1, 1)) {
+    delta <- (parse_number(house_effect))
+    return(matrix(c(-delta, delta, 0, 0)/100, ncol=1));
+  } else {
+    delta <- (parse_number(house_effect))
+    return(matrix(c(delta, -delta, 0, 0)/100, ncol=1));
+  }
+}
+
+use_house_effect <- T
+
+pool_polls <- function(data, end_date) {
+  # print(data)
+  if (nrow(data) == 1) {
+    prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) + use_house_effect*c(parse_house_effect(data$house_effect))#/sqrt(data$sample_size)
+    cov_mat <- 2*multinomial_covariance_mat(matrix(data = prob_data, ncol=1), data$sample_size) + ifelse(is.na(data[[1, "predictive"]]),
+                                                                                                                                                          diag(data$sample_size, 4), 
+                                                                                                                                                          sqrt(data$sample_size)*diag(data[[1, "predictive"]]/100,4))
+    
+    prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) # + use_house_effect*c(parse_house_effect(data$house_effect))#/sqrt(data$sample_size)
+    # prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) + use_house_effect*c(parse_house_effect(data$house_effect))/sqrt(data$sample_size)
+    return(list(p_dem = prob_data[[1]], 
+                p_rep = prob_data[[2]],
+                p_third = prob_data[[3]],
+                p_undecided = prob_data[[4]],
+                size = data$sample_size,
+                mu_dem = prob_data[[1]]*data$sample_size,
+                mu_rep = prob_data[[2]]*data$sample_size,
+                mu_third = prob_data[[3]]*data$sample_size,
+                mu_undecided = prob_data[[4]]*data$sample_size,
+                precision = MASS::ginv(cov_mat),
+                covariance = cov_mat,
+                end_date = end_date))
+  } else {
+    prob_numerator <- matrix(c(0,0,0,0), ncol=1)
+    mu_numerator <- matrix(c(0,0,0,0), ncol=1)
+    precision <- list()
+    denominator <- diag(0, 4)
+    for (i in 1:nrow(data)) {
+      size <- data[[i, 'sample_size']]
+      prob_data <- matrix(c(data[[i,'p_dem']],data[[i,'p_rep']],data[[i,'p_third']],data[[i,'p_undecided']]), ncol=1) + use_house_effect*c(parse_house_effect(data[[i,'house_effect']]))# /sqrt(size)
+      covariance_mat <- 2*multinomial_covariance_mat(matrix(data = prob_data, ncol=1), size) +
+                            ifelse(is.na(data[[i, "predictive"]]),
+                                   diag(sqrt(size),4),
+                                   sqrt(size)*diag(data[[i, "predictive"]]/100,4))
+      p_mat <- MASS::ginv(covariance_mat)
+      prob_data <- matrix(c(data[[i,'p_dem']],data[[i,'p_rep']],data[[i,'p_third']],data[[i,'p_undecided']]), ncol=1) # + use_house_effect*parse_house_effect(data[[i,'house_effect']])#/sqrt(size)
+      denominator <- denominator + p_mat
+      precision[[length(precision)+1]] <- p_mat
+      prob_numerator <- prob_numerator + p_mat %*% prob_data
+      mu_numerator <- mu_numerator + p_mat %*% (prob_data*size) 
+    }
+    den <<- denominator
+    cov_mat <- tryCatch(solve(den),
+                        error=function(e) {
+                          eigen_den <- eigen(den)
+                          vs <- eigen_den$values**-1
+                          vs[[4]] <- exp(mean(log(vs[1:3])))
+                          eigen_den$vectors %*% diag(vs,4) %*% solve(eigen_den$vectors)
+                        })
+    mu <- cov_mat %*% mu_numerator
+    prob <- cov_mat %*% prob_numerator
+    size <- sum(mu)
+    return(list(p_dem = (mu[[1]]/size),
+                p_rep = (mu[[2]]/size),
+                p_third = (mu[[3]]/size),
+                p_undecided = (mu[[4]]/size),
+                mu_dem = (mu[[1]]),
+                mu_rep = (mu[[2]]),
+                mu_third = (mu[[3]]),
+                mu_undecided = (mu[[4]]),
+                size = (size),
+                precision = denominator,
+                covariance = cov_mat,
+                end_date = end_date
+                ))
+  }
+}
+```
+
+We now use the normal approximation to a poll treated as a realization of a multinomial distribution. We can also take advantage of pooling the polls, so any polls concluding on the same day can be combined together to decrease error.
+
+```{r}
 norm_approx <- function(poll_df, rep, dem) {
   democrat <- enquo(dem)
   republican <- enquo(rep)
-  poll_df %>%
+  tmp <- poll_df %>%
     filter(!is.na(number.of.observations)) %>%
     transmute(p_dem = !!democrat/100,
               p_rep = !!republican/100,
               p_undecided = ifelse(is.na(undecided), 0.5*(1 - !!democrat/100 - !!republican/100), undecided/100),
               p_third = ifelse(is.na(undecided), 0.5*(1 - !!democrat/100 - !!republican/100), 1 - !!democrat/100 - !!republican/100 - undecided/100),
-              precision = (qnorm(0.975)*0.5/sqrt(number.of.observations))**-2,
-              start_date = start.date,
-              end_date = end.date,
-              published = as.Date(entry.date.time..et.),
               sample_size = number.of.observations,
-              state = state,
-              mu_dem = sample_size*p_dem,
-              mu_rep = sample_size*p_rep,
-              mu_undecided = sample_size*p_undecided,
-              mu_third = sample_size*p_third,
-              population = population
-              ) %>%
-    group_by(state,end_date) %>%
-    summarize(p_dem = max(0, weighted.mean(p_dem, precision)),
-              p_rep = max(0, weighted.mean(p_rep, precision)),
-              p_undecided = max(0, weighted.mean(p_undecided, precision)),
-              p_third = max(0, weighted.mean(p_third, precision)),
-              precision = sum(precision),
-              # mu_dem = size*p_dem,
-              # mu_rep = size*p_rep,
-              # mu_undecided = size*p_undecided,
-              # mu_third = size*p_third,
-              mu_dem = sum(mu_dem),
-              mu_rep = sum(mu_rep),
-              mu_undecided = sum(mu_undecided),
-              mu_third = sum(mu_third),
-              size = mu_dem + mu_rep + mu_undecided + mu_third,
-              .groups = "drop")
+              house_effect = house_effect,
+              end_date = end.date,
+              predictive = predictive) %>%
+    arrange(end_date)
+  
+  tmp2 <- tmp %>%
+    nest_by(end_date) %>%
+    mutate(data = list(pool_polls(data, end_date)))
+  
+  return(tmp2)
+  
 }
 ```
 
@@ -199,10 +185,12 @@ make_h <- function(new_size, existing_size) {
 }
 ```
 
+The big moment: Kalman filter the polling data (as a multivariate normally distributed sample).
+
 
 ```{r}
-full_kalman <- function(df, election_date) {
-  end_T <- as.integer(election_date - min(df$end_date))
+full_kalman <- function(data, election_date) {
+  end_T <- as.integer(election_date - min(data$end_date))
   xs <- list()
   xs[[1]] <- (matrix(data=c(1622,1497,315,166), ncol=1))
   covariance_matrices <- list()
@@ -210,41 +198,36 @@ full_kalman <- function(df, election_date) {
   diag(covariance_matrices[[1]]) <- 5*diag(covariance_matrices[[1]])
   covariance_matrices[[1]][3,4] <- abs(covariance_matrices[[1]][3,4])
   covariance_matrices[[1]][4,3] <- abs(covariance_matrices[[1]][4,3])
-  # covariance_matrices[[1]] <- 10000*matrix(data=c(50,-1/10,-1,-1,
-  #                                           -1/10,50,-1,-1,
-  #                                           -1,-1,5,1,
-  #                                           -1,-1,1,5), nrow=4)
   residuals <- list()
   p <- list()
   
-  
-  for (i in 1:nrow(df)) {
+  end_dates <- c()
+  for (i in 1:nrow(data)) {
+    df <- data$data[[i]]
+    end_dates <- c(end_dates, data$end_date)
     # estimate
     x_est <- last(xs)
     
-    Q_mat <- diag((qnorm(0.975)**2)*0.25*df$size[i], 4);
+    Q_mat <- diag((qnorm(0.975)**2)*0.25*df$size, 4);
     if (i > 1) {
-      Q_mat <- Q_mat + multinomial_covariance_mat(last(p), size=sum(last(xs)))
+      # random walk suggests we multiply by the days between the end dates
+      days_between_polls <- as.numeric(data$end_date[[i]] - data$end_date[[i-1]])
+      Q_mat <- (Q_mat + multinomial_covariance_mat(last(p), size=sum(last(xs))))*ifelse(is.na(days_between_polls), 1, days_between_polls)
     }
     P_est <- last(covariance_matrices) + Q_mat
     
     # predict
-    z <- matrix(data=c(df$mu_dem[i], df$mu_rep[i], df$mu_third[i], df$mu_undecided[i]), ncol=1)
+    z <- matrix(data=c(df$mu_dem, df$mu_rep, df$mu_third, df$mu_undecided), ncol=1)
     
     h <- diag(1, nrow=4)
     if (i>1) {
-      h <- diag(df$size[i]/sum(x_est), 4)
+      h <- diag(df$size/sum(x_est), 4)
     }
     
     
     y <- z - (h %*% x_est)
     
-    R_mat <- multinomial_covariance_mat(c(df$p_dem[i],
-                                          df$p_rep[i],
-                                          df$p_third[i],
-                                          df$p_undecided[i]),
-                                        size  = df$size[i]) +
-      diag((qnorm(0.975)**2)*0.25*df$size[i], 4);
+    R_mat <- multinomial_covariance_mat(matrix(data=c(df$p_dem, df$p_rep, df$p_third, df$p_undecided), ncol=1), size=df$size) + df$covariance;
     # R_mat[4,c(1,2,3)] <- 0; R_mat[c(1,2,3),4] <- 0;
     s <- (h %*% P_est %*% t(h)) + R_mat
     kalman_gain <- P_est %*% t(h) %*% solve(s)
@@ -263,7 +246,8 @@ full_kalman <- function(df, election_date) {
   list(x = xs,
        p_mat = covariance_matrices,
        prob = p,
-       residuals = residuals)
+       residuals = residuals,
+       end_date = end_dates)
 }
 ```
 
@@ -272,6 +256,7 @@ We then can transform the result into a probability of winning. We need to estim
 
 
 ```{r}
+election_date_2016 <- ymd('2016-11-08')
 state_results <- load_obj(state_path)
 results_2016 <- filter(state_results, year==2016) %>%
   group_by(candidate,state) %>%
@@ -284,36 +269,173 @@ results_2016 <- filter(state_results, year==2016) %>%
   rename(republican = `Trump, Donald J.`,
          democrat = `Clinton, Hillary`) %>%
   mutate(third_party = 1 - republican - democrat)
+```
 
+```{r}
+estimate_c <- function(results, predictions) {
+  assertthat::assert_that((0.95 <= sum(results)),
+                          msg = "sum(results) < 0.95")
+  assertthat::assert_that((sum(results) <= 1 + .Machine$double.eps),
+                          msg = "sum(results) > 1")
+  assertthat::assert_that((0.95 <= sum(predictions)),
+                          msg = "sum(predictions) < 0.95")
+  tmp_sum <<- sum(predictions)
+  assertthat::assert_that((sum(predictions) <= 1 + .Machine$double.eps),
+                          msg = sprintf("(sum(predictions) = %f) > 1", sum(predictions)))
+  
+  
+  delta_dem <- min(results$democrat/predictions$democrat, 1)
+  delta_rep <- -min(results$republican/predictions$republican, 1)
+  delta_undecided <- 0
+  delta_third <- 0
+  
+  if (results$democrat > predictions$democrat) {
+    bolted_republicans <- max(0, predictions$republican - results$republican)
+    unexplained_dem <- results$democrat - predictions$democrat - bolted_republicans
+    
+    if (unexplained_dem > predictions$undecided) {
+      delta_third <- (unexplained_dem - predictions$undecided)/(predictions$third_party)
+      
+      delta_undecided <- 1
+    } else {
+      delta_third <- (unexplained_dem/(predictions$undecided + abs(predictions$third_party - results$third_party)))
+      # delta_undecided <- unexplained_dem/predictions$undecided
+      delta_undecided <- delta_third
+    }
+  } else if (results$republican > predictions$republican) {
+    bolted_dems <- max(0, predictions$democrat - results$democrat)
+    unexplained_rep <- results$republican - predictions$republican - bolted_dems
+    
+    if (unexplained_rep > predictions$undecided) {
+      delta_third <- -((unexplained_rep - predictions$undecided)/(abs(predictions$third_party)))
+      
+      delta_undecided <- -1
+    } else {
+      delta_third <- -(unexplained_rep/(predictions$undecided + abs(predictions$third_party - results$third_party)))
+      # delta_undecided <- unexplained_dem/predictions$undecided
+      delta_undecided <- delta_third
+    }
+  }
+  
+  c(delta_dem, delta_rep, delta_third, delta_undecided)
+} 
+```
+
+Now, I'm paranoid whether we programmed this correctly or not. So let's consider some unit tests. What do we expect when the polls badly over-estimate the Democratic candidate and the Republican candidate had silent supporters?
+
+```{r}
+over_estimate_dem_test <- function() {
+  estimates <- tibble(democrat = 0.65,
+                      republican = 0.25,
+                      third_party = 0.08,
+                      undecided = 0.02)
+  results <- tibble(democrat = 0.45,
+                      republican = 0.5,
+                      third_party = 0.05,
+                      undecided = 0)
+  
+  c <- c(0.45/0.65, -1, (0.08-0.05)*-1/0.08, -1)
+  guess <- estimate_c(results, estimates)
+  assertthat::assert_that(all.equal(c, guess))
+  T
+}
+```
+
+Similarly, if the Republican party is over-estimated.
+
+```{r}
+over_estimate_rep_test <- function() {
+  estimates <- tibble(democrat = 0.25,
+                      republican = 0.65,
+                      third_party = 0.08,
+                      undecided = 0.02)
+  results <- tibble(democrat = 0.5,
+                      republican = 0.45,
+                      third_party = 0.05,
+                      undecided = 0)
+  
+  c <- c(1, -0.45/0.65, 3/8, 1)
+  guess <- estimate_c(results, estimates)
+  assertthat::assert_that(all.equal(c, guess))
+  T
+}
+```
+
+Now, if the third party is over-estimated, we should: sum the undecideds and the error in third-party forming the "ersatz undecideds", then form the ratio of the unexplained Democratic vote to this "ersatz undecideds":
+
+```{r}
+over_estimate_third_party_test <- function() {
+  estimates <- tibble(democrat = 0.4,
+                      republican = 0.4,
+                      third_party = 0.1,
+                      undecided = 0.1)
+  results <- tibble(democrat = 0.5,
+                      republican = 0.45,
+                      third_party = 0.05,
+                      undecided = 0)
+  ersatz_undecided <- estimates$undecided + abs(results$third_party - estimates$third_party)
+  unexplained_dem <- results$democrat - estimates$democrat
+  c <- c(1, -1, unexplained_dem/ersatz_undecided, unexplained_dem/ersatz_undecided)
+  
+  guess <- estimate_c(results, estimates)
+  assertthat::assert_that(all.equal(c, guess))
+  T
+}
+```
+
+We wrap all these unit tests into a single function:
+
+```{r}
+estimate_c_test_suite <- function() {
+  assertthat::assert_that(over_estimate_third_party_test(),
+                          msg="Failed third-party estimates") 
+  assertthat::assert_that(over_estimate_rep_test(),
+                          msg="Failed over-estimate Republican estimates") 
+  assertthat::assert_that(over_estimate_dem_test(),
+                          msg="Failed over-estimate Democratic estimates") 
+}
+```
+
+
+```{r}
 est_c_for_state <- function(state_abbrev) {
-  estimates <- c(last(filter_state(state_abbrev, polls_2016, election_date_2016, dem=clinton)$prob))
-  names(estimates) <- c('democrat', 'republican', 'third_party', 'undecided')
-  state_2016 <- filter(results_2016, state == expand_abbrev[[state_abbrev]]) %>%
+  tmp <- c(last(filter_state(state_abbrev, polls_2016, election_date_2016, dem=clinton)$prob))
+  estimates <- tibble(democrat = tmp[[1]],
+                      republican = tmp[[2]],
+                      third_party = tmp[[3]],
+                      undecided = tmp[[4]])
+  
+  results <- filter(results_2016, state == expand_abbrev[[state_abbrev]]) %>%
     dplyr::select(-state) %>%
     mutate(undecided=0)
-  delta <- (state_2016 - estimates)/(estimates[['third_party']] + estimates[['undecided']] - state_2016$third_party)
-  c(1,
-    -1,
-    (delta[['democrat']]-delta[['republican']])*abs(delta[['third_party']]),
-    (delta[['democrat']]-delta[['republican']])*abs(delta[['undecided']]))
+  
+  # print(estimates)
+  # print(results)
+  
+  estimate_c(results, estimates)
 }
 ```
 We then take our results, transform the multivariate normal distribution into a univariate normal distribution using the estimates we just considered:
 
 ```{r}
-prob_dem_win <- function(results, state_abbrev=NA) {
+prob_dem_win <- function(results, state_abbrev=NA, min_margin_of_victory=2, election_date=NA) {
   mu <- last(results$x)
   sigma <- last(results$p_mat)
+  last_date <- last(sort(results$end_date))
+  walk_distance <- ifelse(is.na(election_date), 1, sqrt(max(1, as.numeric(election_date-last_date))))
   
   if (is.na(state_abbrev)) {
-    c <- matrix(data = c(1,-1,-1/3,-1/3), ncol=1)
+    c <- matrix(data = c(1,-1,-1/4,-1/4), ncol=1)
     # c <- matrix(data = c(1,-1,0.345*(-0.1790679),-0.1790679), ncol=1)
   } else {
     c <- est_c_for_state(state_abbrev)
   }
   
-  s2 <- t(c) %*% sigma %*% c
-  pnorm(0.5, t(c) %*% mu, sd=sqrt(abs(s2)), lower.tail=F)
+  s2 <- t(c) %*% (sigma*walk_distance) %*% c
+  
+  probability <- pnorm(min_margin_of_victory, t(c) %*% mu, sd=sqrt(abs(s2)), lower.tail=F)
+  # print(sprintf("S2 = %f, mu = %f, prob = %f", s2, t(c) %*% mu, probability))
+  return(probability)
 }
 ```
 
@@ -338,13 +460,18 @@ Iterate through the states with polls available "this far out" from election day
 ```{r}
 run_2016 <- function(end_dt = today() - years(4)) {
   results <- list();
-  for (state in unique(polls_2016$state)) {
-    if (state != "--") {
-      polls <- norm_approx(get_for_state(state) %>% 
-                              filter(end.date <= end_dt),
-                            dem=clinton, rep=trump);
-      if (nrow(polls) > 1) {
-        results[[state]] <- prob_dem_win(full_kalman(polls, election_date_2016))
+  for (state_name in unique(polls_2016$state)) {
+    if (state_name != "--") {
+      state_polls <- polls_2016 %>%
+        filter(state == state_name,
+               end.date <= end_dt)
+      if (nrow(state_polls) > 1) {
+        # print(state_name)
+        polls <- norm_approx(polls_2016 %>% 
+                               filter(state == state_name,
+                                      end.date <= end_dt),
+                             trump, clinton);
+        results[[state_name]] <- prob_dem_win(full_kalman(polls, election_date_2016), election_date=election_date_2016)
       }
     }
   }
@@ -389,10 +516,12 @@ download_latest_2020_polls <- function() {
   # if the file has data (i.e., we succeeded in downloading it)
   # then rename it to "all_polls_2020.csv"
 }
+
+
 ```
 
 ```{r}
-polls_2020 <- read_csv("../data/polling/all_polls_2020.csv",
+polls_2020_raw <- read_csv("../data/polling/all_polls_2020.csv",
                        col_types = cols(
                            .default = col_character(),
   start.date = col_date(format = "%m/%d/%Y"),
@@ -403,7 +532,71 @@ polls_2020 <- read_csv("../data/polling/all_polls_2020.csv",
   biden = col_double(),
   other = col_double(),
   undecided = col_double()
-                       ))
+                       )) %>%
+  mutate(
+  pollster = replace(pollster, "ABC News/Washington Post" == pollster,"ABC News/The Washington Post"),
+  pollster = replace(pollster, "Gonzales Research & Media Services" == pollster,"Gonzales Research & Marketing Strategies Inc."),
+  pollster = replace(pollster, "Mason-Dixon Polling & Research Inc." == pollster,"Mason-Dixon Polling & Strategy"),
+  pollster = replace(pollster, "Meeting Street Insights" == pollster, "Meeting Street Research"),
+ pollster = replace(pollster, "Monmouth" == pollster,"Monmouth University"),
+  pollster = replace(pollster, "NBC News/Wall Street Journal" == pollster, "NBC News/The Wall Street Journal"),
+  pollster = replace(pollster, "NYT/Siena College" == pollster, "Siena College/The New York Times Upshot"),
+  pollster = replace(pollster, "Pulse Opinion Research" == pollster,"Rasmussen Reports/Pulse Opinion Research")) %>%
+  as.data.frame
+```
+
+We need to normalize the pollster names...because no one agrees on how to do this, apparently. We should adjust for house effects, the simplest way to do this is to treat (for example) a "D +4.1" as a shift vector `c(4.1, -4.1, 0, 0)`. Hence we want to subtract this out from the polls produced by the firm with this House Effect. At least, that's the simplest first-order solution.
+
+```{r}
+download_latest_pollster_ratings <- function() {
+  download.file("https://raw.githubusercontent.com/fivethirtyeight/data/master/pollster-ratings/pollster-ratings.csv", 
+              "./data/polling/ratings_2020.csv", method = "auto")
+}
+```
+
+We will setup a function to take a house effect string, then parse it into a 4-component vector.
+
+```{r}
+parse_house_effect <- function(house_effect) {
+  if (is.na(house_effect)) { return(matrix(c(0,0,0,0), ncol=1)); }
+  
+  if ("D" == substring(house_effect, 1, 1)) {
+    delta <- parse_number(house_effect)
+    return(matrix(c(-delta, delta, 0, 0), ncol=1));
+  } else {
+    delta <- parse_number(house_effect)
+    return(matrix(c(delta, -delta, 0, 0), ncol=1));
+  }
+}
+```
+
+```{r}
+pollster_ratings_2020 <- read_csv("../data/polling/ratings_2020.csv")
+```
+
+So now we can add in the House effect to the polling data:
+```{r}
+polls_2020 <- polls_2020_raw %>%
+  left_join(pollster_ratings_2020 %>%
+              dplyr::select(Pollster,
+                            `House Effect`,
+                            `Predictive    Plus-Minus`) %>%
+              rename(pollster = Pollster,
+                     house_effect = `House Effect`,
+                     predictive = `Predictive    Plus-Minus`),
+            by="pollster")
+```
+
+```{r}
+polls_2016 <- polls_2016_raw %>%
+  left_join(pollster_ratings_2020 %>%
+              dplyr::select(Pollster,
+                            `House Effect`,
+                            `Predictive    Plus-Minus`) %>%
+              rename(pollster = Pollster,
+                     house_effect = `House Effect`,
+                     predictive = `Predictive    Plus-Minus`),
+            by="pollster")
 ```
 
 Lets examine the frequencies
@@ -419,7 +612,10 @@ A helper function to automatically run the Kalman filter on a state:
 filter_state <- function(state_name, polls, election_date, dem=biden, rep=trump) {
   democrat <- enquo(dem)
   republican <- enquo(rep)
-  full_kalman(norm_approx(polls %>% filter(state == state_name),dem=(!!democrat), rep=(!!republican)),
+  full_kalman(norm_approx(polls %>%
+                            filter(state == state_name),
+                          dem=(!!democrat),
+                          rep=(!!republican)),
               election_date)
 }
 ```
@@ -431,13 +627,19 @@ We can now automate running the Kalman filter for the states:
 ```{r}
 election_date_2020 <- ymd("2020-11-03")
 
-run_2020 <- function() {
+run_2020 <- function(end_date = today(), is_nowcast = F) {
   results <- list();
   for (state_name in unique(polls_2020$state)) {
     if (state_name != "--") {
-      polls <- norm_approx(polls_2020 %>% filter(state == state_name),dem=biden, rep=trump);
+      # print(state_name)
+      polls <- norm_approx(polls_2020 %>%
+                             filter(state == state_name,
+                                    end.date <= end_date),
+                           rep=trump, dem=biden);
+      
       if (nrow(polls) > 0) {
-        results[[state_name]] <- prob_dem_win(full_kalman(polls, election_date_2020), state_name)
+        # print(sprintf("%s probability %f", state_name, prob_dem_win(full_kalman(polls, election_date_2020), state_name)), election_date=election_date_2020)
+        results[[state_name]] <- prob_dem_win(full_kalman(polls, election_date_2020), state_name, election_date=ifelse(is_nowcast, NA, election_date_2020))
       }
     }
   }
@@ -469,10 +671,10 @@ ratings <- list(
   tilt_rep = 0.35
 )
 ratings <- list(
-  lean_dem = inv_logit(2),
-  lean_rep = inv_logit(-2),
-  likely_dem = inv_logit(3),
-  likely_rep = inv_logit(-3),
+  lean_dem = inv_logit(3/4),
+  lean_rep = inv_logit(-3/4),
+  likely_dem = inv_logit(4),
+  likely_rep = inv_logit(-4),
   safe_dem = inv_logit(5),
   safe_rep = inv_logit(-5),
   toss_up = inv_logit(0),
@@ -501,6 +703,20 @@ qualitative_label <- function(prob_dem_win) {
     }
   }
   label  
+}
+```
+
+For the sake of debugging how I'm assigning labels, I have this helper function to print out what probabilities correspond to what labels. If I were smarter, I would create something visual, or just have the endpoints computed.
+
+```{r}
+test_labels <- function(n=20) {
+  result <- c()
+  for (i in (0:n)) {
+    result <- c(result,  qualitative_label(i/n))
+  }
+  result
+  data.frame(label = result,
+             probability = (0:n)/n)
 }
 ```
 
@@ -539,9 +755,52 @@ plot_prediction <- function(df) {
 
 ```
 
+We can plot the probability that Biden will win the election in a state:
 
 ```{r}
-f1 <- run_2020()
+plot_biden_win <- function(state_name, is_nowcast = F) {
+  forecast <- full_kalman(norm_approx(filter(polls_2020, state==state_name), trump, biden), election_date_2020)
+  c <- matrix(data=est_c_for_state(state_name),ncol=1)
+  mu <- t(c) %*% last(forecast$x)
+  latest_poll_date <- last(sort(forecast$end_date))
+  sigma <- sqrt(abs((t(c) %*% (last(forecast$p_mat) * ifelse(is_nowcast, 1, sqrt(max(1, as.numeric(election_date_2020 - latest_poll_date))))) %*% c)))
+  #print(c) 
+  #print(last(forecast$x))
+  #print(last(forecast$p_mat))
+  #print(sprintf("mu = %f, sigma = %f", mu, sigma))
+  delta <- min(0.01, (6*sigma)/100)
+
+  pic <- ggdistribution(dnorm, seq(2, mu + 4*sigma, by=delta), mean=mu, sd=sigma, fill='blue')
+  ggdistribution(dnorm, seq(-4*sigma + mu, 2, by=delta), mean=mu, sd=sigma, fill='red', p = pic) +
+    labs(title = sprintf("Probability of Biden winning %s", state_name),
+       subtitle = sprintf("Kalman filter of state-level polls as of %s (prob %.3f%%)",
+                         today(),
+                         prob_dem_win(forecast, state_name, election_date=election_date_2020)*100),
+       caption = "https://political-arithmetic.blogspot.com")
+}
+```
+
+I then work my way through the interesting states, saving them to files.
+
+```{r}
+print_plots <- function(states = c("AZ", "FL", "GA",
+                                   "MI", "NV", "NC", "NH",
+                                   "OH", "PA", "TX", "WI")) {
+  for(state_name in states) {
+    print(getwd())
+    outfile <- sprintf("./img/2020-plots/%s-%s.png", state_name, today())
+    print(outfile)
+    p <<- plot_biden_win(state_name)
+    ggsave(outfile, plot=p)
+  }
+}
+```
+
+
+```{r}
+use_house_effect <- F
+date_run <- today() # ymd("2020-07-20")
+f1 <- run_2020(date_run)
 f0 <- dump_forecast(f1)
 current_forecast <- rbind(f0,
              data.frame(state_abbv = names(electoral_delegates.abbrev),
@@ -583,13 +842,19 @@ plot <- ggplot() +
   scale_fill_manual("Rating", values = unlist(color_code[sort(unique(current_forecast$prediction))])) +
   labs(fill = "Rating",
        title = "Kalman Filtered Poll Aggregator",
-       subtitle = paste0("State-level Presidential polls applied to a Kalman Filter, ",
-                         today()),
+       subtitle = paste0("State-level Presidential polls applied ",
+                         date_run),
        caption = "https://political-arithmetic.blogspot.com") +
   coord_sf(datum = NA)
 
-outfile <- sprintf("../img/2020-plots/kalman-filter-%s.png",today())
-ggsave(outfile, plot=plot)
+outfile <- sprintf("../img/2020-plots/kalman-filter-%s-hypo.png",date_run)
+# ggsave(outfile, plot=plot)
+# print_plots() # use_house_effect_plot
+# no_house_effect_plot
+plot
+```
+
+```{r}
 plot
 ```
 
