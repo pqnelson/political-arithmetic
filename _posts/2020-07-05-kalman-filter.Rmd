@@ -10,6 +10,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(matrixcalc)
 library(tidyverse)
 library(lubridate)
 library(truncnorm)
@@ -53,10 +54,11 @@ Then we shadow an identifier which we'll use shortly but define later on:
 polls_2016 <- polls_2016_raw # XXX fix this, declaration ahead of time
 ```
 
-# Refined Model
+# Multinomial Asymptotically Normal Approximation
 
 This time, lets use a multinomial distribution to describe a poll, then use the (multivariate) normal approximation which will be our `z[k]`. This will give us a normal variable `x[k][DEM]` for the estimated support for the Democratic candidate, and another `x[k][REP]` for the Republican candidate. Third party supporters become noise (more or less)...well, due to the quirkiness of the normal approximation to the multinomial, it's singular in nature (meaning: we can write `third_party = 1 - dem - rep` for the proportions), so we have an extra variable (`third_party`) that's not needed. (Just like real life.)
 
+We have the multinomial covariance matrix used for, well, lots of things. It's asymptotically the multivariate normal distribution's covariance matrix, so we need to compute it frequently.
 
 ```{r}
 multinomial_covariance_mat <- function(prob_vec, size) {
@@ -65,117 +67,286 @@ multinomial_covariance_mat <- function(prob_vec, size) {
   diag(mat) <- prob_vec*(1 - prob_vec)*size;
   mat
 }
+```
 
+## Combining Data
+
+Following Jackman's "Pooling the Polls", we take a precision-weighted average of polls concluding on the same day. This amounts to, for a single poll released on a given end date, renaming the variables and computing the covariance and precision matrices. For multiple polls released on a given day, taking `matrix.inverse(matrix.sum(precision_matrix)) %*% (precision_matrix[[1]] %*% (poll_size[[1]]*poll_proportions[1]) + ... + precision_matrix[[N]] %*% (poll_size[[N]] * poll_proportions[N]))`. This is because, unlike Jackman, we are treating polling data as a 4-vector (as opposed to a scalar tracking support for one particular party or candidate).
+
+We have slight nuances, like factoring in House Effects for pollsters (as impacting the covariance matrix), but we're fairly faithful to Jackman's original intentions.
+
+```{r}
 # forward declaration...
 parse_house_effect <- function(house_effect) {
   if (is.na(house_effect)) { return(matrix(c(0,0,0,0), ncol=1)); }
   
   if ("D" == substring(house_effect, 1, 1)) {
-    delta <- (parse_number(house_effect))
+    delta <- 0.5*(parse_number(house_effect))
     return(matrix(c(-delta, delta, 0, 0)/100, ncol=1));
   } else {
-    delta <- (parse_number(house_effect))
+    delta <- 0.5*(parse_number(house_effect))
     return(matrix(c(delta, -delta, 0, 0)/100, ncol=1));
   }
 }
 
 use_house_effect <- T
 
-pool_polls <- function(data, end_date) {
-  # print(data)
-  if (nrow(data) == 1) {
-    prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) + use_house_effect*c(parse_house_effect(data$house_effect))#/sqrt(data$sample_size)
-    cov_mat <- 2*multinomial_covariance_mat(matrix(data = prob_data, ncol=1), data$sample_size) + ifelse(is.na(data[[1, "predictive"]]),
-                                                                                                                                                          diag(data$sample_size, 4), 
-                                                                                                                                                          sqrt(data$sample_size)*diag(data[[1, "predictive"]]/100,4))
+# helper function used only once
+make_symmetric_matrix <- function(mat) {
+  assertthat::assert_that(is.matrix(mat))
+  assertthat::assert_that(is.square.matrix(mat))
+  result <- mat;
+  if (!is.symmetric.matrix(result)) {
+    tmp <- 0.5*mat
+    result <- as.matrix(tmp + t(tmp))
+  }
+  assertthat::assert_that(is.symmetric.matrix(result))
+  return(result)
+}
+
+make_positive_definite <- function(mat) {
+  assertthat::assert_that(is.matrix(mat))
+  assertthat::assert_that(is.square.matrix(mat))
+  if (is.symmetric.matrix(mat) && is.positive.definite(mat)) {
+    return(mat)
+  }
+  
+  result <- make_symmetric_matrix(mat)
+  if (is.positive.definite(result)) {
+    return(result);
+  }
+
+  eigen_vs <- eigen(result)
+  result <- make_symmetric_matrix(eigen_vs$vectors %*% diag(ifelse(eigen_vs$values < 1e-5, 1, eigen_vs$values), nrow=nrow(mat),ncol=ncol(mat)) %*% solve(eigen_vs$vectors))
+  
+  assertthat::assert_that(is.matrix(result),
+                          msg = sprintf("Somehow, the result is not a matrix? It's a %s", class(result)))
+  assertthat::assert_that(is.square.matrix(result))
+  assertthat::assert_that(is.positive.definite(result))
+  return(result)
+}
+```
+
+We also need to handle the cases where the poll doesn't ask about third party voters.
+
+```{r}
+make_nonsingular <- function(cov_mat, size) {
+  if(!is.singular.matrix(cov_mat)) {
+    return(cov_mat)
+  }
+  eg <- eigen(cov_mat)
+  min_val <- rep(qnorm(0.975)*sqrt(size), length(eg$values))
+  
+  eg$vectors %*% diag(ifelse(eg$values<1e-7, min_val, eg$values), length(eg$values)) %*% solve(eg$vectors)
+}
+```
+
+```{r}
+pool_single_poll <- function(data, end_date) {
+  min_probability <- qnorm(0.975)/sqrt(data$sample_size)
+  prob_data <- rescale_probabilities(
+    matrix(c(max(data[[1,'p_dem']], 0),
+             max(data[[1,'p_rep']], 0),
+             max(data[[1,'p_third']], 0),
+             max(data[[1,'p_undecided']], 0)),
+           ncol=1) +
+      use_house_effect*parse_house_effect(data$house_effect),
+    min_probability)#/sqrt(data$sample_size)
+
+  tmp <- 2*multinomial_covariance_mat(matrix(data = ifelse(prob_data<1e-6,qnorm(0.975)/sqrt(data$sample_size), prob_data), ncol=1), data$sample_size) +
+      diag(sqrt(data$sample_size)*ifelse(is.na(data[[1, "predictive"]]),1,data[[1, "predictive"]])/100,4)
+  
+  cov_mat <- make_positive_definite(make_nonsingular(2*multinomial_covariance_mat(matrix(data = prob_data, ncol=1), data$sample_size), data$sample_size) +
+      diag(sqrt(data$sample_size)*ifelse(is.na(data[[1, "predictive"]]),1,data[[1, "predictive"]])/100,4)) +
+      diag(qnorm(0.975)*sqrt(data$sample_size), 4)
+  
+  # prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) # + use_house_effect*c(parse_house_effect(data$house_effect))#/sqrt(data$sample_size)
+  # prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) + use_house_effect*c(parse_house_effect(data$house_effect))/sqrt(data$sample_size)
+  
+  assertthat::assert_that(is.positive.definite(cov_mat),
+                          msg="Pooling a single poll produces a covariance matrix that is not positive definite...strange...")
+  
+  return(list(p_dem = prob_data[[1]], 
+              p_rep = prob_data[[2]],
+              p_third = prob_data[[3]],
+              p_undecided = prob_data[[4]],
+              size = data$sample_size,
+              mu_dem = prob_data[[1]]*data$sample_size,
+              mu_rep = prob_data[[2]]*data$sample_size,
+              mu_third = prob_data[[3]]*data$sample_size,
+              mu_undecided = prob_data[[4]]*data$sample_size,
+              precision = MASS::ginv(cov_mat),
+              covariance = cov_mat,
+              end_date = end_date))
+}
+```
+
+```{r}
+rescale_probabilities <- function(probabilities, min_probability) {
+ # return(probabilities)
+  if (all(probabilities >= min_probability)) {
+    return(probabilities);
+  }
+  num_zeroes <- sum(probabilities < min_probability)
+  # print(num_zeroes)
+  recaled <- (1 - num_zeroes*min_probability)/sum(ifelse(probabilities < min_probability, 0, probabilities))
+  
+  
+  matrix(ifelse(probabilities < min_probability, min_probability, probabilities*recaled),
+         ncol=1)
+}
+```
+
+
+```{r}
+pool_multiple_polls <- function(data, end_date) {
+  prob_numerator <- matrix(c(0,0,0,0), ncol=1)
+  mu_numerator <- matrix(c(0,0,0,0), ncol=1)
+  precision <- list()
+  denominator <- diag(0, 4)
+  probabilities <- list()
+  
+  for (i in 1:nrow(data)) {
+    size <- data[[i, 'sample_size']]
+    min_prob <- qnorm(0.975)/sqrt(size)
+    prob_data <- # rescale_probabilities(
+      matrix(c(max(data[[i,'p_dem']], 0),
+               max(data[[i,'p_rep']], 0),
+               max(data[[i,'p_third']], 0),
+               max(data[[i,'p_undecided']], 0)),
+             ncol=1) + use_house_effect*c(parse_house_effect(data[[i,'house_effect']]))
+      #min_prob)# /sqrt(size)
+    probabilities[[length(probabilities)+1]] <- prob_data
     
-    prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) # + use_house_effect*c(parse_house_effect(data$house_effect))#/sqrt(data$sample_size)
-    # prob_data <- c(data[[1,'p_dem']],data[[1,'p_rep']],data[[1,'p_third']],data[[1,'p_undecided']]) + use_house_effect*c(parse_house_effect(data$house_effect))/sqrt(data$sample_size)
-    return(list(p_dem = prob_data[[1]], 
-                p_rep = prob_data[[2]],
-                p_third = prob_data[[3]],
-                p_undecided = prob_data[[4]],
-                size = data$sample_size,
-                mu_dem = prob_data[[1]]*data$sample_size,
-                mu_rep = prob_data[[2]]*data$sample_size,
-                mu_third = prob_data[[3]]*data$sample_size,
-                mu_undecided = prob_data[[4]]*data$sample_size,
-                precision = MASS::ginv(cov_mat),
-                covariance = cov_mat,
-                end_date = end_date))
+    p_raw <- c(max(data[[i,'p_dem']], 0),
+               max(data[[i,'p_rep']], 0),
+               max(data[[i,'p_third']], 0),
+               max(data[[i,'p_undecided']], 0))
+    tmp <- rescale_probabilities(
+      matrix(ifelse(p_raw<1e-7, qnorm(0.975)/sqrt(size), p_raw),
+             ncol=1) +
+        use_house_effect*c(parse_house_effect(data[[i,'house_effect']])),
+      qnorm(0.975)/sqrt(size))
+    
+    covariance_mat <- make_positive_definite(
+      make_nonsingular(multinomial_covariance_mat(matrix(data = tmp, ncol=1), ifelse(is.na(data[[i, "predictive"]]), size, size)), size) +
+        diag(sqrt(size)*ifelse(is.na(data[[i, "predictive"]]),
+                               qnorm(0.975)/100,
+                               data[[i, "predictive"]]/100),
+             4) # +
+        # diag(qnorm(0.975)*sqrt(size), 4)
+      )
+    
+    
+    p_mat <- tryCatch(solve(covariance_mat),
+                      error=function(e) {
+                        MASS::ginv(covariance_mat)
+                      })
+    
+    denominator <- denominator + p_mat
+    precision[[length(precision)+1]] <- p_mat
+    prob_numerator <- prob_numerator + p_mat %*% prob_data
+    mu_numerator <- (mu_numerator + (p_mat %*% (prob_data*size)))
+  }
+  den <- denominator
+
+  cov_mat <- make_positive_definite(
+    tryCatch(solve(den),
+             error=function(e) {
+               eigen_den <- eigen(den)
+               vs <- eigen_den$values**-1
+               vs[[4]] <- exp(mean(log(vs[1:3])))
+               eigen_den$vectors %*% diag(vs,4) %*% solve(eigen_den$vectors)
+             }))
+  
+  mu <- abs(cov_mat %*% mu_numerator)
+  size <- sum(mu)
+  assertthat::assert_that(is.positive.definite(cov_mat),
+                          msg="Pooling multiple polls produces a covariance matrix that is not positive definite")
+  assertthat::assert_that(size > 0)
+  assertthat::assert_that(!any(mu < 0))
+  return(list(p_dem = (mu[[1]]/size),
+              p_rep = (mu[[2]]/size),
+              p_third = (mu[[3]]/size),
+              p_undecided = (mu[[4]]/size),
+              mu_dem = (mu[[1]]),
+              mu_rep = (mu[[2]]),
+              mu_third = (mu[[3]]),
+              mu_undecided = (mu[[4]]),
+              size = (size),
+              precision = denominator,
+              covariance = cov_mat,
+              end_date = end_date
+  ))
+}
+
+pool_polls <- function(data, end_date) {
+  if (nrow(data) == 1) {
+    return(pool_single_poll(data, end_date))
   } else {
-    prob_numerator <- matrix(c(0,0,0,0), ncol=1)
-    mu_numerator <- matrix(c(0,0,0,0), ncol=1)
-    precision <- list()
-    denominator <- diag(0, 4)
-    for (i in 1:nrow(data)) {
-      size <- data[[i, 'sample_size']]
-      prob_data <- matrix(c(data[[i,'p_dem']],data[[i,'p_rep']],data[[i,'p_third']],data[[i,'p_undecided']]), ncol=1) + use_house_effect*c(parse_house_effect(data[[i,'house_effect']]))# /sqrt(size)
-      covariance_mat <- 2*multinomial_covariance_mat(matrix(data = prob_data, ncol=1), size) +
-                            ifelse(is.na(data[[i, "predictive"]]),
-                                   diag(sqrt(size),4),
-                                   sqrt(size)*diag(data[[i, "predictive"]]/100,4))
-      p_mat <- MASS::ginv(covariance_mat)
-      prob_data <- matrix(c(data[[i,'p_dem']],data[[i,'p_rep']],data[[i,'p_third']],data[[i,'p_undecided']]), ncol=1) # + use_house_effect*parse_house_effect(data[[i,'house_effect']])#/sqrt(size)
-      denominator <- denominator + p_mat
-      precision[[length(precision)+1]] <- p_mat
-      prob_numerator <- prob_numerator + p_mat %*% prob_data
-      mu_numerator <- mu_numerator + p_mat %*% (prob_data*size) 
-    }
-    den <<- denominator
-    cov_mat <- tryCatch(solve(den),
-                        error=function(e) {
-                          eigen_den <- eigen(den)
-                          vs <- eigen_den$values**-1
-                          vs[[4]] <- exp(mean(log(vs[1:3])))
-                          eigen_den$vectors %*% diag(vs,4) %*% solve(eigen_den$vectors)
-                        })
-    mu <- cov_mat %*% mu_numerator
-    prob <- cov_mat %*% prob_numerator
-    size <- sum(mu)
-    return(list(p_dem = (mu[[1]]/size),
-                p_rep = (mu[[2]]/size),
-                p_third = (mu[[3]]/size),
-                p_undecided = (mu[[4]]/size),
-                mu_dem = (mu[[1]]),
-                mu_rep = (mu[[2]]),
-                mu_third = (mu[[3]]),
-                mu_undecided = (mu[[4]]),
-                size = (size),
-                precision = denominator,
-                covariance = cov_mat,
-                end_date = end_date
-                ))
+    return(pool_multiple_polls(data, end_date))
   }
 }
 ```
 
+```{r}
+renormalize_probability <- function(probabilities, size) {
+  min_probability <- qnorm(0.975)/sqrt(size)
+  if (all(probabilities >= min_probability)) {
+    return(probabilities);
+  }
+  num_zeroes <- sum(probabilities < min_probability)
+  print(num_zeroes)
+  recaled <- (1 - num_zeroes*min_probability)/sum(ifelse(probabilities < min_probability, 0, probabilities))
+  
+  ifelse(probabilities < min_probability, min_probability, probabilities*recaled)
+}
+
+test_probs <- function() {
+  # renormalize_probability(c(0.47-0.021, 0.44+0.021, 0.045, 0.045), 3070)
+  renormalize_probability(c(0.51-0.009, 0.45+0.009, 0.02, 0.02), 1234)
+}
+# norm_approx(filter(polls_2020, state=="MI"), trump, biden)
+```
+
 We now use the normal approximation to a poll treated as a realization of a multinomial distribution. We can also take advantage of pooling the polls, so any polls concluding on the same day can be combined together to decrease error.
+
+A note about the parameters expected to the `norm_approx` function, it expects the column names for the Republican candidate (`rep`) and Democratic candidate (`dem`). We use it by simply calling `norm_approx(polls_2020, trump, biden)` for example, no need for quotes or anything of the sort.
 
 ```{r}
 norm_approx <- function(poll_df, rep, dem) {
   democrat <- enquo(dem)
   republican <- enquo(rep)
-  tmp <- poll_df %>%
+  
+  df <- poll_df %>%
     filter(!is.na(number.of.observations)) %>%
     transmute(p_dem = !!democrat/100,
               p_rep = !!republican/100,
-              p_undecided = ifelse(is.na(undecided), 0.5*(1 - !!democrat/100 - !!republican/100), undecided/100),
-              p_third = ifelse(is.na(undecided), 0.5*(1 - !!democrat/100 - !!republican/100), 1 - !!democrat/100 - !!republican/100 - undecided/100),
+              p_undecided = ifelse(is.na(undecided),
+                                   ifelse(is.na(other),
+                                          0.75*(1 - !!democrat/100 - !!republican/100),
+                                          (1 - !!democrat/100 - !!republican/100 - other/100)),
+                                   undecided/100),
+              p_third = ifelse(is.na(other),
+                               ifelse(is.na(undecided),
+                                      0.25*(1 - !!democrat/100 - !!republican/100),
+                                      1 - !!democrat/100 - !!republican/100 - undecided/100),
+                               other/100),
               sample_size = number.of.observations,
               house_effect = house_effect,
               end_date = end.date,
               predictive = predictive) %>%
     arrange(end_date)
   
-  tmp2 <- tmp %>%
+  df  %>%
     nest_by(end_date) %>%
     mutate(data = list(pool_polls(data, end_date)))
-  
-  return(tmp2)
-  
 }
 ```
+
+# Kalman Filter
+
+The Kalman filter assumes we have latent variables `x[t]` (like the electorate's support for candidates) which are observed through sampling `y[t]` (e.g., with polls). The basic equations for this system is `x[t+1] = F[t]%*%x[t] + v[t]` where `v[t] ~ mvnorm(0, q_mat[t])`, and `y[t] = H[t] %*% x[t] + w[t]` for `w[t] ~ mvnorm(0, r_mat[t])`. The units for `x[t]` and `y[t]` are respondents to the poll who support the specified candidate. We estimate `x[t]` as `x_hat[t]`. 
 
 Now, the `x_hat[k, k-1]` will need to be re-scaled to match the polling results, which is what happens with the `H[k]` matrix.
 
@@ -186,7 +357,6 @@ make_h <- function(new_size, existing_size) {
 ```
 
 The big moment: Kalman filter the polling data (as a multivariate normally distributed sample).
-
 
 ```{r}
 full_kalman <- function(data, election_date) {
@@ -205,6 +375,7 @@ full_kalman <- function(data, election_date) {
   for (i in 1:nrow(data)) {
     df <- data$data[[i]]
     end_dates <- c(end_dates, data$end_date)
+    
     # estimate
     x_est <- last(xs)
     
@@ -223,7 +394,6 @@ full_kalman <- function(data, election_date) {
     if (i>1) {
       h <- diag(df$size/sum(x_est), 4)
     }
-    
     
     y <- z - (h %*% x_est)
     
@@ -279,7 +449,6 @@ estimate_c <- function(results, predictions) {
                           msg = "sum(results) > 1")
   assertthat::assert_that((0.95 <= sum(predictions)),
                           msg = "sum(predictions) < 0.95")
-  tmp_sum <<- sum(predictions)
   assertthat::assert_that((sum(predictions) <= 1 + .Machine$double.eps),
                           msg = sprintf("(sum(predictions) = %f) > 1", sum(predictions)))
   
@@ -579,24 +748,32 @@ So now we can add in the House effect to the polling data:
 polls_2020 <- polls_2020_raw %>%
   left_join(pollster_ratings_2020 %>%
               dplyr::select(Pollster,
-                            `House Effect`,
-                            `Predictive    Plus-Minus`) %>%
+                            `Mean-Reverted Bias`,
+                            `Predictive    Plus-Minus`,
+                            `Banned by 538`) %>%
               rename(pollster = Pollster,
-                     house_effect = `House Effect`,
+                     banned_538 = `Banned by 538`,
+                     house_effect = `Mean-Reverted Bias`,
                      predictive = `Predictive    Plus-Minus`),
-            by="pollster")
+            by="pollster") %>%
+  mutate(state = ifelse("FLA" == state, "FL", state),
+         banned = (banned_538 == "yes"))
 ```
 
 ```{r}
 polls_2016 <- polls_2016_raw %>%
   left_join(pollster_ratings_2020 %>%
               dplyr::select(Pollster,
-                            `House Effect`,
-                            `Predictive    Plus-Minus`) %>%
+                            `Mean-Reverted Bias`,
+                            `Predictive    Plus-Minus`,
+                            `Banned by 538`) %>%
               rename(pollster = Pollster,
-                     house_effect = `House Effect`,
+                     banned_538 = `Banned by 538`,
+                     house_effect = `Mean-Reverted Bias`,
                      predictive = `Predictive    Plus-Minus`),
-            by="pollster")
+            by="pollster") %>%
+  mutate(state = ifelse("FLA" == state, "FL", state),
+         banned = (banned_538 == "yes"))
 ```
 
 Lets examine the frequencies
@@ -627,15 +804,25 @@ We can now automate running the Kalman filter for the states:
 ```{r}
 election_date_2020 <- ymd("2020-11-03")
 
-run_2020 <- function(end_date = today(), is_nowcast = F) {
+run_2020 <- function(end_date = today(), is_nowcast = F, remove_banned=F) {
   results <- list();
   for (state_name in unique(polls_2020$state)) {
     if (state_name != "--") {
-      # print(state_name)
-      polls <- norm_approx(polls_2020 %>%
-                             filter(state == state_name,
-                                    end.date <= end_date),
-                           rep=trump, dem=biden);
+      print(state_name)
+      
+      state_polls <- polls_2020 %>%
+        filter(state == state_name,
+               banned %in% ifelse(remove_banned, c(F), c(F,T)),
+               end.date <= end_date)
+      
+      if (remove_banned) {
+        polls <- state_polls %>%
+          filter(banned == F) %>%
+          norm_approx(trump, biden)
+      } else {
+        polls <- norm_approx(state_polls,
+                             rep=trump, dem=biden);
+      }
       
       if (nrow(polls) > 0) {
         # print(sprintf("%s probability %f", state_name, prob_dem_win(full_kalman(polls, election_date_2020), state_name)), election_date=election_date_2020)
@@ -645,6 +832,66 @@ run_2020 <- function(end_date = today(), is_nowcast = F) {
   }
   results;
 }
+```
+
+For the sake of curiosity, let's create a data frame whose rows are states, and columns are the percent support for the Democratic candidate, Republican candidate, third parties, and the undecided voters.
+
+```{r}
+percentage_support <- function(polls, election_date, dem, rep, end_date = today(), is_nowcast = F, remove_banned=F) {
+  democrat <- enquo(dem)
+  republican <- enquo(rep)
+  results <- data.frame(state = c(),
+                        democrat = c(),
+                        republican = c(),
+                        other = c(),
+                        undecided = c());
+  for (state_name in unique(polls$state)) {
+    if (state_name != "--") {
+      print(state_name)
+      
+      
+      if (remove_banned) {
+        state_polls <- polls %>%
+          filter(state == state_name,
+                 banned == F,
+                 end.date <= end_date)
+      } else {
+        state_polls <- polls %>%
+          filter(state == state_name,
+                 end.date <= end_date)
+      }
+      
+      normed_polls <- norm_approx(state_polls,
+                           !!republican, !!democrat);
+      
+      if (nrow(polls) > 0) {
+        probabilities <- last(full_kalman(normed_polls, election_date)$prob)
+        results <- rbind(results,
+                         tibble(state = state_name,
+                                democrat = probabilities[[1]],
+                                republican = probabilities[[2]],
+                                other = probabilities[[3]],
+                                undecided = probabilities[[4]]))
+      }
+    }
+  }
+  results;
+}
+
+prob_2020 <- function(end_date = today(), is_nowcast = F, remove_banned=F) {
+  percentage_support(polls_2020, election_date_2020, biden, trump, end_date, is_nowcast, remove_banned)
+}
+```
+
+```{r}
+prob_2016 <- function(end_date = today() - years(4), is_nowcast = F, remove_banned=F) {
+  percentage_support(polls_2016, election_date_2016, clinton, trump, end_date, is_nowcast, remove_banned)
+}
+```
+
+```{r}
+p20 <- prob_2020()
+kable(arrange(p20 %>% mutate(biden = democrat - republican), -biden))
 ```
 
 ## Words of Estimative Probability
@@ -790,7 +1037,7 @@ print_plots <- function(states = c("AZ", "FL", "GA",
     print(getwd())
     outfile <- sprintf("./img/2020-plots/%s-%s.png", state_name, today())
     print(outfile)
-    p <<- plot_biden_win(state_name)
+    p <- plot_biden_win(state_name)
     ggsave(outfile, plot=p)
   }
 }
@@ -847,15 +1094,16 @@ plot <- ggplot() +
        caption = "https://political-arithmetic.blogspot.com") +
   coord_sf(datum = NA)
 
-outfile <- sprintf("../img/2020-plots/kalman-filter-%s-hypo.png",date_run)
-# ggsave(outfile, plot=plot)
+outfile <- sprintf("../img/2020-plots/kalman-filter-%s.png",date_run)
+ggsave(outfile, plot=plot)
 # print_plots() # use_house_effect_plot
 # no_house_effect_plot
 plot
 ```
 
 ```{r}
-plot
+house_fx_plot <- plot
+house_fx_plot
 ```
 
 ```{r}
