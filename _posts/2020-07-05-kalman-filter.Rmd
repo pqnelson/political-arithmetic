@@ -79,7 +79,7 @@ We have slight nuances, like factoring in House Effects for pollsters (as impact
 # forward declaration...
 parse_house_effect <- function(house_effect) {
   if (is.na(house_effect)) { return(matrix(c(0,0,0,0), ncol=1)); }
-  
+  if (is.numeric(house_effect)) { return(matrix(c(0,0,0,0), ncol=1)); }
   if ("D" == substring(house_effect, 1, 1)) {
     delta <- 0.5*(parse_number(house_effect))
     return(matrix(c(-delta, delta, 0, 0)/100, ncol=1));
@@ -332,6 +332,7 @@ pool_multiple_polls <- function(data, dt) {
 }
 
 pool_polls <- function(data, dt) {
+  data0 <<- data
   if (nrow(data) == 1) {
     df0 <<- data;
     dt0 <<- dt;
@@ -729,6 +730,9 @@ expected_ev <- function(forecast) {
     } else {
       party <- ifelse(forecast[[state]] < 0.5, "rep", "dem")
       acc[[party]] <- acc[[party]] + electoral_delegates.abbrev[[state]];
+      # acc[["dem"]] <- acc[["dem"]] + forecast[[state]]*electoral_delegates.abbrev[[state]];
+      # acc[["rep"]] <- acc[["rep"]] + (1-forecast[[state]])*electoral_delegates.abbrev[[state]];
+      
     }
   }
   acc;
@@ -756,7 +760,7 @@ download_latest_2020_polls <- function() {
   # then rename it to "all_polls_2020.csv"
 }
 
-download_latest_2020_polls()
+#download_latest_2020_polls()
 ```
 
 ```{r}
@@ -811,7 +815,9 @@ parse_house_effect <- function(house_effect) {
 ```
 
 ```{r}
-pollster_ratings_2020 <- read_csv("../data/polling/ratings_2020.csv")
+pollster_ratings_2020 <- read_csv("../data/polling/ratings_2020.csv") %>%
+  mutate(banned = ifelse(Pollster == "Trafalgar Group", "yes", `Banned by 538`)) %>%
+  mutate(`Banned by 538` = banned)
 ```
 
 So now we can add in the House effect to the polling data:
@@ -822,12 +828,12 @@ polls_2020 <- polls_2020_raw %>%
   left_join(pollster_ratings_2020 %>%
               dplyr::select(Pollster,
                             `Mean-Reverted Bias`,
-                            `Predictive    Plus-Minus`,
+                            `Predictive Plus-Minus`,
                             `Banned by 538`) %>%
               rename(pollster = Pollster,
                      banned_538 = `Banned by 538`,
                      house_effect = `Mean-Reverted Bias`,
-                     predictive = `Predictive    Plus-Minus`),
+                     predictive = `Predictive Plus-Minus`),
             by="pollster") %>%
   mutate(state = ifelse("FLA" == state, "FL", state),
          banned = (banned_538 == "yes")) %>%
@@ -839,15 +845,16 @@ year(polls_2020$start.date) <- 2020
 
 ```{r}
 polls_2016 <- polls_2016_raw %>%
+  filter(year(end.date) == 2016) %>%
   left_join(pollster_ratings_2020 %>%
               dplyr::select(Pollster,
                             `Mean-Reverted Bias`,
-                            `Predictive    Plus-Minus`,
+                            `Predictive Plus-Minus`,
                             `Banned by 538`) %>%
               rename(pollster = Pollster,
                      banned_538 = `Banned by 538`,
                      house_effect = `Mean-Reverted Bias`,
-                     predictive = `Predictive    Plus-Minus`),
+                     predictive = `Predictive Plus-Minus`),
             by="pollster") %>%
   mutate(state = ifelse("FLA" == state, "FL", state),
          banned = (banned_538 == "yes"),
@@ -882,6 +889,7 @@ We can now automate running the Kalman filter for the states:
 
 ```{r}
 election_date_2020 <- ymd("2020-11-03")
+election_date_2022 <- ymd("2022-11-08")
 
 run_2020 <- function(end_date = today(), is_nowcast = F, remove_banned=F) {
   results <- list();
@@ -1051,12 +1059,18 @@ chart_support_comparison_over_time <- function(prob_16, prob_20, state_abbrev, r
   
   # return(probabilities_df)
   
+  rbg <- ymd('2020/09/18')
   ggplot(data=probabilities_df,
          aes(x=days, y=percent, group=party)) +
     geom_vline(xintercept=as.numeric(rnc_end_date), linetype=4) +
     annotate("text",
              x=(rnc_end_date), y=25,
              label="\nRNC ends",
+             angle=90, size=3.25) +
+    geom_vline(xintercept=as.numeric(rbg), linetype=4) +
+    annotate("text",
+             x=(rbg), y=25,
+             label="\nRBG dies",
              angle=90, size=3.25) +
     geom_line(aes(color=party)) + 
     geom_point(aes(color=party)) + # "#FFC0CB"
@@ -1073,7 +1087,9 @@ chart_support_comparison_over_time <- function(prob_16, prob_20, state_abbrev, r
 
 ```{r}
 kable(polls_2020 %>% filter(#entry.date.time..et. >= today() - weeks(2)
-                            start.date + 0.5*(end.date - start.date) >= today() - days(10)) %>% group_by(state) %>% summarize(count = n()) %>% arrange(-count))
+                            # start.date + 0.5*(end.date - start.date)
+                            #entry.date.time..et. >= today() - days(3)
+                            end.date >= today() - days(3)) %>% group_by(state) %>% summarize(count = n()) %>% arrange(-count))
 ```
 
 Now we save the plot to a file.
@@ -1088,24 +1104,56 @@ save_comparison_plot <- function(prob_16, prob_20, state_abbrev, date_run = toda
 ```
 
 ```{r}
-# tail(p20_all %>% filter(state == "GA"))
-chart_support_comparison_over_time(p16_all, p20_all, "MN")
+tail(p20_all %>% filter(state == "TX"))
+save_comparison_plot(p16_all, p20_all, "TX")
 ```
 
 ```{r}
-# tail(p20_all %>% filter(state == "FL"))
+tail(p20_all %>% filter(state == "PA"))
+save_comparison_plot(p16_all, p20_all, "PA")
+```
+
+```{r}
+tail(p20_all %>% filter(state == "FL"))
 save_comparison_plot(p16_all, p20_all, "FL")
 ```
 
 ```{r}
+tail(p20_all %>% filter(state == "NC"))
+save_comparison_plot(p16_all, p20_all, "NC")
+```
+
+```{r}
+tail(p20_all %>% filter(state == "SC"))
+save_comparison_plot(p16_all, p20_all, "SC")
+```
+
+
+
+```{r}
+tail(p20_all %>% filter(state == "AZ"))
+save_comparison_plot(p16_all, p20_all, "AZ")
+```
+
+```{r}
+tail(p20_all %>% filter(state == "GA"))
+save_comparison_plot(p16_all, p20_all, "GA")
+```
+```{r}
+inv_logit <- function(odds) {
+  odds/(1 + odds)
+}
+tail(p20_all %>% filter(state == "OH"))
+save_comparison_plot(p16_all, p20_all, "OH")
+```
+
+```{r}
+tail(p20_all %>% filter(state == "MI"))
 save_comparison_plot(p16_all, p20_all, "MI")
 ```
 
 ```{r}
-save_comparison_plot(p16_all, p20_all, "GA")
-```
-
-```{r}
+tail(p20_all %>% filter(state == "WI"))
 save_comparison_plot(p16_all, p20_all, "WI")
 ```
 
@@ -1453,4 +1501,326 @@ polling_odds_16 %>%
   dplyr::select(state, end.date, a, pollster) %>%
   filter(state %in% c("PA", "MI", "WI")) %>%
   arrange(a^2)
+```
+
+# Senate Polls
+
+FiveThirtyEight has provided the Senate polls, so let's pull them down.
+
+```{r}
+download_latest_senate_polls <- function() {
+  senate_polls_url <- "https://projects.fivethirtyeight.com/polls/data/senate_polls.csv" # "https://projects.fivethirtyeight.com/polls-page/senate_polls.csv"
+  if(file.exists("../data/polling/senate/senate_polls.csv")) {
+    file.rename("../data/polling/senate/senate_polls.csv",
+                paste0("../data/polling/senate/senate_polls.",
+                       as.numeric(now()),
+                       ".csv"))
+  }
+  download.file(senate_polls_url, 
+                "../data/polling/senate/senate_polls.csv", method = "auto")
+}
+download_latest_senate_polls()
+```
+
+We have to transform them to a format suitable for Kalman filtering.
+
+```{r}
+senate_raw <- read_csv("../data/polling/senate/senate_polls.csv") %>%
+  mutate(pollster = recode(pollster, 
+                           `WPA Intelligence` = "WPA Intelligence (WPAi)",
+                           `Mellman` = "Mellman Group",
+                           `Selzer` = "Selzer & Co.",
+                           `Clarity` = "Clarity Campaign Labs",
+                           `Susquehanna` = "Susquehanna Polling & Research Inc.",
+                           `Garin Hart Yang` = "Garin-Hart-Yang Research Group",
+                           `Braun` = "Braun Research",
+                           `Remington` = "Remington Research Group",
+                           `Fabrizio` = "Fabrizio, Lee & Associates",
+                           `Tarrance` = "Tarrance Group",
+                           `U. Georgia SPIA` = "University of Georgia School of Public and International Affairs",
+                           `Quinnipiac` = "Quinnipiac University",
+                           `PPP` = "Public Policy Polling",
+                           `Mason-Dixon` = "Mason-Dixon Polling & Strategy",
+                           `U. North Florida` = "University of North Florida",
+                           `Saint Leo U.` = "Saint Leo University",
+                           `Dan Jones` = "Dan Jones & Associates",
+                           `St. Anselm` = "Saint Anselm College",
+                           `Cygnal Political` = "Cygnal",
+                           `Emerson College Polling Society` = "Emerson College",
+                           `Suffolk` = "Suffolk University",
+                           `OH Predictive Insights / MBQF` = "OH Predictive Insights",
+                           `U. New Hampshire`="University of New Hampshire",
+                           `Trafalgar Group/InsiderAdvantage` = "Trafalgar Group"))
+
+trim_for_state <- function(senate_polls, state_fullname) {
+  
+  trimmed_senate <- senate_polls %>% 
+    filter(state == state_fullname) %>%
+    rename(number.of.observations = sample_size) %>%
+    mutate(end.date = (end_date),
+           start.date = (start_date)) %>%
+    dplyr::select(-start_date, -end_date,
+                  -display_name,-sponsor_ids,-sponsors,
+                  -pollster_rating_name, -population_full, -office_type, 
+                  -seat_number, -seat_name, -created_at, -url, 
+                  -stage, -race_id, -candidate_id, -candidate_party, 
+                  -nationwide_batch, -tracking, -partisan, -internal, 
+                  -pollster_rating_id, -methodology, -election_date, 
+                  -sponsor_candidate, -ranked_choice_reallocated, 
+                  -notes, -answer) %>%
+    spread(candidate_name, pct) %>%
+    arrange(end.date)
+  trimmed_senate
+}
+
+```
+
+Let us now try to find the normal approximation for Iowa's senate race.
+
+```{r}
+ia_2020 <- full_kalman(norm_approx(trim_for_state(senate_raw, "Iowa") %>%
+                                     filter(!is.na(`Theresa Greenfield`),
+                                            !is.na(`Joni K. Ernst`)) %>%
+                                     rename(joni_ernst = `Joni K. Ernst`,
+                                            theresa_greenfield = `Theresa Greenfield`) %>%
+                                     mutate(undecided = NA,
+                                            other = NA,
+                                            house_effect = "D+0",
+                                            predictive=0) %>%
+                                     dplyr::select(-`Eddie Mauro`, -`Rick Stewart`, -`Suzanne Herzog`),
+                                   joni_ernst, theresa_greenfield), election_date_2020)
+```
+
+We can try to generalize this further:
+
+```{r}
+kalman_senate <- function(polls, state_name, election_date) {
+  state_polls <<- polls %>%
+    filter(state == state_name) %>% 
+    mutate(end_date = mdy(end_date),
+           start_date = mdy(start_date))
+  republican <<- filter(state_polls, candidate_party == "REP") %>%
+    arrange(end_date) %>% pull(candidate_name) %>% 
+    last 
+  democrat <<- filter(state_polls, candidate_party == "DEM") %>%
+    arrange(end_date) %>% pull(candidate_name)  %>% 
+    last
+  
+  poll_df <<- state_polls %>% 
+    trim_for_state(state_name) %>%
+    rename(republican =  !!republican,
+           democrat = !!democrat) %>%
+  left_join(pollster_ratings_2020 %>%
+              dplyr::select(Pollster,
+                            `Mean-Reverted Bias`,
+                            `Predictive Plus-Minus`,
+                            `Banned by 538`) %>%
+              rename(pollster = Pollster,
+                     banned_538 = `Banned by 538`,
+                     house_effect = `Mean-Reverted Bias`,
+                     predictive = `Predictive Plus-Minus`),
+            by="pollster") %>%
+    filter(!is.na(democrat),
+           !is.na(republican),
+           banned_538 == "no") %>%
+    dplyr::select(state,
+                  pollster, 
+                  fte_grade,
+                  number.of.observations,
+                  population,
+                  start.date,
+                  end.date,
+                  democrat,
+                  republican,
+                  house_effect,
+                  predictive) %>%
+    mutate(undecided = NA,
+           other = NA)
+  
+  full_kalman(norm_approx(poll_df, dem=democrat, rep=republican), election_date)
+}
+```
+
+```{r}
+transform_senate_result <- function(kalman_senate, state_name) {
+  results <- data.frame(state = c(),
+                        democrat = c(),
+                        republican = c(),
+                        other = c(),
+                        undecided = c(),
+                        date = c());
+  for (i in 1:length(kalman_senate$prob)) {
+    row <- kalman_senate$prob[[i]]
+    results <- rbind(results,
+                     tibble(state = state_name,
+                            democrat = row[[1]],
+                            republican = row[[2]],
+                            third_party = row[[3]],
+                            undecided = row[[4]],
+                            date = kalman_senate$date[[i]]))
+  }
+  results
+}
+```
+
+```{r}
+save_senate_plot <- function(senate_data, state_name, rnc_end_date = ymd('2020/08/27'), as_of_date=today()) {
+  rbg <- ymd('2020/09/18')
+  plot <- ggplot(data=senate_data %>%
+                   transform_senate_result(state_name) %>%
+                   gather("party", "percent", republican, democrat, undecided, third_party) %>%
+                   mutate(percent = 100*percent,
+                          party = factor(party, c("democrat", "republican", "undecided", "third_party")),
+                          days = date),
+                 aes(x=days, y=percent, group=party)) +
+    #geom_vline(xintercept=as.numeric(rnc_end_date), linetype=4) +
+    #annotate("text",
+    #         x=(rnc_end_date), y=25,
+     #        label="\nRNC ends",
+    #         angle=90, size=3.25) +
+    # geom_vline(xintercept=as.numeric(rbg), linetype=4) +
+    # annotate("text",
+    #         x=(rbg), y=25,
+    #         label="\nRBG dies",
+    #         angle=90, size=3.25) +
+    geom_line(aes(color=party)) + 
+    geom_point(aes(color=party)) +
+    scale_color_manual(values=c("#0015BC", "red", "#daa520", "purple")) +
+    scale_x_date(date_labels = "%b",
+                 date_breaks = "1 months") +
+    labs(title = paste0(state_name, " Senate Polls (2022)"),
+         subtitle = paste0("State-level Senate polls, Kalman filtered, ",
+                           format(as_of_date, "%b %d, %Y")),
+         caption = "https://political-arithmetic.blogspot.com")
+  
+  
+  # plot <- chart_support_comparison_over_time(prob_16, prob_20 %>% filter(date <= date_run), state_abbrev)
+  outfile <- sprintf("../img/2020-plots/senate-comparison-%s-%s.png", state_name, as_of_date)
+  ggsave(outfile, plot=plot, height=4, dpi=500)
+  plot
+}
+```
+
+```{r}
+foo <- senate_raw %>% rename(candidate_party = party)
+oh_senate <- kalman_senate(foo, "Ohio", election_date_2022)
+save_senate_plot(oh_senate, "Ohio")
+```
+
+
+```{r}
+ga_senate <- kalman_senate(foo, "Georgia", election_date_2022)
+save_senate_plot(ga_senate, "Georgia")
+```
+
+```{r}
+fl_senate <- kalman_senate(foo, "Florida", election_date_2022)
+save_senate_plot(fl_senate, "Florida")
+```
+
+```{r}
+az_senate <- kalman_senate(foo, "Arizona", election_date_2022)
+save_senate_plot(az_senate, "Arizona")
+```
+
+```{r}
+wi_senate <- kalman_senate(foo, "Wisconsin", election_date_2022)
+save_senate_plot(wi_senate, "Wisconsin")
+```
+
+```{r}
+nh_senate <- kalman_senate(foo, "New Hampshire", election_date_2022)
+save_senate_plot(nh_senate, "New Hampshire")
+```
+
+
+```{r}
+nv_senate <- kalman_senate(foo, "Nevada", election_date_2022)
+save_senate_plot(nv_senate, "Nevada")
+```
+
+
+```{r}
+ky_senate <- kalman_senate(senate_raw, "Kentucky", election_date_2020)
+save_senate_plot(ky_senate, "Kentucky")
+```
+
+```{r}
+nc_senate <- kalman_senate(senate_raw, "North Carolina", election_date_2020)
+transform_senate_result(nc_senate, "North Carolina")
+save_senate_plot(nc_senate, "North Carolina")
+```
+
+```{r}
+sc_senate <- kalman_senate(senate_raw, "South Carolina", election_date_2020)
+transform_senate_result(sc_senate, "South Carolina")
+save_senate_plot(sc_senate, "South Carolina")
+```
+
+
+
+```{r}
+tx_senate <- kalman_senate(senate_raw, "Texas", election_date_2020)
+tail(transform_senate_result(tx_senate, "Texas"))
+save_senate_plot(tx_senate, "Texas")
+```
+
+
+```{r}
+mt_senate <- kalman_senate(senate_raw, "Montana", election_date_2020)
+(transform_senate_result(mt_senate, "Montana"))
+save_senate_plot(mt_senate, "Montana")
+```
+
+
+```{r}
+mi_senate <- kalman_senate(senate_raw, "Michigan", election_date_2020)
+tail(transform_senate_result(mi_senate, "Michigan"))
+save_senate_plot(mi_senate, "Michigan")
+```
+
+
+```{r}
+ga_senate <- kalman_senate(senate_raw %>% filter(race_id == 6271), "Georgia", election_date_2020)
+tail(transform_senate_result(ga_senate, "Georgia"))
+save_senate_plot(ga_senate, "Georgia")
+```
+
+```{r}
+nc_senate <- kalman_senate(senate_raw %>%
+                             mutate(end = parse_date(end_date,"%m/%d/%y"),
+                                    created = parse_datetime(created_at, "%m/%d/%y %H:%M")) %>%
+                             filter(as.Date(created) <= as.Date('2020-10-01'),
+                                    end <= as.Date('2020-10-01')),
+                           "North Carolina",
+                           election_date_2020)
+tail(transform_senate_result(nc_senate, "North Carolina") %>% filter(date < as.Date('2020-10-28')))
+# save_senate_plot(nc_senate, "North Carolina", as_of_date=as.Date('2020-10-01'))
+```
+
+```{r}
+az_senate <- kalman_senate(senate_raw %>% filter(created <= as.Date('2020-10-27'), end_date <= as.Date('2020-10-27')), "Arizona", election_date_2020)
+tail(transform_senate_result(az_senate, "Arizona"))
+save_senate_plot(az_senate, "Arizona")
+```
+
+```{r}
+ak_senate <- kalman_senate(senate_raw, "Alaska", election_date_2020)
+save_senate_plot(ak_senate, "Alaska")
+```
+```{r}
+me_senate <- kalman_senate(senate_raw, "Maine", election_date_2020)
+transform_senate_result(me_senate, "Maine")
+save_senate_plot(me_senate, "Maine")
+```
+```{r}
+ia_senate <- kalman_senate(senate_raw, "Iowa", election_date_2020)
+tail(transform_senate_result(ia_senate, "Iowa"))
+save_senate_plot(ia_senate, "Iowa")
+```
+
+```{r}
+co_senate <- kalman_senate(senate_raw, "Colorado", election_date_2020)
+tail(transform_senate_result(co_senate, "Colorado"))
+save_senate_plot(co_senate, "Colorado")
 ```
