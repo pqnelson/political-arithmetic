@@ -1741,14 +1741,14 @@ save_senate_plot(nv_senate, "Nevada")
 
 
 ```{r}
-ky_senate <- kalman_senate(senate_raw, "Kentucky", election_date_2020)
+ky_senate <- kalman_senate(senate_raw, "Kentucky", election_date_2022)
 save_senate_plot(ky_senate, "Kentucky")
 ```
 
 ```{r}
-nc_senate <- kalman_senate(senate_raw, "North Carolina", election_date_2020)
-transform_senate_result(nc_senate, "North Carolina")
-save_senate_plot(nc_senate, "North Carolina")
+pa_senate <- kalman_senate(senate_raw, "Pennsylvania", election_date_2022)
+transform_senate_result(nc_senate, "Pennsylvania")
+save_senate_plot(nc_senate, "Pennsylvania")
 ```
 
 ```{r}
