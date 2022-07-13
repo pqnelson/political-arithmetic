@@ -31,6 +31,8 @@ county_fips <- county_results %>%
 
 ```{r}
 state_results <- read.csv("../data/elections/presidential/state/1976-2020-president.csv")
+
+census_data <- read.csv("../data/census/la1990.csv")
 ```
 
 # The 1988-2000 elections
@@ -362,20 +364,42 @@ dev.off()
 p
 ```
 
+## Census Thinking
+
+Let me try looking at characteristics of these parishes.
+
+```{r}
+sd_white <- sqrt(mean(((census_data$white/census_data$population) - sum(census_data$white)/sum(census_data$population))))
+c_df <- census_data %>%
+  mutate(density = population/land_area,
+    z_density = (density-mean(density))/sd(density),
+    diversity = ((white/population) - sum(white)/sum(population))/sd_white) %>%
+  select(Parish,z_density,diversity,population,land_area)
+```
+
 ## Clinton 1992
 
 ```{r}
+normalize_parish <- function(s) {
+  tolower(str_replace_all(s, " ",""))
+}
 foo92 <- left_join(la88 %>% mutate(r88 = republican,
                                    d88 = democrat,
-                                   m88 = (democrat - republican)/total) %>% select(Parish,r88,d88,m88), 
+                                   t88 = total,
+                                   m88 = (democrat - republican)/total) %>% select(Parish,r88,d88,m88,t88), 
           la92 %>% mutate(r92 = republican,
                           d92 = democrat,
-                          m92 = (democrat - republican)/total) %>% select(Parish,r92,d92,m92)) %>%
+                          t92 = total,
+                          m92 = (democrat - republican)/total) %>% select(Parish,r92,d92,m92,t92)) %>%
   mutate(delta_r = r92 - r88,
          delta_d = d92 - d88,
-         delta_m = (r92 - d92) - (r88 - d88)) %>%
+         delta_m = (r92 - d92) - (r88 - d88),
+         par = normalize_parish(Parish)) %>%
   arrange((m92 - m88)) %>%
-  inner_join(county_fips)
+  left_join(county_fips %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  left_join(c_df %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  select(-Parish.y,-Parish.x,-par)
+ # rename(Parish = Parish.x)
 foo92
 ```
 
@@ -446,6 +470,64 @@ p
 dev.off()
 p
 ```
+```{r}
+p <- la92 %>%
+  inner_join(county_fips) %>%
+  rename(Perot_raw = Perot) %>%
+  mutate(Perot = Perot_raw/total) %>%
+  select(FIPS,Perot,Perot_raw) %>%
+  mutate(county_fips = as.character(FIPS)) %>%
+  select(county_fips,Perot) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = Perot)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Perot margin voters (1992)",
+       fill = "Percent")
+jpeg("la92-perot.jpeg")
+p
+dev.off()
+p
+```
+
+## Perot Change in 1996
+
+```{r}
+p <- la92 %>%
+  inner_join(county_fips) %>%
+  rename(Perot92 = Perot,
+         votes92 = total) %>%
+  mutate(Perot92_percent = Perot92/votes92) %>%
+  select(FIPS,Perot92_percent,Perot92,votes92) %>%
+  inner_join(la96 %>%
+               inner_join(county_fips) %>%
+               rename(Perot96 = Perot,
+                      votes96 = total) %>%
+               mutate(Perot96_percent = Perot96/votes96) %>%
+               select(FIPS,Perot96_percent,Perot96,votes96)) %>%
+  mutate(county_fips = as.character(FIPS),
+         delta_Perot = Perot96 - Perot92) %>%
+  select(county_fips,delta_Perot) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta_Perot)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(low = "red", high = "white", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Change in Perot voters (1996 vs 1992)",
+       fill = "Number Voters")
+jpeg("la96-perot.jpeg")
+p
+dev.off()
+p
+```
+
 ## Clinton in 1996
 
 
@@ -456,18 +538,28 @@ foo96 <- left_join(la96 %>% mutate(r96 = republican,
           la92 %>% mutate(r92 = republican,
                           d92 = democrat,
                           m92 = (democrat - republican)/total) %>% select(Parish,r92,d92,m92)) %>%
+  left_join(la88 %>% mutate(r88 = republican,
+                            d88 = democrat,
+                            m88 = (democrat-republican)/total) %>%
+              select(Parish,r88,d88,m88)) %>%
   mutate(delta_r = r96 - r92,
          delta_d = d96 - d92,
-         delta_m = (r96 - d96) - (r92 - d92)) %>%
+         delta_d88 = d96 - d88,
+         delta_r88 = r96 - r88,
+         delta_m = (r96 - d96) - (r92 - d92),
+         delta_m88 = (r96 - d96) - (r88 - d88),
+         par = normalize_parish(Parish)) %>%
   arrange((m96 - m92)) %>%
-  inner_join(county_fips)
+  left_join(county_fips %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  left_join(c_df %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  select(-Parish.y,-Parish.x,-par)
 foo96
 ```
 ```{r}
 p <- foo96 %>%
-  select(FIPS,delta_r) %>%
+  select(FIPS,delta_r88) %>%
   mutate(county_fips = as.character(FIPS),
-         delta_r = ifelse(delta_r < 0, (delta_r), 0)) %>%
+         delta_r = ifelse(delta_r88 < 0, (delta_r88), 0)) %>%
   select(county_fips,delta_r) %>%
   left_join(counties, by = "county_fips") %>% 
   filter(state_name == "Louisiana") %>% 
@@ -477,9 +569,30 @@ p <- foo96 %>%
   scale_fill_continuous(low = "blue", high = "white", label = scales::comma) +
   theme(legend.title = element_text(),
         legend.key.width = unit(.5, "in")) +
-  labs(title = "Decrease in Republican voters (1996 vs 1992)",
+  labs(title = "Decrease in Republican voters (1996 vs 1988)",
        fill = "Number Voters")
-jpeg("la96-decrease-repubs.jpeg")
+jpeg("la96-88-decrease-repubs.jpeg")
+p
+dev.off()
+p
+```
+```{r}
+p <- foo96 %>%
+  select(FIPS,delta_r88) %>%
+  mutate(county_fips = as.character(FIPS),
+         delta_r = ifelse(delta_r88 > 0, (delta_r88), 0)) %>%
+  select(county_fips,delta_r) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta_r)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(high = "red", low = "white", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Increase in Republican voters (1996 vs 1988)",
+       fill = "Number Voters")
+jpeg("la96-88-increase-repubs.jpeg")
 p
 dev.off()
 p
@@ -529,6 +642,29 @@ p
 ```
 ```{r}
 p <- foo96 %>%
+  select(FIPS,delta_d88) %>%
+  mutate(county_fips = as.character(FIPS),
+         delta_d = ifelse(delta_d88 > 0, log10(delta_d88), 0)) %>%
+  select(county_fips,delta_d) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta_d)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ # scale_fill_continuous(low = "white", high = "blue", label = scales::comma) +
+  scale_fill_binned(low = "white", high = "blue", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Increase in Democratic voters (1996 vs 1988)",
+       fill = "Number Voters")
+jpeg("la96-88-increase-dems.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo96 %>%
   select(FIPS,delta_r) %>%
   mutate(county_fips = as.character(FIPS),
          delta_r = ifelse(delta_r > 0, (delta_r), 0)) %>%
@@ -555,17 +691,549 @@ p
 ```{r}
 foo00 <- left_join(la96 %>% mutate(r96 = republican,
                                    d96 = democrat,
-                                   m96 = (democrat - republican)/total) %>% select(Parish,r96,d96,m96), 
+                                   d96_per = democrat/total,
+                                   r96_per = republican/total,
+                                   t96 = total,
+                                   log_odds_d96 = log(democrat) - log(total - democrat),
+                                   log_odds_r96 = log(republican) - log(total - republican),
+                                   m96 = (democrat - republican)/total) %>%
+                     select(Parish,r96,d96,m96,log_odds_d96,log_odds_r96,d96_per,r96_per,t96), 
           la00 %>% mutate(r00 = republican,
                           d00 = democrat,
-                          m00 = (democrat - republican)/total) %>% select(Parish,r00,d00,m00)) %>%
+                          m00 = (democrat - republican)/total,
+                          d00_per = democrat/total,
+                          r00_per = republican/total,
+                          t00 = total,
+                          log_odds_d00 = log(democrat) - log(total - democrat),
+                          log_odds_r00 = log(republican) - log(total - republican)
+                          ) %>%
+            select(Parish,r00,d00,m00,log_odds_d00,log_odds_r00,d00_per,r00_per,t00)) %>%
   mutate(delta_r = r00 - r96,
          delta_d = d00 - d96,
-         delta_m = (r00 - d00) - (r96 - d96)) %>%
+         delta_m = (r00 - d00) - (r96 - d96),
+         par = normalize_parish(Parish)) %>%
   arrange((m00 - m96)) %>%
-  inner_join(county_fips)
+  left_join(county_fips %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  left_join(census_data %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  left_join(c_df %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  rename(population = population.x,
+         land_area = land_area.x,
+         Parish = Parish.x) %>%
+  select(-Parish.y.y,-Parish.x.x,-par,-population.y,-land_area.y)
 foo00
 ```
+
+Trying a naive model of the turnout.
+
+```{r}
+summary(lm(t00 ~ 0 + white_vap + black_vap, foo00))
+```
+
+```{r}
+summary(lm(t96 ~ 0 + white_vap + black_vap, foo00))
+```
+
+```{r}
+summary(lm(d00 - 0.95*black_voters ~ 0 + white_voters, 
+           foo00 %>% mutate(white_voters = 0.64942*white_vap,
+                            black_voters = 0.43411*black_vap)))
+```
+
+```{r}
+summary(lm(d96 - 0.9*black_voters ~ 0 + white_voters, 
+           foo00 %>% mutate(white_voters = 0.64030*white_vap,
+                            black_voters = 0.48269*black_vap)))
+```
+```{r}
+summary(lm(t00 - 0.385*black_vap ~ 0 + white_vap, foo00))
+```
+```{r}
+summary(lm(t00 - 0.65*white_vap ~ 0 + black_vap, foo00))
+```
+
+```{r}
+summary(lm(t00 ~ black_vap + white_vap, foo00))
+```
+
+
+```{r}
+p <- foo00 %>%
+  select(FIPS,diversity) %>%
+  mutate(county_fips = as.character(FIPS)) %>%
+  select(county_fips,diversity) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = diversity)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+  # scale_fill_continuous(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Population Diversity 1990",
+       subtitle = "White Population Relative to State average",
+       fill = "Z_white")
+jpeg("la-diversity.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo00 %>%
+  select(FIPS,diversity) %>%
+  mutate(county_fips = as.character(FIPS),
+         diversity = ifelse(diversity < 0, -diversity, 0
+                            #ifelse(diversity > 0, 1, 0)
+                            )
+         ) %>%
+  select(county_fips,diversity) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = diversity)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ # scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(high = "green", low = "white", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Population Diversity 1990",
+       subtitle = "Parishes where White Population proportion is smaller Relative to State average",
+       fill = "Z_diversity")
+jpeg("la-diversity.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+adjacency <- read.csv("../data/census/county_adjacency2010.csv")
+la_adjacency <- adjacency %>%
+  filter(fipscounty %in% county_fips$FIPS)
+```
+
+We have a make-shift local Moran's I:
+
+```{r}
+local_moran <- function(df, col) {
+  fips <- c()
+  val <- c()
+  for(fip in df$FIPS) {
+    fips <- c(fips,fip)
+    z_node <- filter(df, FIPS==fip)[[col]]
+    neighbor_fips <- filter(la_adjacency,
+                            fipscounty==fips,
+                            fipsneighbor!=fip)$fipsneighbor
+    n <- z_node*sum(filter(df, FIPS %in% neighbor_fips)[col])
+    val <- c(val, n)
+  }
+  d <- sum(df[col]^2)
+  data.frame(FIPS = fips,
+             local_moran = val)
+}
+local_moran(foo00, 'log_odds_d96')
+```
+
+```{r}
+p <- local_moran(foo00, 'log_odds_d96') %>%
+  mutate(county_fips = as.character(FIPS),
+         local_moran = local_moran) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = local_moran)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+ #scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1996 Voting Similarity",
+       subtitle = "Local Moran's I with log-odds Democratic Vote",
+       fill = "Z")
+jpeg("la96-moran.jpeg")
+p
+dev.off()
+p
+```
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS),
+         d96_per = 100*d96_per) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = d96_per)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_binned(low = "white", high = "blue", # label = scales::comma, 
+                   breaks = c(30, 40, 50, 60, 70), guide = guide_bins(show.limits = T)) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1996 Democratic Vote",
+       subtitle = "Percent of Parish Vote for Clinton",
+       fill = "%")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS),
+         d00_per = 100*d00_per) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = d00_per)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_binned(low = "white", high = "blue", # label = scales::comma, 
+                   breaks = c(30, 40, 50, 60, 70), guide = guide_bins(show.limits = T)) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Democratic Vote",
+       subtitle = "Percent of Parish Vote for Gore",
+       fill = "%")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS),
+         d_per = 100*(d00_per - d96_per),
+         z = ifelse(d_per < mean(d_per),d_per,0)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = z)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_binned(low = "red", high = "white", # label = scales::comma, 
+                   # breaks = c(30, 40, 50, 60, 70), 
+                   guide = guide_bins(show.limits = T)) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Democratic Vote Loss",
+       subtitle = "Percent of Parish Vote for Clinton but not Gore",
+       fill = "%")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS),
+         d_per = 100*(d00_per - d96_per),
+         z = (d_per - mean(d_per))/sd(d_per)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = d_per)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_binned(low = "red", high = "white", # label = scales::comma, 
+                   # breaks = c(30, 40, 50, 60, 70), 
+                   guide = guide_bins(show.limits = T)) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Democratic Vote Loss",
+       subtitle = "Percent of Parish Vote for Clinton but not Gore",
+       fill = "%")
+jpeg("la00-gore-loss.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS)
+         # local_moran = ifelse(local_moran > 0, local_moran, 0)
+         ) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = r96_per)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 33) +
+# scale_fill_continuous(low = "white", high = "red") +
+ scale_fill_binned(low = "white", high = "red", # label = scales::comma, 
+                   breaks = c(0.3, 0.4, 0.5, 0.6, 0.7), guide = guide_bins(show.limits = T)) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1996 Republican Vote",
+       subtitle = "Percent of Parish Vote for Dole",
+       fill = "%")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS)
+         # local_moran = ifelse(local_moran > 0, local_moran, 0)
+         ) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = r00_per)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 33) +
+  #scale_fill_continuous(low = "white", high = "red") +
+ scale_fill_binned(low = "white", high = "red", # label = scales::comma, 
+                   breaks = c(0.3, 0.4, 0.5, 0.6, 0.7), 
+                   guide = guide_bins(show.limits = T)) +
+ #  scale_fill_stepsn(n.breaks = 10, colours = terrain.colors(10)) +
+ # scale_fill_binned(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Republican Vote",
+       subtitle = "Percent of Parish Vote for Bush",
+       fill = "%")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+```{r}
+p <- local_moran(foo00, 'r00_per') %>%
+  mutate(county_fips = as.character(FIPS)
+         # local_moran = ifelse(local_moran > 0, local_moran, 0)
+         ) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = local_moran)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+ #scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Democratic Voting Similarity",
+       subtitle = "Local Moran's I with log-odds Democratic Vote",
+       fill = "Z")
+#jpeg("la00-moran.jpeg")
+p
+#dev.off()
+#p
+```
+
+```{r}
+p <- local_moran(foo00 %>% mutate(delta = m00-m96 # log_odds_d00 - log_odds_d96
+                                  , log_r00 = log10(r00)), 
+                 'm96') %>%
+  mutate(county_fips = as.character(FIPS)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = local_moran)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+ #scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Voting Similarity",
+       subtitle = "Local Moran's I with margin of victory 1996",
+       fill = "Z")
+jpeg("la96-moran.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo00 %>%
+  mutate(county_fips = as.character(FIPS),
+         delta = ifelse(abs(m00-m96)>0.26,abs(m00-m96)*100,
+                        #(abs(m00-m96) - mean((mutate(foo00, delta=m00-m96))$delta))/sd((mutate(foo00, delta=m00-m96))$delta),
+                        0)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "2000 Vote Margin",
+       subtitle = "Bush Improvement Over Dole",
+       fill = "Margin (%)")
+jpeg("la00-bush-improvement2.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo96 %>%
+  mutate(county_fips = as.character(FIPS),
+         delta = ifelse(m96<m92,m92-m96,0)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta*100)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1996 Vote Margin",
+       subtitle = "Dole Improvement Over Bush",
+       fill = "Percent")
+jpeg("la96-dole-improvement.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo96 %>%
+  mutate(county_fips = as.character(FIPS),
+         delta = ifelse(m96>m92,m96-m92,0)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = delta*100)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "blue", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1996 Vote Margin",
+       subtitle = "Clinton 1996 Improvement Over 1992",
+       fill = "Percent")
+jpeg("la96-clinton-improvement.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo92 %>%
+  mutate(county_fips = as.character(FIPS)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = (m92-m88)*100)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ #scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "blue", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "1992 Vote Margin",
+       subtitle = "Clinton Improvement Over Dukakis",
+       fill = "Percent")
+jpeg("la92-clinton-improvement.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- local_moran(foo00 %>% mutate(delta = m00-m96 # log_odds_d00 - log_odds_d96
+                                  , log_r00 = log10(r00)), 
+                 'm00') %>%
+  mutate(county_fips = as.character(FIPS)) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = local_moran)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+ #scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Voting Similarity",
+       subtitle = "Local Moran's I with margin of victory 2000",
+       fill = "Z")
+jpeg("la00-moran.jpeg")
+p
+dev.off()
+p
+```
+
+
+```{r}
+p <- foo00 %>%
+  select(FIPS,diversity) %>%
+  mutate(county_fips = as.character(FIPS),
+         diversity = ifelse(diversity > 0, diversity, 0
+                            #ifelse(diversity > 0, 1, 0)
+                            )
+         ) %>%
+  select(county_fips,diversity) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = diversity)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ # scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Population Diversity 1990",
+       subtitle = "Parishes where White Population proportion is bigger Relative to State average",
+       fill = "Z_whiteness")
+jpeg("la-whiteness.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo00 %>%
+  select(FIPS,diversity) %>%
+  mutate(county_fips = as.character(FIPS),
+         diversity = ifelse(diversity > 0, diversity, 0
+                            #ifelse(diversity > 0, 1, 0)
+                            )
+         ) %>%
+  select(county_fips,diversity) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = diversity)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+ # scale_fill_continuous(type = "viridis") +
+ scale_fill_continuous(low = "white", high = "green", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Population Diversity 1990",
+       subtitle = "White Population Relative to State average",
+       fill = "Z_diversity")
+jpeg("la-lack-diversity.jpeg")
+p
+dev.off()
+p
+```
+
+```{r}
+p <- foo00 %>%
+  select(FIPS,z_density) %>%
+  mutate(county_fips = as.character(FIPS),
+         z_density = ifelse(z_density > 0, 0, z_density)) %>%
+  select(county_fips,z_density) %>%
+  left_join(counties, by = "county_fips") %>% 
+  filter(state_name == "Louisiana") %>% 
+  ggplot(mapping = aes(long, lat, group = group, fill = z_density)) +
+  geom_polygon(color = "#000000", size = .25) +
+  coord_map(projection = "albers", lat0 = 29, lat1 = 45) +
+  scale_fill_continuous(type = "viridis") +
+  # scale_fill_continuous(low = "white", high = "red", label = scales::comma) +
+  theme(legend.title = element_text(),
+        legend.key.width = unit(.5, "in")) +
+  labs(title = "Population Density 1990",
+       fill = "z_density")
+jpeg("la-density.jpeg")
+p
+dev.off()
+p
+```
+
 ```{r}
 p <- foo00 %>%
   select(FIPS,delta_r) %>%
