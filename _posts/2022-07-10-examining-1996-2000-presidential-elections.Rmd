@@ -398,9 +398,33 @@ foo92 <- left_join(la88 %>% mutate(r88 = republican,
   arrange((m92 - m88)) %>%
   left_join(county_fips %>% mutate(par = normalize_parish(Parish)), by="par") %>%
   left_join(c_df %>% mutate(par = normalize_parish(Parish)), by="par") %>%
-  select(-Parish.y,-Parish.x,-par)
+  left_join(census_data %>% mutate(par = normalize_parish(Parish)), by="par") %>%
+  select(-Parish.y.y,-par,-land_area.y,-Parish.y,-Parish.x,-population.x) %>%
+  rename(Parish = Parish.x.x,
+         land_area = land_area.x,
+         population = population.y)
  # rename(Parish = Parish.x)
 foo92
+```
+
+Some cavalier calculations of voter turnout.
+
+```{r}
+summary(lm(t88 ~ 0 + white_vap + black_vap, foo92))
+```
+```{r}
+summary(lm(d88 ~ 0 + white_voter + black_voter,
+           foo92 %>% mutate(white_voter = 0.543397*white_vap,
+                            black_voter = 0.519700*black_vap)))
+```
+
+```{r}
+summary(lm(t92 ~ 0 + white_vap + black_vap, foo92))
+```
+```{r}
+summary(lm(d92 -  black_voter ~ 0 + white_voter,
+           foo92 %>% mutate(white_voter = 0.62364*white_vap,
+                            black_voter = 0.52896*black_vap)))
 ```
 
 
